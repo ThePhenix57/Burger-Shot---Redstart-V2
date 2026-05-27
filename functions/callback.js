@@ -12,10 +12,10 @@ export async function onRequest(context) {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         client_id: "1508986297660870806",
-        client_secret: "N9CJufXc0d5xJUcvvUJRaUqoDVkj64wA",
+        client_secret: "rFN9iOo-41wG8kO6zWy80CrXcqoJZRae",
         grant_type: "authorization_code",
         code,
-        redirect_uri: "https://burger-shot-redstart-v2.thephenix5759.workers.dev/callback",
+        redirect_uri: "https://burger-shot-redstart-v2.thephenix5759.workers.dev/functions/callback",
       }),
     });
 
