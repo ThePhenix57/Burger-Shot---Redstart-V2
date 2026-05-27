@@ -487,13 +487,24 @@
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
-  const SUPABASE_KEY = 'SUPABASE_ANON_KEY_PLACEHOLDER';
-  
+  let SUPABASE_URL = '';
+  let SUPABASE_KEY = '';
+
   const DIRECTION_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
 
   let currentUser = null;
 
+  async function initConfig() {
+  const res = await fetch('/.netlify/functions/config');
+  const config = await res.json();
+  SUPABASE_URL = config.supabaseUrl;
+  SUPABASE_KEY = config.supabaseKey;
+  init();
+}
+
+window.addEventListener('DOMContentLoaded', initConfig);
+
+function init() {
   // Init
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
