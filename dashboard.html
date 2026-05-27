@@ -20,26 +20,145 @@
     body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background .3s,color .3s; }
 
     /* SIDEBAR */
-    .sidebar { position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-width);background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto; }
-    .sidebar-logo { padding:20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0; }
+    .sidebar {
+      position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-width);
+      background:var(--bg-card);border-right:1px solid var(--border);
+      display:flex;flex-direction:column;z-index:100;overflow:hidden;
+    }
+    .sidebar-logo {
+      padding:20px 16px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:10px;flex-shrink:0;
+    }
     .sidebar-logo-img { width:38px;height:38px;border-radius:10px;object-fit:cover;flex-shrink:0; }
     .sidebar-logo-text { font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--red);line-height:1; }
     .sidebar-logo-sub { font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-top:2px; }
-    .sidebar-nav { flex:1;padding:12px 0;display:flex;flex-direction:column;gap:2px;overflow-y:auto;min-height:0; }
-    .nav-section { padding:10px 16px 4px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted); }
-    .nav-item { display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;transition:all .2s;border-left:3px solid transparent;font-size:14px;font-weight:500;color:var(--text-muted); }
-    .nav-item:hover { background:var(--bg-card2);color:var(--text); }
-    .nav-item.active { background:rgba(192,57,43,.1);border-left-color:var(--red);color:var(--text); }
+
+    /* NAV ZONE — quadrillage rouge/blanc avec séparateur bleu marine */
+    .sidebar-nav-zone {
+      flex:1;min-height:0;overflow-y:auto;
+      position:relative;
+      /* Quadrillage rouge + blanc semi-transparent */
+      background-color: #0d0d0d;
+      background-image:
+        linear-gradient(rgba(192,57,43,0.13) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(192,57,43,0.13) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px;
+    }
+    [data-theme="light"] .sidebar-nav-zone {
+      background-color: #f0ece6;
+      background-image:
+        linear-gradient(rgba(192,57,43,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(192,57,43,0.15) 1px, transparent 1px),
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px;
+    }
+
+    /* Séparateur bleu marine entre nav-zone et user-zone */
+    .sidebar-nav-separator {
+      height: 3px;
+      flex-shrink: 0;
+      background: linear-gradient(90deg, #0a1628, #1a3a6b, #0d2444, #0a1628);
+      box-shadow: 0 0 8px rgba(26,58,107,0.8), 0 0 16px rgba(26,58,107,0.4);
+      position: relative;
+      z-index: 2;
+    }
+
+    .sidebar-nav { padding:12px 0;display:flex;flex-direction:column;gap:2px; }
+    .nav-section {
+      padding:10px 16px 4px;font-size:10px;letter-spacing:2px;
+      text-transform:uppercase;color:rgba(255,255,255,0.35);
+      text-shadow: 0 0 8px rgba(192,57,43,0.5);
+    }
+    [data-theme="light"] .nav-section { color:rgba(0,0,0,0.35); text-shadow:none; }
+    .nav-item {
+      display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;
+      transition:all .2s;border-left:3px solid transparent;
+      font-size:14px;font-weight:500;color:rgba(240,240,240,0.6);
+      position:relative;
+    }
+    [data-theme="light"] .nav-item { color:rgba(26,26,26,0.6); }
+    .nav-item:hover {
+      background:rgba(192,57,43,0.12);
+      color:var(--text);
+      backdrop-filter: blur(4px);
+    }
+    .nav-item.active {
+      background:rgba(192,57,43,0.18);
+      border-left-color:var(--red);
+      color:#fff;
+      backdrop-filter: blur(4px);
+      box-shadow: inset 0 0 20px rgba(192,57,43,0.1);
+    }
+    [data-theme="light"] .nav-item.active { color:var(--text); }
     .nav-icon { font-size:16px;width:20px;text-align:center; }
     .role-hidden { display:none!important; }
-    .sidebar-user { padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--bg-card); }
-    .user-avatar { width:34px;height:34px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;overflow:hidden;flex-shrink:0; }
+
+    /* USER ZONE en bas */
+    .sidebar-user-zone {
+      flex-shrink:0;
+      background: var(--bg-card);
+      padding: 14px 16px 10px;
+    }
+    .user-card {
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;
+      background:var(--bg-card2);
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-bottom:10px;
+    }
+    .user-avatar {
+      width:34px;height:34px;border-radius:50%;background:var(--red);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;font-size:13px;overflow:hidden;flex-shrink:0;
+    }
     .user-avatar img { width:100%;height:100%;object-fit:cover; }
     .user-info { flex:1;min-width:0; }
     .user-name { font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .user-role { font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:1px; }
-    .logout-btn { background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0; }
-    .logout-btn:hover { color:var(--red); }
+
+    /* BOUTON DÉCONNEXION */
+    .logout-btn {
+      width:100%;
+      padding:9px 16px;
+      background:#c0392b;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-family:'Barlow',sans-serif;
+      font-size:13px;
+      font-weight:700;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      cursor:pointer;
+      position:relative;
+      overflow:hidden;
+      transition:background .2s, box-shadow .2s;
+      box-shadow:
+        0 0 0 1px rgba(192,57,43,0.6),
+        0 0 8px rgba(192,57,43,0.4),
+        0 0 16px rgba(192,57,43,0.15);
+    }
+    .logout-btn::before {
+      content:'';
+      position:absolute;
+      top:-50%;left:-60%;
+      width:40%;height:200%;
+      background:rgba(255,255,255,0.25);
+      transform:skewX(-20deg);
+      transition:left .4s ease;
+    }
+    .logout-btn:hover {
+      background:#a93226;
+      box-shadow:
+        0 0 0 1px rgba(192,57,43,0.9),
+        0 0 12px rgba(192,57,43,0.7),
+        0 0 24px rgba(192,57,43,0.3);
+    }
+    .logout-btn:hover::before { left:130%; }
 
     /* MAIN */
     .main { margin-left:var(--sidebar-width);min-height:100vh;display:flex;flex-direction:column;width:calc(100% - var(--sidebar-width)); }
@@ -154,16 +273,21 @@
         <div class="sidebar-logo-sub">Espace Employé</div>
       </div>
     </div>
-    <nav class="sidebar-nav" id="sidebarNav">
-      <!-- injecté par JS selon rôle -->
-    </nav>
-    <div class="sidebar-user">
-      <div class="user-avatar" id="userAvatar"></div>
-      <div class="user-info">
-        <div class="user-name" id="userName">—</div>
-        <div class="user-role" id="userRole">—</div>
+    <div class="sidebar-nav-zone">
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- injecté par JS selon rôle -->
+      </nav>
+    </div>
+    <div class="sidebar-nav-separator"></div>
+    <div class="sidebar-user-zone">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar"></div>
+        <div class="user-info">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-role" id="userRole">—</div>
+        </div>
       </div>
-      <button class="logout-btn" onclick="logout()" title="Déconnexion">🚪</button>
+      <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
     </div>
   </div>
 
