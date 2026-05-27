@@ -418,7 +418,8 @@
   let SUPABASE_KEY = '';
   const DIRECTION_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
   let currentUser = null;
-
+  let produitsCaisse = [];
+  
   async function initConfig() {
     const res = await fetch('/.netlify/functions/config');
     const config = await res.json();
@@ -721,7 +722,7 @@ async function loadCaisseProduits() {
       <div class="caisse-grid">
 
         ${data.filter(p => p.categorie === cat).map(p => `
-          <div class="caisse-produit" onclick='ajouterAuTicket(${JSON.stringify(p)})'>
+          <div class="caisse-produit" onclick="ajouterAuTicketById('${p.id}')">
 
             ${p.image_url
               ? `<img src="${p.image_url}">`
@@ -743,7 +744,14 @@ async function loadCaisseProduits() {
 }
 
 function ajouterAuTicket(produit){
+function ajouterAuTicketById(id){
 
+  const produit = produitsCaisse.find(p => p.id === id);
+
+  if(!produit) return;
+
+  ajouterAuTicket(produit);
+}
   const exist = commande.find(p => p.id === produit.id);
 
   if(exist){
@@ -901,6 +909,7 @@ document.addEventListener('input', async e => {
     }
 
     const data = await supabaseFetch(
+      produitsCaisse = data;
       `clients?select=*&nom=ilike.*${val}*`
     );
 
