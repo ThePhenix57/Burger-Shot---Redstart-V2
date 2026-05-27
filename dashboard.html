@@ -339,7 +339,7 @@
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
-      <img class="sidebar-logo-img" src="https://upload.redstartrp.fr/uploads/photo-1779909454-241fe4af9eb4.png" onerror="this.style.display='none'">
+      <img class="sidebar-logo-img" src="https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png" onerror="this.style.display='none'" style="background:transparent;">
       <div>
         <div class="sidebar-logo-text">Burger Shot</div>
         <div class="sidebar-logo-sub">Espace Employé</div>
@@ -957,7 +957,7 @@ async function loadProduits() {
               <button onclick="toggleProduit('${p.id}',${p.actif})">${p.actif?'✅':'❌'}</button>
               <button onclick="supprimerProduit('${p.id}')">🗑️</button>
             </div>
-            ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:36px;margin-bottom:8px;">🍔</div>`}
+            ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:36px;margin-bottom:8px;">${getEmoji(p.categorie)}</div>`}
             <div class="produit-card-nom">${p.nom}</div>
             <div class="produit-card-prix">${p.prix}$</div>
             <div class="produit-card-pts">🎯 ${p.points} pts</div>
