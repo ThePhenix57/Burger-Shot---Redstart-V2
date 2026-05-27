@@ -26,7 +26,9 @@ export default {
         const tokenData = await tokenRes.json();
 
         if (!tokenData.access_token) {
-          return Response.redirect(new URL(`/?error=${encodeURIComponent(JSON.stringify(tokenData))}`, url.origin), 302);
+          return new Response(JSON.stringify(tokenData), {
+          headers: { 'Content-Type': 'application/json' }
+          });
         }
 
         const userRes = await fetch("https://discord.com/api/users/@me", {
