@@ -470,15 +470,16 @@
     document.getElementById('page-' + name).classList.add('active');
     if (el) el.classList.add('active');
 
-    const titles = {
-      'accueil': 'Accueil',
-      'clients': 'Clients',
-      'enregistrer-client': 'Nouveau Client',
-      'employes': 'Employés',
-      'ajouter-employe': 'Ajouter un Employé',
-      'menu': 'Gestion du Menu'
-      'caisse': 'Caisse',
-    };
+  const titles = {
+    'accueil': 'Accueil',
+    'clients': 'Clients',
+    'enregistrer-client': 'Nouveau Client',
+    'employes': 'Employés',
+    'ajouter-employe': 'Ajouter un Employé',
+    'menu': 'Gestion du Menu',
+    'caisse': 'Caisse',
+  };
+    
     document.getElementById('pageTitle').textContent = titles[name] || name;
 
     if (name === 'clients') loadClients();
@@ -743,7 +744,6 @@ async function loadCaisseProduits() {
   genererTicket();
 }
 
-function ajouterAuTicket(produit){
 function ajouterAuTicketById(id){
 
   const produit = produitsCaisse.find(p => p.id === id);
@@ -752,6 +752,9 @@ function ajouterAuTicketById(id){
 
   ajouterAuTicket(produit);
 }
+
+function ajouterAuTicket(produit){
+
   const exist = commande.find(p => p.id === produit.id);
 
   if(exist){
