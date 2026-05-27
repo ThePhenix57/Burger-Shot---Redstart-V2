@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,6 @@
     :root {
       --red: #c0392b;
       --red-dark: #922b21;
-      --navy: #1a2744;
       --orange: #e67e22;
       --bg: #0d0d0d;
       --bg-card: #111111;
@@ -19,38 +18,108 @@
       --border: rgba(255,255,255,0.08);
       --success: #27ae60;
       --warning: #f39c12;
+      --sidebar-width: 240px;
+    }
+    [data-theme="light"] {
+      --bg: #f0ece6;
+      --bg-card: #ffffff;
+      --bg-card2: #f5f0ea;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --border: rgba(0,0,0,0.1);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
-    .sidebar-logo { padding: 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-    .sidebar-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--red); }
-    .-logo-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
-    .-nav { flex: 1; padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
-    .nav-section { padding: 8px 16px 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; color: var(--text-muted); }
+    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0;
+      width: var(--sidebar-width);
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
+    }
+    .sidebar-logo-icon {
+      width: 38px; height: 38px;
+      background: var(--red);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .sidebar-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--red); line-height: 1; }
+    .sidebar-logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; margin-top: 2px; }
+    .sidebar-nav { flex: 1; padding: 12px 0; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+    .nav-section { padding: 10px 16px 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; cursor: pointer;
+      transition: all 0.2s; border-left: 3px solid transparent;
+      font-size: 14px; font-weight: 500; color: var(--text-muted);
+    }
     .nav-item:hover { background: var(--bg-card2); color: var(--text); }
     .nav-item.active { background: rgba(192,57,43,0.1); border-left-color: var(--red); color: var(--text); }
     .nav-item.direction-only { display: none; }
     .nav-section.direction-only { display: none; }
-    .nav-icon { font-size: 18px; width: 20px; text-align: center; }
-    .-user { padding: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; overflow: hidden; }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    /* ── SIDEBAR USER (collé en bas) ── */
+    .sidebar-user {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
+      background: var(--bg-card);
+    }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--red);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; overflow: hidden; flex-shrink: 0;
+    }
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .user-name { font-size: 13px; font-weight: 600; }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .user-role { font-size: 11px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; }
-    .logout-btn { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px; }
+    .logout-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 4px; flex-shrink: 0; }
     .logout-btn:hover { color: var(--red); }
-    .main { margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
-    .topbar {position: sticky;top: 0;z-index: 50;width: 100%;padding: 20px 32px;border-bottom: 1px solid var(--border);display: flex;align-items: center;justify-content: space-between;background: var(--bg);backdrop-filter: blur(10px)}
-    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
-    .content { flex: 1; padding: 32px; }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg);
+      backdrop-filter: blur(10px);
+    }
+    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .theme-btn {
+      background: var(--bg-card2); border: 1px solid var(--border);
+      color: var(--text); width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .theme-btn:hover { border-color: var(--red); transform: scale(1.1); }
+
+    /* ── CONTENT ── */
+    .content { flex: 1; padding: 28px; }
     .page { display: none; }
     .page.active { display: block; }
+
+    /* ── CARDS / COMPONENTS ── */
     .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
     .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; margin-bottom: 16px; color: var(--red); }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
     .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
     .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--red); }
     .stat-label { font-size: 12px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
@@ -64,6 +133,8 @@
     .btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); }
     .btn-success { background: var(--success); color: white; }
     .btn-success:hover { opacity: 0.9; }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-danger:hover { background: var(--red-dark); }
     table { width: 100%; border-collapse: collapse; }
     th { text-align: left; padding: 10px 12px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
     td { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
@@ -78,62 +149,86 @@
     .alert-success { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); color: var(--success); }
     .alert-error { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: var(--red); }
     .red-line { height: 3px; background: linear-gradient(90deg, var(--red), var(--orange)); border-radius: 2px; margin-bottom: 24px; }
-    .access-denied { position: fixed; inset: 0; background: #0d0d0d; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 999; }
-    .access-denied h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--red); letter-spacing: 3px; }
+
+    /* ── CAISSE ── */
+    .caisse-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+      align-items: start;
+    }
+    .caisse-produits { min-height: 200px; }
+    .caisse-categorie { margin-bottom: 24px; }
+    .caisse-categorie-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .caisse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .caisse-produit {
+      background: var(--bg-card2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; cursor: pointer;
+      transition: all 0.2s; text-align: center;
+    }
+    .caisse-produit:hover { transform: translateY(-2px); border-color: var(--red); box-shadow: 0 4px 12px rgba(192,57,43,0.2); }
+    .caisse-produit img { width: 56px; height: 56px; object-fit: contain; margin-bottom: 8px; }
+    .caisse-produit-nom { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .caisse-produit-prix { font-size: 12px; color: var(--red); font-weight: 700; }
+
+    /* ── TICKET ── */
+    .ticket-wrapper { position: sticky; top: 80px; }
+    .ticket-thermal {
+      width: 100%; background: #f5f1e8; color: #111;
+      border-radius: 12px; padding: 24px;
+      font-family: 'Courier New', monospace;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    [data-theme="light"] .ticket-thermal { box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .ticket-logo { text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 14px; letter-spacing: 2px; }
+    .ticket-info { font-size: 12px; margin-bottom: 10px; color: #444; }
+    .ticket-separator { border: none; border-top: 1px dashed #999; margin: 12px 0; }
+    .ticket-articles { min-height: 60px; }
+    .ticket-line { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+    .ticket-empty { text-align: center; color: #999; font-size: 13px; padding: 20px 0; }
+    .ticket-total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 10px; }
+    .ticket-meta { margin-top: 10px; font-size: 12px; color: #555; }
+    .ticket-buttons { display: flex; gap: 10px; margin-top: 18px; }
+    .ticket-buttons .btn { flex: 1; }
+
+    /* ── PRODUIT CARDS (gestion menu) ── */
     .produit-card { background: var(--bg-card2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; position: relative; }
-    .produit-card img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
+    .produit-card img { width: 56px; height: 56px; object-fit: contain; margin-bottom: 8px; }
     .produit-card-nom { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
     .produit-card-prix { font-size: 12px; color: var(--red); }
     .produit-card-pts { font-size: 11px; color: var(--text-muted); }
     .produit-card-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
     .produit-card-actions button { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px; }
-    .caisse-layout{display:grid;grid-template-columns: 1fr 380px;gap:24px; }
-    .caisse-produits{min-height:700px; }
-    .ticket-wrapper{display:flex;justify-content:center; }
-    .ticket-thermal{width:100%;background:#f5f1e8;color:#111;border-radius:12px;padding:24px;font-family: monospace;box-shadow:0 10px 30px rgba(0,0,0,0.4);position:sticky;top:20px;background-image:linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px);background-size:100% 4px; }
-    .ticket-logo{text-align:center;font-size:28px;font-weight:bold;margin-bottom:16px; }
-    .ticket-info{font-size:13px;margin-bottom:12px; }
-    .ticket-separator{border-top:1px dashed #333;margin:14px 0; }
-    .ticket-line{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px; }
-    .ticket-total{font-size:20px;font-weight:bold;text-align:right;margin-top:12px; }
-    .ticket-client,
-    .ticket-employe{margin-top:10px;font-size:13px;}
-    .ticket-buttons{display:flex;gap:10px;margin-top:20px; }
-    .btn-danger{background:#c0392b;color:white;}
-    .btn-danger:hover{background:#922b21; }
-    .caisse-categorie{margin-bottom:24px; }
-    .caisse-categorie-title{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:10px; }
-    .caisse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px; }
-    .caisse-produit{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:0.2s;text-align:center; }
-    .caisse-produit:hover{transform:translateY(-2px);border-color:var(--red); }
-    .caisse-produit img{width:60px;height:60px;object-fit:contain;margin-bottom:8px; }
-    .popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999; }
-    .popup-box{width:500px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px; }
-    .client-results{margin-bottom:20px; }
+
+    /* ── POPUP ── */
+    .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .popup-box { width: 480px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+    .client-results { margin-bottom: 12px; }
   </style>
 </head>
 <body>
 
-<div id="accessDenied" class="access-denied" style="display:none;">
-  <h1>⛔ Accès Refusé</h1>
-  <p style="color:#888;">Vous n'êtes pas autorisé à accéder à cette interface.</p>
-  <a href="/" style="color:var(--red);">Retour à l'accueil</a>
-</div>
-
 <div id="app" style="display:none;">
+
+  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🍔</div>
       <div>
         <div class="sidebar-logo-text">Burger Shot</div>
         <div class="sidebar-logo-sub">Espace Employé</div>
       </div>
     </div>
+
     <nav class="sidebar-nav">
       <div class="nav-section">Général</div>
       <div class="nav-item active" onclick="showPage('accueil', this)">
         <span class="nav-icon">🏠</span> Accueil
       </div>
       <div class="nav-section">Caisse</div>
+      <div class="nav-item" onclick="showPage('caisse', this)">
+        <span class="nav-icon">🧾</span> Caisse
+      </div>
       <div class="nav-item" onclick="showPage('clients', this)">
         <span class="nav-icon">👥</span> Clients
       </div>
@@ -152,24 +247,28 @@
         <span class="nav-icon">🍔</span> Gestion du menu
       </div>
     </nav>
+
+    <!-- USER en bas, hors du flux nav -->
     <div class="sidebar-user">
       <div class="user-avatar" id="userAvatar"></div>
-      <div>
+      <div class="user-info">
         <div class="user-name" id="userName">—</div>
         <div class="user-role" id="userRole">—</div>
       </div>
       <button class="logout-btn" onclick="logout()" title="Déconnexion">🚪</button>
     </div>
-  <div class="nav-item" onclick="showPage('caisse', this)">
-    <span class="nav-icon">🧾</span> Caisse
   </div>
-</div>
 
+  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <div class="page-title" id="pageTitle">Accueil</div>
-      <div style="font-size:13px; color:var(--text-muted);" id="topDate"></div>
+      <div class="topbar-right">
+        <div style="font-size:13px; color:var(--text-muted);" id="topDate"></div>
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Changer le thème">☀️</button>
+      </div>
     </div>
+
     <div class="content">
 
       <!-- PAGE ACCUEIL -->
@@ -196,72 +295,51 @@
           </p>
         </div>
       </div>
-<!-- PAGE CAISSE -->
-<div class="page" id="page-caisse">
-  <div class="red-line"></div>
 
-  <div class="caisse-layout">
+      <!-- PAGE CAISSE -->
+      <div class="page" id="page-caisse">
+        <div class="red-line"></div>
+        <div class="caisse-layout">
 
-    <!-- PRODUITS -->
-    <div class="card caisse-produits">
-      <div class="card-title">Caisse Burger Shot</div>
+          <!-- PRODUITS -->
+          <div class="card caisse-produits">
+            <div class="card-title">Caisse Burger Shot</div>
+            <div class="form-group">
+              <label class="form-label">Recherche client</label>
+              <input class="form-input" id="clientSearch" placeholder="Nom du client...">
+            </div>
+            <div id="clientResults" class="client-results"></div>
+            <div id="caisseProduits">Chargement des produits...</div>
+          </div>
 
-      <div class="form-group">
-        <label class="form-label">Recherche client</label>
-        <input class="form-input" id="clientSearch" placeholder="Nom du client...">
+          <!-- TICKET -->
+          <div class="ticket-wrapper">
+            <div class="ticket-thermal">
+              <div class="ticket-logo">🍔 BURGER SHOT</div>
+              <div class="ticket-info">
+                <div id="ticketId">BS-000000000000-001</div>
+                <div id="ticketDate"></div>
+              </div>
+              <hr class="ticket-separator">
+              <div class="ticket-articles" id="ticketArticles">
+                <div class="ticket-empty">Aucune commande</div>
+              </div>
+              <hr class="ticket-separator">
+              <div class="ticket-total">TOTAL : <span id="ticketTotal">0$</span></div>
+              <div class="ticket-meta">
+                <div>Client : <strong id="ticketClient">Inconnu</strong></div>
+                <div>Employé : <strong id="ticketEmploye">—</strong></div>
+              </div>
+              <div class="ticket-buttons">
+                <button class="btn btn-danger" onclick="annulerCommande()">❌ Annuler</button>
+                <button class="btn btn-success" onclick="ouvrirValidation()">✅ Valider</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <div id="clientResults" class="client-results"></div>
-
-      <div id="caisseProduits">
-        Chargement des produits...
-      </div>
-    </div>
-
-    <!-- TICKET -->
-    <div class="ticket-wrapper">
-
-      <div class="ticket-thermal">
-
-        <div class="ticket-logo">
-          🍔 BURGER SHOT
-        </div>
-
-        <div class="ticket-info">
-          <div id="ticketId">BS-000000000000-001</div>
-          <div id="ticketDate"></div>
-        </div>
-
-        <div class="ticket-separator"></div>
-
-        <div id="ticketArticles"></div>
-
-        <div class="ticket-separator"></div>
-
-        <div class="ticket-total">
-          TOTAL : <span id="ticketTotal">0$</span>
-        </div>
-
-        <div class="ticket-client">
-          Client : <span id="ticketClient">Inconnu</span>
-        </div>
-
-        <div class="ticket-employe">
-          Employé : <span id="ticketEmploye">—</span>
-        </div>
-
-        <div class="ticket-buttons">
-          <button class="btn btn-danger" onclick="annulerCommande()">❌ Annuler</button>
-          <button class="btn btn-success" onclick="ouvrirValidation()">✅ Valider</button>
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-</div>
-      
       <!-- PAGE CLIENTS -->
       <div class="page" id="page-clients">
         <div class="red-line"></div>
@@ -401,7 +479,6 @@
             </div>
             <button class="btn btn-primary" onclick="ajouterProduit()">✅ Ajouter le produit</button>
           </div>
-
           <div class="card" style="flex:1;">
             <div class="card-title">Produits du menu</div>
             <div id="produitsGrid">Chargement...</div>
@@ -409,6 +486,18 @@
         </div>
       </div>
 
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- POPUP VALIDATION -->
+<div id="popupValidation" class="popup-overlay" style="display:none;">
+  <div class="popup-box">
+    <div class="card-title">Validation commande</div>
+    <div id="popupRecap"></div>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn btn-danger" onclick="fermerPopup()">❌ Retour</button>
+      <button class="btn btn-success" onclick="validerCommande()">✅ Confirmer</button>
     </div>
   </div>
 </div>
@@ -419,14 +508,14 @@
   const DIRECTION_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
   let currentUser = null;
   let produitsCaisse = [];
-  
+  let commande = [];
+  let selectedClient = null;
+
   window.addEventListener('DOMContentLoaded', () => {
-    SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co/';
+    SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
     SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
     init();
   });
-
-  window.addEventListener('DOMContentLoaded', initConfig);
 
   function init() {
     const params = new URLSearchParams(window.location.search);
@@ -441,7 +530,7 @@
 
     const avatarEl = document.getElementById('userAvatar');
     if (avatar) {
-      avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png">`;
+      avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png" onerror="this.parentElement.textContent='${username.charAt(0).toUpperCase()}'">`;
     } else {
       avatarEl.textContent = username.charAt(0).toUpperCase();
     }
@@ -451,6 +540,7 @@
     document.getElementById('topDate').textContent = new Date().toLocaleDateString('fr-FR', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
+    document.getElementById('ticketEmploye').textContent = username;
 
     if (role === 'direction') {
       document.querySelectorAll('.direction-only').forEach(el => {
@@ -462,30 +552,38 @@
     loadStats();
   }
 
+  /* ── THÈME ── */
+  function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('themeBtn');
+    if (html.dataset.theme === 'dark') {
+      html.dataset.theme = 'light';
+      btn.textContent = '🌙';
+    } else {
+      html.dataset.theme = 'dark';
+      btn.textContent = '☀️';
+    }
+  }
+
+  /* ── NAVIGATION ── */
   function showPage(name, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
     if (el) el.classList.add('active');
-
-  const titles = {
-    'accueil': 'Accueil',
-    'clients': 'Clients',
-    'enregistrer-client': 'Nouveau Client',
-    'employes': 'Employés',
-    'ajouter-employe': 'Ajouter un Employé',
-    'menu': 'Gestion du Menu',
-    'caisse': 'Caisse',
-  };
-    
+    const titles = {
+      'accueil': 'Accueil', 'clients': 'Clients',
+      'enregistrer-client': 'Nouveau Client', 'employes': 'Employés',
+      'ajouter-employe': 'Ajouter un Employé', 'menu': 'Gestion du Menu', 'caisse': 'Caisse',
+    };
     document.getElementById('pageTitle').textContent = titles[name] || name;
-
     if (name === 'clients') loadClients();
     if (name === 'employes') loadEmployes();
     if (name === 'menu') loadProduits();
     if (name === 'caisse') loadCaisseProduits();
   }
 
+  /* ── SUPABASE ── */
   async function supabaseFetch(endpoint, options = {}) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
       headers: {
@@ -500,6 +598,7 @@
     return res.json();
   }
 
+  /* ── STATS ── */
   async function loadStats() {
     try {
       const clients = await supabaseFetch('clients?select=id');
@@ -511,6 +610,7 @@
     } catch(e) {}
   }
 
+  /* ── CLIENTS ── */
   async function loadClients() {
     const data = await supabaseFetch('clients?select=*&order=created_at.desc');
     const el = document.getElementById('clientsTable');
@@ -525,6 +625,21 @@
     </tr>`).join('')}</tbody></table>`;
   }
 
+  async function enregistrerClient() {
+    const nom = document.getElementById('clientNom').value.trim();
+    const prenom = document.getElementById('clientPrenom').value.trim();
+    const naissance = document.getElementById('clientNaissance').value;
+    const tel = document.getElementById('clientTel').value.trim();
+    const discord = document.getElementById('clientDiscord').value.trim();
+    const alertEl = document.getElementById('alertClient');
+    if (!nom || !prenom) { alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prénom obligatoires.</div>'; return; }
+    await supabaseFetch('clients', { method: 'POST', body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, telephone: tel || null, discord_id: discord || null }) });
+    alertEl.innerHTML = '<div class="alert alert-success">✅ Client enregistré !</div>';
+    ['clientNom','clientPrenom','clientNaissance','clientTel','clientDiscord'].forEach(id => document.getElementById(id).value = '');
+    loadStats();
+  }
+
+  /* ── EMPLOYÉS ── */
   async function loadEmployes() {
     const data = await supabaseFetch('employes?select=*&order=created_at.desc');
     const el = document.getElementById('employesTable');
@@ -540,33 +655,6 @@
     </tr>`).join('')}</tbody></table>`;
   }
 
-  async function enregistrerClient() {
-    const nom = document.getElementById('clientNom').value.trim();
-    const prenom = document.getElementById('clientPrenom').value.trim();
-    const naissance = document.getElementById('clientNaissance').value;
-    const tel = document.getElementById('clientTel').value.trim();
-    const discord = document.getElementById('clientDiscord').value.trim();
-    const alertEl = document.getElementById('alertClient');
-
-    if (!nom || !prenom) {
-      alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prénom obligatoires.</div>';
-      return;
-    }
-
-    await supabaseFetch('clients', {
-      method: 'POST',
-      body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, telephone: tel || null, discord_id: discord || null })
-    });
-
-    alertEl.innerHTML = '<div class="alert alert-success">✅ Client enregistré !</div>';
-    document.getElementById('clientNom').value = '';
-    document.getElementById('clientPrenom').value = '';
-    document.getElementById('clientNaissance').value = '';
-    document.getElementById('clientTel').value = '';
-    document.getElementById('clientDiscord').value = '';
-    loadStats();
-  }
-
   async function ajouterEmploye() {
     const nom = document.getElementById('empNom').value.trim();
     const prenom = document.getElementById('empPrenom').value.trim();
@@ -575,25 +663,14 @@
     const poste = document.getElementById('empPoste').value;
     const contrat = document.getElementById('empContrat').value;
     const alertEl = document.getElementById('alertEmploye');
-
-    if (!nom || !prenom || !discord) {
-      alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom, prénom et ID Discord obligatoires.</div>';
-      return;
-    }
-
-    await supabaseFetch('employes', {
-      method: 'POST',
-      body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, discord_id: discord, poste, contrat })
-    });
-
+    if (!nom || !prenom || !discord) { alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom, prénom et ID Discord obligatoires.</div>'; return; }
+    await supabaseFetch('employes', { method: 'POST', body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, discord_id: discord, poste, contrat }) });
     alertEl.innerHTML = '<div class="alert alert-success">✅ Employé ajouté !</div>';
-    document.getElementById('empNom').value = '';
-    document.getElementById('empPrenom').value = '';
-    document.getElementById('empNaissance').value = '';
-    document.getElementById('empDiscord').value = '';
+    ['empNom','empPrenom','empNaissance','empDiscord'].forEach(id => document.getElementById(id).value = '');
     loadStats();
   }
 
+  /* ── MENU / PRODUITS ── */
   function previewImage() {
     const file = document.getElementById('prodImage').files[0];
     if (file) {
@@ -613,39 +690,20 @@
     const categorie = document.getElementById('prodCategorie').value;
     const imageFile = document.getElementById('prodImage').files[0];
     const alertEl = document.getElementById('alertMenu');
-
-    if (!nom || !prix) {
-      alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prix obligatoires.</div>';
-      return;
-    }
-
+    if (!nom || !prix) { alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prix obligatoires.</div>'; return; }
     let image_url = null;
-
     if (imageFile) {
       const fileName = `${Date.now()}_${imageFile.name.replace(/\s/g, '_')}`;
       const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/produits/${fileName}`, {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': imageFile.type,
-        },
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': imageFile.type },
         body: imageFile
       });
-      if (uploadRes.ok) {
-        image_url = `${SUPABASE_URL}/storage/v1/object/public/produits/${fileName}`;
-      }
+      if (uploadRes.ok) image_url = `${SUPABASE_URL}/storage/v1/object/public/produits/${fileName}`;
     }
-
-    await supabaseFetch('produits', {
-      method: 'POST',
-      body: JSON.stringify({ nom, prix: parseFloat(prix), points: parseInt(points) || 0, categorie, image_url })
-    });
-
+    await supabaseFetch('produits', { method: 'POST', body: JSON.stringify({ nom, prix: parseFloat(prix), points: parseInt(points) || 0, categorie, image_url }) });
     alertEl.innerHTML = '<div class="alert alert-success">✅ Produit ajouté !</div>';
-    document.getElementById('prodNom').value = '';
-    document.getElementById('prodPrix').value = '';
-    document.getElementById('prodPoints').value = '';
+    ['prodNom','prodPrix','prodPoints'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('prodImage').value = '';
     document.getElementById('prodPreview').style.display = 'none';
     loadProduits();
@@ -654,26 +712,19 @@
   async function loadProduits() {
     const data = await supabaseFetch('produits?select=*&order=categorie.asc,nom.asc');
     const el = document.getElementById('produitsGrid');
-    if (!Array.isArray(data) || !data.length) {
-      el.innerHTML = '<p style="color:var(--text-muted)">Aucun produit. Ajoutez-en un !</p>';
-      return;
-    }
-
+    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun produit. Ajoutez-en un !</p>'; return; }
     const categories = [...new Set(data.map(p => p.categorie))];
     el.innerHTML = categories.map(cat => `
       <div style="margin-bottom:24px;">
-        <div style="font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border);">${cat}</div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:10px;">
+        <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${cat}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;">
           ${data.filter(p => p.categorie === cat).map(p => `
             <div class="produit-card" style="opacity:${p.actif ? 1 : 0.5};">
               <div class="produit-card-actions">
-                <button onclick="toggleProduit('${p.id}', ${p.actif})" title="${p.actif ? 'Désactiver' : 'Activer'}">${p.actif ? '✅' : '❌'}</button>
+                <button onclick="toggleProduit('${p.id}',${p.actif})" title="${p.actif?'Désactiver':'Activer'}">${p.actif?'✅':'❌'}</button>
                 <button onclick="supprimerProduit('${p.id}')" title="Supprimer">🗑️</button>
               </div>
-              ${p.image_url
-                ? `<img src="${p.image_url}" alt="${p.nom}">`
-                : `<div style="width:60px;height:60px;background:var(--border);border-radius:8px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:28px;">🍔</div>`
-              }
+              ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : `<div style="width:56px;height:56px;background:var(--border);border-radius:8px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:28px;">🍔</div>`}
               <div class="produit-card-nom">${p.nom}</div>
               <div class="produit-card-prix">${p.prix}$</div>
               <div class="produit-card-pts">${p.points} pts</div>
@@ -685,10 +736,7 @@
   }
 
   async function toggleProduit(id, actif) {
-    await supabaseFetch(`produits?id=eq.${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ actif: !actif })
-    });
+    await supabaseFetch(`produits?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ actif: !actif }) });
     loadProduits();
   }
 
@@ -697,258 +745,139 @@
     await supabaseFetch(`produits?id=eq.${id}`, { method: 'DELETE' });
     loadProduits();
   }
-let commande = [];
-let selectedClient = null;
 
-async function loadCaisseProduits() {
-
-  const data = await supabaseFetch('produits?select=*&actif=eq.true&order=categorie.asc');
-  produitsCaisse = data;
-  const el = document.getElementById('caisseProduits');
-
-  if (!Array.isArray(data) || !data.length) {
-    el.innerHTML = 'Aucun produit.';
-    return;
-  }
-
-  const categories = [...new Set(data.map(p => p.categorie))];
-
-  el.innerHTML = categories.map(cat => `
-    <div class="caisse-categorie">
-
-      <div class="caisse-categorie-title">${cat}</div>
-
-      <div class="caisse-grid">
-
-        ${data.filter(p => p.categorie === cat).map(p => `
-          <div class="caisse-produit" onclick="ajouterAuTicketById('${p.id}')">
-
-            ${p.image_url
-              ? `<img src="${p.image_url}">`
-              : `<div style="font-size:42px;">🍔</div>`
-            }
-
-            <div>${p.nom}</div>
-            <div style="color:var(--red); margin-top:6px;">${p.prix}$</div>
-
-          </div>
-        `).join('')}
-
-      </div>
-
-    </div>
-  `).join('');
-
-  genererTicket();
-}
-
-function ajouterAuTicketById(id){
-
-  const produit = produitsCaisse.find(p => p.id === id);
-
-  if(!produit) return;
-
-  ajouterAuTicket(produit);
-}
-
-function ajouterAuTicket(produit){
-
-  const exist = commande.find(p => p.id === produit.id);
-
-  if(exist){
-    exist.quantite++;
-  }else{
-    commande.push({
-      ...produit,
-      quantite:1
-    });
-  }
-
-  renderTicket();
-}
-
-function renderTicket(){
-
-  const el = document.getElementById('ticketArticles');
-
-  if(!commande.length){
-    el.innerHTML = '<div style="text-align:center;">Aucune commande</div>';
-  }else{
-
-    el.innerHTML = commande.map(p => `
-      <div class="ticket-line">
-
-        <div>
-          ${p.nom} x${p.quantite}
+  /* ── CAISSE ── */
+  async function loadCaisseProduits() {
+    const data = await supabaseFetch('produits?select=*&actif=eq.true&order=categorie.asc');
+    produitsCaisse = Array.isArray(data) ? data : [];
+    const el = document.getElementById('caisseProduits');
+    if (!produitsCaisse.length) { el.innerHTML = 'Aucun produit.'; return; }
+    const categories = [...new Set(produitsCaisse.map(p => p.categorie))];
+    el.innerHTML = categories.map(cat => `
+      <div class="caisse-categorie">
+        <div class="caisse-categorie-title">${cat}</div>
+        <div class="caisse-grid">
+          ${produitsCaisse.filter(p => p.categorie === cat).map(p => `
+            <div class="caisse-produit" onclick="ajouterAuTicketById('${p.id}')">
+              ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : `<div style="font-size:36px;margin-bottom:8px;">🍔</div>`}
+              <div class="caisse-produit-nom">${p.nom}</div>
+              <div class="caisse-produit-prix">${p.prix}$</div>
+            </div>
+          `).join('')}
         </div>
-
-        <div>
-          ${p.prix * p.quantite}$
-        </div>
-
       </div>
     `).join('');
+    genererTicket();
   }
 
-  const total = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
-
-  document.getElementById('ticketTotal').textContent = total + '$';
-
-  document.getElementById('ticketClient').textContent =
-    selectedClient
-      ? `${selectedClient.prenom} ${selectedClient.nom}`
-      : 'Inconnu';
-
-  document.getElementById('ticketEmploye').textContent =
-    currentUser.username;
-}
-
-function genererTicket(){
-
-  const now = new Date();
-
-  const dd = String(now.getDate()).padStart(2,'0');
-  const mm = String(now.getMonth()+1).padStart(2,'0');
-  const yyyy = now.getFullYear();
-
-  const hh = String(now.getHours()).padStart(2,'0');
-  const min = String(now.getMinutes()).padStart(2,'0');
-
-  document.getElementById('ticketId').textContent =
-    `BS-${dd}${mm}${yyyy}${hh}${min}-001`;
-
-  document.getElementById('ticketDate').textContent =
-    now.toLocaleString('fr-FR');
-
-  renderTicket();
-}
-
-function annulerCommande(){
-
-  if(!confirm('Annuler la commande ?')) return;
-
-  commande = [];
-  selectedClient = null;
-
-  renderTicket();
-}
-
-function ouvrirValidation(){
-
-  if(!commande.length){
-    alert('Aucune commande.');
-    return;
+  function ajouterAuTicketById(id) {
+    const produit = produitsCaisse.find(p => p.id === id);
+    if (!produit) return;
+    const exist = commande.find(p => p.id === produit.id);
+    if (exist) { exist.quantite++; } else { commande.push({ ...produit, quantite: 1 }); }
+    renderTicket();
   }
 
-  const total = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
-
-  document.getElementById('popupRecap').innerHTML = `
-    ${commande.map(p=>`
-      <div class="ticket-line">
-        <div>${p.nom} x${p.quantite}</div>
-        <div>${p.prix * p.quantite}$</div>
-      </div>
-    `).join('')}
-
-    <div class="ticket-separator"></div>
-
-    <div class="ticket-total">
-      TOTAL : ${total}$
-    </div>
-  `;
-
-  document.getElementById('popupValidation').style.display = 'flex';
-}
-
-function fermerPopup(){
-  document.getElementById('popupValidation').style.display = 'none';
-}
-
-async function validerCommande(){
-
-  const total = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
-
-  await supabaseFetch('commandes', {
-  method:'POST',
-  body: JSON.stringify({
-
-    client_id: selectedClient
-      ? selectedClient.id
-      : null,
-
-    employe_discord_id: currentUser.id,
-
-    items: JSON.stringify(commande),
-
-    total: total,
-
-    points_gagnes: Math.floor(total / 100),
-
-    paye_par_points: false
-  })
-});
-
-  fermerPopup();
-
-  alert('✅ Commande validée !');
-
-  commande = [];
-  selectedClient = null;
-
-  genererTicket();
-}
-
-document.addEventListener('input', async e => {
-  if(e.target.id === 'clientSearch'){
-    const val = e.target.value.trim();
-    if(val.length < 2){
-      document.getElementById('clientResults').innerHTML = '';
-      return;
-    }
-    const data = await supabaseFetch(`clients?select=*&nom=ilike.*${val}*`);
-    document.getElementById('clientResults').innerHTML =
-      data.map(c => `
-        <div
-          onclick='selectClient(${JSON.stringify(c)})'
-          style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;"
-        >
-          ${c.prenom} ${c.nom}
+  function renderTicket() {
+    const el = document.getElementById('ticketArticles');
+    if (!commande.length) {
+      el.innerHTML = '<div class="ticket-empty">Aucune commande</div>';
+    } else {
+      el.innerHTML = commande.map(p => `
+        <div class="ticket-line">
+          <div>${p.nom} ×${p.quantite}</div>
+          <div>${p.prix * p.quantite}$</div>
         </div>
       `).join('');
+    }
+    const total = commande.reduce((a, b) => a + (b.prix * b.quantite), 0);
+    document.getElementById('ticketTotal').textContent = total + '$';
+    document.getElementById('ticketClient').textContent = selectedClient ? `${selectedClient.prenom} ${selectedClient.nom}` : 'Inconnu';
+    document.getElementById('ticketEmploye').textContent = currentUser ? currentUser.username : '—';
   }
-});
 
-function selectClient(client){
+  function genererTicket() {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2,'0');
+    const mm = String(now.getMonth()+1).padStart(2,'0');
+    const yyyy = now.getFullYear();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const min = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('ticketId').textContent = `BS-${dd}${mm}${yyyy}${hh}${min}-001`;
+    document.getElementById('ticketDate').textContent = now.toLocaleString('fr-FR');
+    renderTicket();
+  }
 
-  selectedClient = client;
+  function annulerCommande() {
+    if (!confirm('Annuler la commande ?')) return;
+    commande = [];
+    selectedClient = null;
+    document.getElementById('clientSearch').value = '';
+    renderTicket();
+  }
 
-  document.getElementById('clientSearch').value =
-    `${client.prenom} ${client.nom}`;
+  function ouvrirValidation() {
+    if (!commande.length) { alert('Aucune commande.'); return; }
+    const total = commande.reduce((a, b) => a + (b.prix * b.quantite), 0);
+    document.getElementById('popupRecap').innerHTML = `
+      ${commande.map(p => `<div class="ticket-line" style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;"><div>${p.nom} ×${p.quantite}</div><div>${p.prix * p.quantite}$</div></div>`).join('')}
+      <hr style="border:none;border-top:1px dashed #999;margin:12px 0;">
+      <div style="font-size:18px;font-weight:bold;text-align:right;">TOTAL : ${total}$</div>
+    `;
+    document.getElementById('popupValidation').style.display = 'flex';
+  }
 
-  document.getElementById('clientResults').innerHTML = '';
+  function fermerPopup() {
+    document.getElementById('popupValidation').style.display = 'none';
+  }
 
-  renderTicket();
-}
+  async function validerCommande() {
+    const total = commande.reduce((a, b) => a + (b.prix * b.quantite), 0);
+    await supabaseFetch('commandes', {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: selectedClient ? selectedClient.id : null,
+        employe_discord_id: currentUser.id,
+        items: JSON.stringify(commande),
+        total,
+        points_gagnes: Math.floor(total / 100),
+        paye_par_points: false
+      })
+    });
+    fermerPopup();
+    alert('✅ Commande validée !');
+    commande = [];
+    selectedClient = null;
+    document.getElementById('clientSearch').value = '';
+    genererTicket();
+  }
+
+  /* ── RECHERCHE CLIENT ── */
+  document.addEventListener('input', async e => {
+    if (e.target.id === 'clientSearch') {
+      const val = e.target.value.trim();
+      if (val.length < 2) { document.getElementById('clientResults').innerHTML = ''; return; }
+      const data = await supabaseFetch(`clients?select=*&nom=ilike.*${val}*`);
+      document.getElementById('clientResults').innerHTML = Array.isArray(data)
+        ? data.map(c => `
+            <div onclick='selectClient(${JSON.stringify(c)})' style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:14px;">
+              ${c.prenom} ${c.nom}
+            </div>
+          `).join('')
+        : '';
+    }
+  });
+
+  function selectClient(client) {
+    selectedClient = client;
+    document.getElementById('clientSearch').value = `${client.prenom} ${client.nom}`;
+    document.getElementById('clientResults').innerHTML = '';
+    renderTicket();
+  }
+
   function logout() {
     window.location.href = '/';
   }
 </script>
-<!-- POPUP VALIDATION -->
-<div id="popupValidation" class="popup-overlay" style="display:none;">
-
-  <div class="popup-box">
-
-    <div class="card-title">Validation commande</div>
-
-    <div id="popupRecap"></div>
-
-    <div style="display:flex; gap:10px; margin-top:20px;">
-      <button class="btn btn-danger" onclick="fermerPopup()">❌ Retour</button>
-      <button class="btn btn-success" onclick="validerCommande()">✅ Confirmer</button>
-    </div>
-
-  </div>
-
-</div>
 </body>
 </html>
