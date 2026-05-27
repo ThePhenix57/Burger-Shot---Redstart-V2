@@ -1,9 +1,0 @@
-const tokenData = await tokenRes.json();
-
-// Ajoute ça temporairement
-if (!tokenData.access_token) {
-  return Response.redirect(
-    new URL(`/?error=${encodeURIComponent(JSON.stringify(tokenData))}`, url.origin), 
-    302
-  );
-}
