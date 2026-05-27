@@ -21,288 +21,72 @@
       --warning: #f39c12;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Barlow', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      position: fixed;
-      left: 0; top: 0; bottom: 0;
-      width: 240px;
-      background: var(--bg-card);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      z-index: 100;
-    }
-    .sidebar-logo {
-      padding: 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .sidebar-logo-text {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 2px;
-      color: var(--red);
-    }
-    .sidebar-logo-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-    }
-    .sidebar-nav {
-      flex: 1;
-      padding: 16px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .nav-section {
-      padding: 8px 16px 4px;
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-left: 3px solid transparent;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-muted);
-    }
+    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+    .sidebar-logo { padding: 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .sidebar-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--red); }
+    .sidebar-logo-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
+    .sidebar-nav { flex: 1; padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
+    .nav-section { padding: 8px 16px 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; color: var(--text-muted); }
     .nav-item:hover { background: var(--bg-card2); color: var(--text); }
-    .nav-item.active {
-      background: rgba(192,57,43,0.1);
-      border-left-color: var(--red);
-      color: var(--text);
-    }
+    .nav-item.active { background: rgba(192,57,43,0.1); border-left-color: var(--red); color: var(--text); }
     .nav-item.direction-only { display: none; }
+    .nav-section.direction-only { display: none; }
     .nav-icon { font-size: 18px; width: 20px; text-align: center; }
-    .sidebar-user {
-      padding: 16px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .user-avatar {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: var(--red);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
-      overflow: hidden;
-    }
+    .sidebar-user { padding: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; overflow: hidden; }
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .user-name { font-size: 13px; font-weight: 600; }
-    .user-role {
-      font-size: 11px;
-      color: var(--orange);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .logout-btn {
-      margin-left: auto;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 18px;
-      padding: 4px;
-    }
+    .user-role { font-size: 11px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; }
+    .logout-btn { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px; }
     .logout-btn:hover { color: var(--red); }
-
-    /* MAIN */
-    .main {
-      margin-left: 240px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .topbar {
-      padding: 20px 32px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .page-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 32px;
-      letter-spacing: 2px;
-    }
-    .content {
-      flex: 1;
-      padding: 32px;
-    }
-
-    /* PAGES */
+    .main { margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { padding: 20px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
+    .content { flex: 1; padding: 32px; }
     .page { display: none; }
     .page.active { display: block; }
-
-    /* CARDS */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-    }
-    .card-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 20px;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-      color: var(--red);
-    }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; margin-bottom: 16px; color: var(--red); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-    .stat-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-    }
-    .stat-value {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 36px;
-      color: var(--red);
-    }
-    .stat-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-
-    /* FORMS */
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--red); }
+    .stat-label { font-size: 12px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
     .form-group { margin-bottom: 16px; }
-    .form-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-    .form-input, .form-select {
-      width: 100%;
-      padding: 10px 14px;
-      background: var(--bg-card2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Barlow', sans-serif;
-      font-size: 14px;
-      transition: border-color 0.2s;
-    }
-    .form-input:focus, .form-select:focus {
-      outline: none;
-      border-color: var(--red);
-    }
+    .form-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+    .form-input, .form-select { width: 100%; padding: 10px 14px; background: var(--bg-card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; transition: border-color 0.2s; }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--red); }
     .form-select option { background: var(--bg-card2); }
-    .btn {
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: none;
-      font-family: 'Barlow', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
     .btn-primary { background: var(--red); color: white; }
     .btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); }
     .btn-success { background: var(--success); color: white; }
     .btn-success:hover { opacity: 0.9; }
-
-    /* TABLE */
     table { width: 100%; border-collapse: collapse; }
-    th {
-      text-align: left;
-      padding: 10px 12px;
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-    }
-    td {
-      padding: 12px;
-      font-size: 14px;
-      border-bottom: 1px solid var(--border);
-    }
+    th { text-align: left; padding: 10px 12px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    td { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: var(--bg-card2); }
-
-    /* BADGES */
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
     .badge-red { background: rgba(192,57,43,0.2); color: var(--red); }
     .badge-orange { background: rgba(230,126,34,0.2); color: var(--orange); }
     .badge-green { background: rgba(39,174,96,0.2); color: var(--success); }
     .badge-blue { background: rgba(52,152,219,0.2); color: #3498db; }
-
-    /* ALERT */
-    .alert {
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
     .alert-success { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); color: var(--success); }
     .alert-error { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: var(--red); }
-
-    .red-line {
-      height: 3px;
-      background: linear-gradient(90deg, var(--red), var(--orange));
-      border-radius: 2px;
-      margin-bottom: 24px;
-    }
-
-    /* ACCESS DENIED */
-    .access-denied {
-      position: fixed;
-      inset: 0;
-      background: #0d0d0d;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      z-index: 999;
-    }
-    .access-denied h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 48px;
-      color: var(--red);
-      letter-spacing: 3px;
-    }
+    .red-line { height: 3px; background: linear-gradient(90deg, var(--red), var(--orange)); border-radius: 2px; margin-bottom: 24px; }
+    .access-denied { position: fixed; inset: 0; background: #0d0d0d; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 999; }
+    .access-denied h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--red); letter-spacing: 3px; }
+    .produit-card { background: var(--bg-card2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; position: relative; }
+    .produit-card img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
+    .produit-card-nom { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .produit-card-prix { font-size: 12px; color: var(--red); }
+    .produit-card-pts { font-size: 11px; color: var(--text-muted); }
+    .produit-card-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
+    .produit-card-actions button { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px; }
   </style>
 </head>
 <body>
@@ -314,7 +98,6 @@
 </div>
 
 <div id="app" style="display:none;">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
       <div>
@@ -324,22 +107,26 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">Général</div>
-      <div class="nav-item active" onclick="showPage('accueil')">
+      <div class="nav-item active" onclick="showPage('accueil', this)">
         <span class="nav-icon">🏠</span> Accueil
       </div>
       <div class="nav-section">Caisse</div>
-      <div class="nav-item" onclick="showPage('clients')">
+      <div class="nav-item" onclick="showPage('clients', this)">
         <span class="nav-icon">👥</span> Clients
       </div>
-      <div class="nav-item" onclick="showPage('enregistrer-client')">
+      <div class="nav-item" onclick="showPage('enregistrer-client', this)">
         <span class="nav-icon">➕</span> Nouveau Client
       </div>
       <div class="nav-section direction-only">Direction</div>
-      <div class="nav-item direction-only" onclick="showPage('employes')">
+      <div class="nav-item direction-only" onclick="showPage('employes', this)">
         <span class="nav-icon">👔</span> Employés
       </div>
-      <div class="nav-item direction-only" onclick="showPage('ajouter-employe')">
+      <div class="nav-item direction-only" onclick="showPage('ajouter-employe', this)">
         <span class="nav-icon">➕</span> Ajouter Employé
+      </div>
+      <div class="nav-section direction-only">Menu</div>
+      <div class="nav-item direction-only" onclick="showPage('menu', this)">
+        <span class="nav-icon">🍔</span> Gestion du menu
       </div>
     </nav>
     <div class="sidebar-user">
@@ -352,7 +139,6 @@
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <div class="page-title" id="pageTitle">Accueil</div>
@@ -426,7 +212,7 @@
         </div>
       </div>
 
-      <!-- PAGE EMPLOYÉS (DIRECTION) -->
+      <!-- PAGE EMPLOYÉS -->
       <div class="page" id="page-employes">
         <div class="red-line"></div>
         <div class="card">
@@ -435,7 +221,7 @@
         </div>
       </div>
 
-      <!-- PAGE AJOUTER EMPLOYÉ (DIRECTION) -->
+      <!-- PAGE AJOUTER EMPLOYÉ -->
       <div class="page" id="page-ajouter-employe">
         <div class="red-line"></div>
         <div class="card" style="max-width:500px;">
@@ -482,6 +268,56 @@
         </div>
       </div>
 
+      <!-- PAGE GESTION MENU -->
+      <div class="page" id="page-menu">
+        <div class="red-line"></div>
+        <div style="display:flex; gap:24px; align-items:flex-start;">
+          <div class="card" style="min-width:350px; max-width:400px;">
+            <div class="card-title">Ajouter un produit</div>
+            <div id="alertMenu"></div>
+            <div class="form-group">
+              <label class="form-label">Nom du produit</label>
+              <input class="form-input" id="prodNom" placeholder="Burger Classic">
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Prix ($)</label>
+                <input class="form-input" id="prodPrix" type="number" placeholder="600">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Points</label>
+                <input class="form-input" id="prodPoints" type="number" placeholder="10">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Catégorie</label>
+              <select class="form-select" id="prodCategorie">
+                <option value="Burger">Burger</option>
+                <option value="Menu">Menu</option>
+                <option value="Boisson">Boisson</option>
+                <option value="Dessert">Dessert</option>
+                <option value="Accompagnement">Accompagnement</option>
+                <option value="Session">Session</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Image (PNG/JPG)</label>
+              <input class="form-input" id="prodImage" type="file" accept="image/png,image/jpeg,image/webp" style="padding:6px;" onchange="previewImage()">
+            </div>
+            <div id="prodPreview" style="margin-bottom:16px; display:none;">
+              <img id="prodPreviewImg" style="width:80px; height:80px; object-fit:contain; border-radius:8px; border:1px solid var(--border);">
+            </div>
+            <button class="btn btn-primary" onclick="ajouterProduit()">✅ Ajouter le produit</button>
+          </div>
+
+          <div class="card" style="flex:1;">
+            <div class="card-title">Produits du menu</div>
+            <div id="produitsGrid">Chargement...</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -509,10 +345,7 @@
     const avatar = params.get('avatar');
     const role = params.get('role');
 
-    if (!id) {
-      window.location.href = '/';
-      return;
-    }
+    if (!id) { window.location.href = '/'; return; }
 
     currentUser = { id, username, avatar, role };
 
@@ -525,37 +358,39 @@
 
     document.getElementById('userName').textContent = username;
     document.getElementById('userRole').textContent = role === 'direction' ? '⭐ Direction' : 'Employé';
-
     document.getElementById('topDate').textContent = new Date().toLocaleDateString('fr-FR', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
     if (role === 'direction') {
-      document.querySelectorAll('.direction-only').forEach(el => el.style.display = 'flex');
-      document.querySelectorAll('.nav-section.direction-only').forEach(el => el.style.display = 'block');
+      document.querySelectorAll('.direction-only').forEach(el => {
+        el.style.display = el.classList.contains('nav-section') ? 'block' : 'flex';
+      });
     }
 
     document.getElementById('app').style.display = 'flex';
     loadStats();
   }
 
-  function showPage(name) {
+  function showPage(name, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
-    event.currentTarget.classList.add('active');
+    if (el) el.classList.add('active');
 
     const titles = {
       'accueil': 'Accueil',
       'clients': 'Clients',
       'enregistrer-client': 'Nouveau Client',
       'employes': 'Employés',
-      'ajouter-employe': 'Ajouter un Employé'
+      'ajouter-employe': 'Ajouter un Employé',
+      'menu': 'Gestion du Menu'
     };
     document.getElementById('pageTitle').textContent = titles[name] || name;
 
     if (name === 'clients') loadClients();
     if (name === 'employes') loadEmployes();
+    if (name === 'menu') loadProduits();
   }
 
   async function supabaseFetch(endpoint, options = {}) {
@@ -577,48 +412,39 @@
       const clients = await supabaseFetch('clients?select=id');
       const employes = await supabaseFetch('employes?select=id&actif=eq.true');
       const passActifs = await supabaseFetch('clients?select=id&pass=not.is.null');
-      document.getElementById('statClients').textContent = clients.length || 0;
-      document.getElementById('statEmployes').textContent = employes.length || 0;
-      document.getElementById('statPass').textContent = passActifs.length || 0;
+      document.getElementById('statClients').textContent = Array.isArray(clients) ? clients.length : 0;
+      document.getElementById('statEmployes').textContent = Array.isArray(employes) ? employes.length : 0;
+      document.getElementById('statPass').textContent = Array.isArray(passActifs) ? passActifs.length : 0;
     } catch(e) {}
   }
 
   async function loadClients() {
     const data = await supabaseFetch('clients?select=*&order=created_at.desc');
     const el = document.getElementById('clientsTable');
-    if (!data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun client enregistré.</p>'; return; }
-    el.innerHTML = `<table>
-      <thead><tr>
-        <th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th>
-      </tr></thead>
-      <tbody>${data.map(c => `<tr>
-        <td>${c.nom}</td>
-        <td>${c.prenom}</td>
-        <td>${c.telephone || '—'}</td>
-        <td>${c.pass ? `<span class="badge badge-orange">${c.pass}</span>` : '—'}</td>
-        <td><span class="badge badge-blue">${c.points} pts</span></td>
-        <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun client enregistré.</p>'; return; }
+    el.innerHTML = `<table><thead><tr>
+      <th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th>
+    </tr></thead><tbody>${data.map(c => `<tr>
+      <td>${c.nom}</td><td>${c.prenom}</td><td>${c.telephone || '—'}</td>
+      <td>${c.pass ? `<span class="badge badge-orange">${c.pass}</span>` : '—'}</td>
+      <td><span class="badge badge-blue">${c.points} pts</span></td>
+      <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
+    </tr>`).join('')}</tbody></table>`;
   }
 
   async function loadEmployes() {
     const data = await supabaseFetch('employes?select=*&order=created_at.desc');
     const el = document.getElementById('employesTable');
-    if (!data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun employé.</p>'; return; }
-    el.innerHTML = `<table>
-      <thead><tr>
-        <th>Nom</th><th>Prénom</th><th>Poste</th><th>Contrat</th><th>Embauche</th><th>Statut</th>
-      </tr></thead>
-      <tbody>${data.map(e => `<tr>
-        <td>${e.nom}</td>
-        <td>${e.prenom}</td>
-        <td><span class="badge badge-orange">${e.poste}</span></td>
-        <td><span class="badge badge-blue">${e.contrat}</span></td>
-        <td>${new Date(e.date_embauche).toLocaleDateString('fr-FR')}</td>
-        <td><span class="badge ${e.actif ? 'badge-green' : 'badge-red'}">${e.actif ? 'Actif' : 'Inactif'}</span></td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun employé.</p>'; return; }
+    el.innerHTML = `<table><thead><tr>
+      <th>Nom</th><th>Prénom</th><th>Poste</th><th>Contrat</th><th>Embauche</th><th>Statut</th>
+    </tr></thead><tbody>${data.map(e => `<tr>
+      <td>${e.nom}</td><td>${e.prenom}</td>
+      <td><span class="badge badge-orange">${e.poste}</span></td>
+      <td><span class="badge badge-blue">${e.contrat}</span></td>
+      <td>${new Date(e.date_embauche).toLocaleDateString('fr-FR')}</td>
+      <td><span class="badge ${e.actif ? 'badge-green' : 'badge-red'}">${e.actif ? 'Actif' : 'Inactif'}</span></td>
+    </tr>`).join('')}</tbody></table>`;
   }
 
   async function enregistrerClient() {
@@ -673,6 +499,110 @@
     document.getElementById('empNaissance').value = '';
     document.getElementById('empDiscord').value = '';
     loadStats();
+  }
+
+  function previewImage() {
+    const file = document.getElementById('prodImage').files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('prodPreviewImg').src = e.target.result;
+        document.getElementById('prodPreview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function ajouterProduit() {
+    const nom = document.getElementById('prodNom').value.trim();
+    const prix = document.getElementById('prodPrix').value;
+    const points = document.getElementById('prodPoints').value;
+    const categorie = document.getElementById('prodCategorie').value;
+    const imageFile = document.getElementById('prodImage').files[0];
+    const alertEl = document.getElementById('alertMenu');
+
+    if (!nom || !prix) {
+      alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prix obligatoires.</div>';
+      return;
+    }
+
+    let image_url = null;
+
+    if (imageFile) {
+      const fileName = `${Date.now()}_${imageFile.name.replace(/\s/g, '_')}`;
+      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/produits/${fileName}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': imageFile.type,
+        },
+        body: imageFile
+      });
+      if (uploadRes.ok) {
+        image_url = `${SUPABASE_URL}/storage/v1/object/public/produits/${fileName}`;
+      }
+    }
+
+    await supabaseFetch('produits', {
+      method: 'POST',
+      body: JSON.stringify({ nom, prix: parseFloat(prix), points: parseInt(points) || 0, categorie, image_url })
+    });
+
+    alertEl.innerHTML = '<div class="alert alert-success">✅ Produit ajouté !</div>';
+    document.getElementById('prodNom').value = '';
+    document.getElementById('prodPrix').value = '';
+    document.getElementById('prodPoints').value = '';
+    document.getElementById('prodImage').value = '';
+    document.getElementById('prodPreview').style.display = 'none';
+    loadProduits();
+  }
+
+  async function loadProduits() {
+    const data = await supabaseFetch('produits?select=*&order=categorie.asc,nom.asc');
+    const el = document.getElementById('produitsGrid');
+    if (!Array.isArray(data) || !data.length) {
+      el.innerHTML = '<p style="color:var(--text-muted)">Aucun produit. Ajoutez-en un !</p>';
+      return;
+    }
+
+    const categories = [...new Set(data.map(p => p.categorie))];
+    el.innerHTML = categories.map(cat => `
+      <div style="margin-bottom:24px;">
+        <div style="font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border);">${cat}</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:10px;">
+          ${data.filter(p => p.categorie === cat).map(p => `
+            <div class="produit-card" style="opacity:${p.actif ? 1 : 0.5};">
+              <div class="produit-card-actions">
+                <button onclick="toggleProduit('${p.id}', ${p.actif})" title="${p.actif ? 'Désactiver' : 'Activer'}">${p.actif ? '✅' : '❌'}</button>
+                <button onclick="supprimerProduit('${p.id}')" title="Supprimer">🗑️</button>
+              </div>
+              ${p.image_url
+                ? `<img src="${p.image_url}" alt="${p.nom}">`
+                : `<div style="width:60px;height:60px;background:var(--border);border-radius:8px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:28px;">🍔</div>`
+              }
+              <div class="produit-card-nom">${p.nom}</div>
+              <div class="produit-card-prix">${p.prix}$</div>
+              <div class="produit-card-pts">${p.points} pts</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function toggleProduit(id, actif) {
+    await supabaseFetch(`produits?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ actif: !actif })
+    });
+    loadProduits();
+  }
+
+  async function supprimerProduit(id) {
+    if (!confirm('Supprimer ce produit définitivement ?')) return;
+    await supabaseFetch(`produits?id=eq.${id}`, { method: 'DELETE' });
+    loadProduits();
   }
 
   function logout() {
