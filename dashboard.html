@@ -25,8 +25,8 @@
     .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
     .sidebar-logo { padding: 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
     .sidebar-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--red); }
-    .sidebar-logo-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
-    .sidebar-nav { flex: 1; padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
+    .-logo-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
+    .-nav { flex: 1; padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
     .nav-section { padding: 8px 16px 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
     .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; color: var(--text-muted); }
     .nav-item:hover { background: var(--bg-card2); color: var(--text); }
@@ -34,7 +34,7 @@
     .nav-item.direction-only { display: none; }
     .nav-section.direction-only { display: none; }
     .nav-icon { font-size: 18px; width: 20px; text-align: center; }
-    .sidebar-user { padding: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .-user { padding: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
     .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; overflow: hidden; }
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .user-name { font-size: 13px; font-weight: 600; }
@@ -42,7 +42,7 @@
     .logout-btn { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px; }
     .logout-btn:hover { color: var(--red); }
     .main { margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
-    .topbar { padding: 20px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .topbar {position: sticky;top: 0;z-index: 50;width: 100%;padding: 20px 32px;border-bottom: 1px solid var(--border);display: flex;align-items: center;justify-content: space-between;background: var(--bg);backdrop-filter: blur(10px)}
     .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
     .content { flex: 1; padding: 32px; }
     .page { display: none; }
@@ -87,6 +87,29 @@
     .produit-card-pts { font-size: 11px; color: var(--text-muted); }
     .produit-card-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
     .produit-card-actions button { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px; }
+    .caisse-layout{display:grid;grid-template-columns: 1fr 380px;gap:24px; }
+    .caisse-produits{min-height:700px; }
+    .ticket-wrapper{display:flex;justify-content:center; }
+    .ticket-thermal{width:100%;background:#f5f1e8;color:#111;border-radius:12px;padding:24px;font-family: monospace;box-shadow:0 10px 30px rgba(0,0,0,0.4);position:sticky;top:20px;background-image:linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px);background-size:100% 4px; }
+    .ticket-logo{text-align:center;font-size:28px;font-weight:bold;margin-bottom:16px; }
+    .ticket-info{font-size:13px;margin-bottom:12px; }
+    .ticket-separator{border-top:1px dashed #333;margin:14px 0; }
+    .ticket-line{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px; }
+    .ticket-total{font-size:20px;font-weight:bold;text-align:right;margin-top:12px; }
+    .ticket-client,
+    .ticket-employe{margin-top:10px;font-size:13px;}
+    .ticket-buttons{display:flex;gap:10px;margin-top:20px; }
+    .btn-danger{background:#c0392b;color:white;}
+    .btn-danger:hover{background:#922b21; }
+    .caisse-categorie{margin-bottom:24px; }
+    .caisse-categorie-title{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:10px; }
+    .caisse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px; }
+    .caisse-produit{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:0.2s;text-align:center; }
+    .caisse-produit:hover{transform:translateY(-2px);border-color:var(--red); }
+    .caisse-produit img{width:60px;height:60px;object-fit:contain;margin-bottom:8px; }
+    .popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999; }
+    .popup-box{width:500px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px; }
+    .client-results{margin-bottom:20px; }
   </style>
 </head>
 <body>
@@ -137,7 +160,10 @@
       </div>
       <button class="logout-btn" onclick="logout()" title="Déconnexion">🚪</button>
     </div>
+  <div class="nav-item" onclick="showPage('caisse', this)">
+    <span class="nav-icon">🧾</span> Caisse
   </div>
+</div>
 
   <div class="main">
     <div class="topbar">
@@ -170,7 +196,72 @@
           </p>
         </div>
       </div>
+<!-- PAGE CAISSE -->
+<div class="page" id="page-caisse">
+  <div class="red-line"></div>
 
+  <div class="caisse-layout">
+
+    <!-- PRODUITS -->
+    <div class="card caisse-produits">
+      <div class="card-title">Caisse Burger Shot</div>
+
+      <div class="form-group">
+        <label class="form-label">Recherche client</label>
+        <input class="form-input" id="clientSearch" placeholder="Nom du client...">
+      </div>
+
+      <div id="clientResults" class="client-results"></div>
+
+      <div id="caisseProduits">
+        Chargement des produits...
+      </div>
+    </div>
+
+    <!-- TICKET -->
+    <div class="ticket-wrapper">
+
+      <div class="ticket-thermal">
+
+        <div class="ticket-logo">
+          🍔 BURGER SHOT
+        </div>
+
+        <div class="ticket-info">
+          <div id="ticketId">BS-000000000000-001</div>
+          <div id="ticketDate"></div>
+        </div>
+
+        <div class="ticket-separator"></div>
+
+        <div id="ticketArticles"></div>
+
+        <div class="ticket-separator"></div>
+
+        <div class="ticket-total">
+          TOTAL : <span id="ticketTotal">0$</span>
+        </div>
+
+        <div class="ticket-client">
+          Client : <span id="ticketClient">Inconnu</span>
+        </div>
+
+        <div class="ticket-employe">
+          Employé : <span id="ticketEmploye">—</span>
+        </div>
+
+        <div class="ticket-buttons">
+          <button class="btn btn-danger" onclick="annulerCommande()">❌ Annuler</button>
+          <button class="btn btn-success" onclick="ouvrirValidation()">✅ Valider</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+      
       <!-- PAGE CLIENTS -->
       <div class="page" id="page-clients">
         <div class="red-line"></div>
@@ -385,12 +476,14 @@
       'employes': 'Employés',
       'ajouter-employe': 'Ajouter un Employé',
       'menu': 'Gestion du Menu'
+      'caisse': 'Caisse',
     };
     document.getElementById('pageTitle').textContent = titles[name] || name;
 
     if (name === 'clients') loadClients();
     if (name === 'employes') loadEmployes();
     if (name === 'menu') loadProduits();
+    if (name === 'caisse') loadCaisseProduits();
   }
 
   async function supabaseFetch(endpoint, options = {}) {
@@ -604,10 +697,263 @@
     await supabaseFetch(`produits?id=eq.${id}`, { method: 'DELETE' });
     loadProduits();
   }
+let commande = [];
+let selectedClient = null;
 
+async function loadCaisseProduits() {
+
+  const data = await supabaseFetch('produits?select=*&actif=eq.true&order=categorie.asc');
+
+  const el = document.getElementById('caisseProduits');
+
+  if (!Array.isArray(data) || !data.length) {
+    el.innerHTML = 'Aucun produit.';
+    return;
+  }
+
+  const categories = [...new Set(data.map(p => p.categorie))];
+
+  el.innerHTML = categories.map(cat => `
+    <div class="caisse-categorie">
+
+      <div class="caisse-categorie-title">${cat}</div>
+
+      <div class="caisse-grid">
+
+        ${data.filter(p => p.categorie === cat).map(p => `
+          <div class="caisse-produit" onclick='ajouterAuTicket(${JSON.stringify(p)})'>
+
+            ${p.image_url
+              ? `<img src="${p.image_url}">`
+              : `<div style="font-size:42px;">🍔</div>`
+            }
+
+            <div>${p.nom}</div>
+            <div style="color:var(--red); margin-top:6px;">${p.prix}$</div>
+
+          </div>
+        `).join('')}
+
+      </div>
+
+    </div>
+  `).join('');
+
+  genererTicket();
+}
+
+function ajouterAuTicket(produit){
+
+  const exist = commande.find(p => p.id === produit.id);
+
+  if(exist){
+    exist.quantite++;
+  }else{
+    commande.push({
+      ...produit,
+      quantite:1
+    });
+  }
+
+  renderTicket();
+}
+
+function renderTicket(){
+
+  const el = document.getElementById('ticketArticles');
+
+  if(!commande.length){
+    el.innerHTML = '<div style="text-align:center;">Aucune commande</div>';
+  }else{
+
+    el.innerHTML = commande.map(p => `
+      <div class="ticket-line">
+
+        <div>
+          ${p.nom} x${p.quantite}
+        </div>
+
+        <div>
+          ${p.prix * p.quantite}$
+        </div>
+
+      </div>
+    `).join('');
+  }
+
+  const total = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
+
+  document.getElementById('ticketTotal').textContent = total + '$';
+
+  document.getElementById('ticketClient').textContent =
+    selectedClient
+      ? `${selectedClient.prenom} ${selectedClient.nom}`
+      : 'Inconnu';
+
+  document.getElementById('ticketEmploye').textContent =
+    currentUser.username;
+}
+
+function genererTicket(){
+
+  const now = new Date();
+
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const yyyy = now.getFullYear();
+
+  const hh = String(now.getHours()).padStart(2,'0');
+  const min = String(now.getMinutes()).padStart(2,'0');
+
+  document.getElementById('ticketId').textContent =
+    `BS-${dd}${mm}${yyyy}${hh}${min}-001`;
+
+  document.getElementById('ticketDate').textContent =
+    now.toLocaleString('fr-FR');
+
+  renderTicket();
+}
+
+function annulerCommande(){
+
+  if(!confirm('Annuler la commande ?')) return;
+
+  commande = [];
+  selectedClient = null;
+
+  renderTicket();
+}
+
+function ouvrirValidation(){
+
+  if(!commande.length){
+    alert('Aucune commande.');
+    return;
+  }
+
+  const total = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
+
+  document.getElementById('popupRecap').innerHTML = `
+    ${commande.map(p=>`
+      <div class="ticket-line">
+        <div>${p.nom} x${p.quantite}</div>
+        <div>${p.prix * p.quantite}$</div>
+      </div>
+    `).join('')}
+
+    <div class="ticket-separator"></div>
+
+    <div class="ticket-total">
+      TOTAL : ${total}$
+    </div>
+  `;
+
+  document.getElementById('popupValidation').style.display = 'flex';
+}
+
+function fermerPopup(){
+  document.getElementById('popupValidation').style.display = 'none';
+}
+
+async function validerCommande(){
+
+  const total = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
+
+  await supabaseFetch('commandes', {
+  method:'POST',
+  body: JSON.stringify({
+
+    client_id: selectedClient
+      ? selectedClient.id
+      : null,
+
+    employe_discord_id: currentUser.id,
+
+    items: JSON.stringify(commande),
+
+    total: total,
+
+    points_gagnes: Math.floor(total / 100),
+
+    paye_par_points: false
+  })
+});
+
+  fermerPopup();
+
+  alert('✅ Commande validée !');
+
+  commande = [];
+  selectedClient = null;
+
+  genererTicket();
+}
+
+document.addEventListener('input', async e => {
+
+  if(e.target.id === 'clientSearch'){
+
+    const val = e.target.value.trim();
+
+    if(val.length < 2){
+      document.getElementById('clientResults').innerHTML = '';
+      return;
+    }
+
+    const data = await supabaseFetch(
+      `clients?select=*&nom=ilike.*${val}*`
+    );
+
+    document.getElementById('clientResults').innerHTML =
+      data.map(c=>`
+        <div
+          onclick='selectClient(${JSON.stringify(c)})'
+          style="
+            padding:10px;
+            background:var(--bg-card2);
+            border:1px solid var(--border);
+            margin-bottom:6px;
+            border-radius:8px;
+            cursor:pointer;
+          "
+        >
+          ${c.prenom} ${c.nom}
+        </div>
+      `).join('');
+  }
+});
+
+function selectClient(client){
+
+  selectedClient = client;
+
+  document.getElementById('clientSearch').value =
+    `${client.prenom} ${client.nom}`;
+
+  document.getElementById('clientResults').innerHTML = '';
+
+  renderTicket();
+}
   function logout() {
     window.location.href = '/';
   }
 </script>
+<!-- POPUP VALIDATION -->
+<div id="popupValidation" class="popup-overlay" style="display:none;">
+
+  <div class="popup-box">
+
+    <div class="card-title">Validation commande</div>
+
+    <div id="popupRecap"></div>
+
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn btn-danger" onclick="fermerPopup()">❌ Retour</button>
+      <button class="btn btn-success" onclick="validerCommande()">✅ Confirmer</button>
+    </div>
+
+  </div>
+
+</div>
 </body>
 </html>
