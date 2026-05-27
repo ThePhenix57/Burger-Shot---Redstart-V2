@@ -1,1 +1,7 @@
+[build]
+  publish = "."
 
+[[headers]]
+  for = "/dashboard.html"
+  [headers.values]
+    X-Frame-Options = "DENY"
