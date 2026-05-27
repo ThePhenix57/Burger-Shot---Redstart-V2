@@ -420,13 +420,11 @@
   let currentUser = null;
   let produitsCaisse = [];
   
-  async function initConfig() {
-    const res = await fetch('/.netlify/functions/config');
-    const config = await res.json();
-    SUPABASE_URL = config.supabaseUrl;
-    SUPABASE_KEY = config.supabaseKey;
+  window.addEventListener('DOMContentLoaded', () => {
+    SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co/';
+    SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
     init();
-  }
+  });
 
   window.addEventListener('DOMContentLoaded', initConfig);
 
