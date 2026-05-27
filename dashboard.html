@@ -899,33 +899,18 @@ async function validerCommande(){
 }
 
 document.addEventListener('input', async e => {
-
   if(e.target.id === 'clientSearch'){
-
     const val = e.target.value.trim();
-
     if(val.length < 2){
       document.getElementById('clientResults').innerHTML = '';
       return;
     }
-
-    const data = await supabaseFetch(
-      produitsCaisse = data;
-      `clients?select=*&nom=ilike.*${val}*`
-    );
-
+    const data = await supabaseFetch(`clients?select=*&nom=ilike.*${val}*`);
     document.getElementById('clientResults').innerHTML =
-      data.map(c=>`
+      data.map(c => `
         <div
           onclick='selectClient(${JSON.stringify(c)})'
-          style="
-            padding:10px;
-            background:var(--bg-card2);
-            border:1px solid var(--border);
-            margin-bottom:6px;
-            border-radius:8px;
-            cursor:pointer;
-          "
+          style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;"
         >
           ${c.prenom} ${c.nom}
         </div>
