@@ -2,10 +2,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Gère le callback Discord
-    if (url.pathname === '/callback' || url.pathname === '/functions/callback') {
+    if (url.pathname === '/callback') {
       const code = url.searchParams.get('code');
-
       if (!code) {
         return Response.redirect(new URL('/?error=nocode', url.origin), 302);
       }
@@ -16,7 +14,7 @@ export default {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({
             client_id: "1508986297660870806",
-            client_secret: "TON_NOUVEAU_SECRET",
+            client_secret: env.DISCORD_SECRET, // ← variable d'environnement
             grant_type: "authorization_code",
             code,
             redirect_uri: `${url.origin}/callback`,
@@ -24,11 +22,11 @@ export default {
         });
 
         const tokenData = await tokenRes.json();
-
         if (!tokenData.access_token) {
-          return new Response(JSON.stringify(tokenData), {
-          headers: { 'Content-Type': 'application/json' }
-          });
+          return Response.redirect(
+            new URL(`/?error=${encodeURIComponent(JSON.stringify(tokenData))}`, url.origin),
+            302
+          );
         }
 
         const userRes = await fetch("https://discord.com/api/users/@me", {
@@ -52,13 +50,15 @@ export default {
         });
 
         return Response.redirect(new URL(`/dashboard.html?${params}`, url.origin), 302);
-
       } catch (err) {
-        return Response.redirect(new URL(`/?error=${encodeURIComponent(err.message)}`, url.origin), 302);
+        return Response.redirect(
+          new URL(`/?error=${encodeURIComponent(err.message)}`, url.origin),
+          302
+        );
       }
     }
 
-    // Pour tout le reste, sert les fichiers statiques
+    // Tout le reste → fichiers statiques
     return env.ASSETS.fetch(request);
   }
 }
