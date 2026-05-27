@@ -504,11 +504,6 @@
 
   function init() {
     const params = new URLSearchParams(window.location.search);
-
-function init() {
-  // Init
-  window.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const username = params.get('username');
     const avatar = params.get('avatar');
@@ -521,7 +516,6 @@ function init() {
 
     currentUser = { id, username, avatar, role };
 
-    // Avatar
     const avatarEl = document.getElementById('userAvatar');
     if (avatar) {
       avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png">`;
@@ -532,12 +526,10 @@ function init() {
     document.getElementById('userName').textContent = username;
     document.getElementById('userRole').textContent = role === 'direction' ? '⭐ Direction' : 'Employé';
 
-    // Date
     document.getElementById('topDate').textContent = new Date().toLocaleDateString('fr-FR', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
-    // Affiche les menus direction si nécessaire
     if (role === 'direction') {
       document.querySelectorAll('.direction-only').forEach(el => el.style.display = 'flex');
       document.querySelectorAll('.nav-section.direction-only').forEach(el => el.style.display = 'block');
@@ -545,7 +537,7 @@ function init() {
 
     document.getElementById('app').style.display = 'flex';
     loadStats();
-  });
+  }
 
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -635,10 +627,10 @@ function init() {
     const naissance = document.getElementById('clientNaissance').value;
     const tel = document.getElementById('clientTel').value.trim();
     const discord = document.getElementById('clientDiscord').value.trim();
-    const alert = document.getElementById('alertClient');
+    const alertEl = document.getElementById('alertClient');
 
     if (!nom || !prenom) {
-      alert.innerHTML = '<div class="alert alert-error">⚠️ Nom et prénom obligatoires.</div>';
+      alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prénom obligatoires.</div>';
       return;
     }
 
@@ -647,7 +639,7 @@ function init() {
       body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, telephone: tel || null, discord_id: discord || null })
     });
 
-    alert.innerHTML = '<div class="alert alert-success">✅ Client enregistré !</div>';
+    alertEl.innerHTML = '<div class="alert alert-success">✅ Client enregistré !</div>';
     document.getElementById('clientNom').value = '';
     document.getElementById('clientPrenom').value = '';
     document.getElementById('clientNaissance').value = '';
@@ -663,10 +655,10 @@ function init() {
     const discord = document.getElementById('empDiscord').value.trim();
     const poste = document.getElementById('empPoste').value;
     const contrat = document.getElementById('empContrat').value;
-    const alert = document.getElementById('alertEmploye');
+    const alertEl = document.getElementById('alertEmploye');
 
     if (!nom || !prenom || !discord) {
-      alert.innerHTML = '<div class="alert alert-error">⚠️ Nom, prénom et ID Discord obligatoires.</div>';
+      alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom, prénom et ID Discord obligatoires.</div>';
       return;
     }
 
@@ -675,7 +667,7 @@ function init() {
       body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, discord_id: discord, poste, contrat })
     });
 
-    alert.innerHTML = '<div class="alert alert-success">✅ Employé ajouté !</div>';
+    alertEl.innerHTML = '<div class="alert alert-success">✅ Employé ajouté !</div>';
     document.getElementById('empNom').value = '';
     document.getElementById('empPrenom').value = '';
     document.getElementById('empNaissance').value = '';
