@@ -2,17 +2,14 @@ exports.handler = async (event) => {
   const { code } = event.queryStringParameters;
 
   if (!code) {
-    return { statusCode: 400, body: "Code manquant" };
+    return {
+      statusCode: 302,
+      headers: { Location: "/?error=nocode" },
+      body: "",
+    };
   }
 
-  const AUTHORIZED = [
-    "280415204477501451",   // Toi - Patron
-    "1157333780898529333",  // Direction
-    "370510144766738432",   // Direction
-  ];
-
   try {
-    // Échange le code contre un token
     const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -26,19 +23,26 @@ exports.handler = async (event) => {
     });
 
     const tokenData = await tokenRes.json();
+    
+    // Si pas de token → on affiche l'erreur exacte
     if (!tokenData.access_token) {
       return {
         statusCode: 302,
-        headers: { Location: "/?error=token" },
+        headers: { Location: `/?error=${encodeURIComponent(JSON.stringify(tokenData))}` },
         body: "",
       };
     }
 
-    // Récupère l'utilisateur Discord
     const userRes = await fetch("https://discord.com/api/users/@me", {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
     const user = await userRes.json();
+
+    const AUTHORIZED = [
+      "280415204477501451",
+      "1157333780898529333",
+      "370510144766738432",
+    ];
 
     if (!AUTHORIZED.includes(user.id)) {
       return {
@@ -48,11 +52,9 @@ exports.handler = async (event) => {
       };
     }
 
-    // Détermine le rôle
-    const DIRECTION = ["280415204477501451", "1157333780898529333", "370510144766738432"];
+    const DIRECTION = ["280415204477501451","1157333780898529333","370510144766738432"];
     const role = DIRECTION.includes(user.id) ? "direction" : "employe";
 
-    // Redirige vers le dashboard avec les infos
     const params = new URLSearchParams({
       id: user.id,
       username: user.username,
@@ -69,7 +71,7 @@ exports.handler = async (event) => {
   } catch (err) {
     return {
       statusCode: 302,
-      headers: { Location: "/?error=server" },
+      headers: { Location: `/?error=${encodeURIComponent(err.message)}` },
       body: "",
     };
   }
