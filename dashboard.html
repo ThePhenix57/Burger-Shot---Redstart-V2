@@ -7,259 +7,156 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --red: #c0392b;
-      --red-dark: #922b21;
-      --orange: #e67e22;
-      --bg: #0d0d0d;
-      --bg-card: #111111;
-      --bg-card2: #1a1a1a;
-      --text: #f0f0f0;
-      --text-muted: #888;
-      --border: rgba(255,255,255,0.08);
-      --success: #27ae60;
-      --warning: #f39c12;
-      --sidebar-width: 240px;
+      --red: #c0392b; --red-dark: #922b21; --orange: #e67e22;
+      --bg: #0d0d0d; --bg-card: #111111; --bg-card2: #1a1a1a;
+      --text: #f0f0f0; --text-muted: #888; --border: rgba(255,255,255,0.08);
+      --success: #27ae60; --warning: #f39c12; --sidebar-width: 240px;
     }
     [data-theme="light"] {
-      --bg: #f0ece6;
-      --bg-card: #ffffff;
-      --bg-card2: #f5f0ea;
-      --text: #1a1a1a;
-      --text-muted: #666;
-      --border: rgba(0,0,0,0.1);
+      --bg: #f0ece6; --bg-card: #ffffff; --bg-card2: #f5f0ea;
+      --text: #1a1a1a; --text-muted: #666; --border: rgba(0,0,0,0.1);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background .3s,color .3s; }
 
-    /* ── SIDEBAR ── */
-    .sidebar {
-      position: fixed; left: 0; top: 0; bottom: 0;
-      width: var(--sidebar-width);
-      background: var(--bg-card);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      z-index: 100; overflow-y: auto;
-    }
-    .sidebar-logo {
-      padding: 20px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
-      flex-shrink: 0;
-    }
-    .sidebar-logo-icon {
-      width: 38px; height: 38px;
-      background: var(--red);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; flex-shrink: 0;
-    }
-    .sidebar-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--red); line-height: 1; }
-    .sidebar-logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; margin-top: 2px; }
-    .sidebar-nav { flex: 1; padding: 12px 0; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
-    .nav-section { padding: 10px 16px 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
-    .nav-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 16px; cursor: pointer;
-      transition: all 0.2s; border-left: 3px solid transparent;
-      font-size: 14px; font-weight: 500; color: var(--text-muted);
-    }
-    .nav-item:hover { background: var(--bg-card2); color: var(--text); }
-    .nav-item.active { background: rgba(192,57,43,0.1); border-left-color: var(--red); color: var(--text); }
-    .nav-item.direction-only { display: none; }
-    .nav-section.direction-only { display: none; }
-    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    /* SIDEBAR */
+    .sidebar { position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-width);background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto; }
+    .sidebar-logo { padding:20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0; }
+    .sidebar-logo-img { width:38px;height:38px;border-radius:10px;object-fit:cover;flex-shrink:0; }
+    .sidebar-logo-text { font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--red);line-height:1; }
+    .sidebar-logo-sub { font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-top:2px; }
+    .sidebar-nav { flex:1;padding:12px 0;display:flex;flex-direction:column;gap:2px;overflow-y:auto;min-height:0; }
+    .nav-section { padding:10px 16px 4px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted); }
+    .nav-item { display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;transition:all .2s;border-left:3px solid transparent;font-size:14px;font-weight:500;color:var(--text-muted); }
+    .nav-item:hover { background:var(--bg-card2);color:var(--text); }
+    .nav-item.active { background:rgba(192,57,43,.1);border-left-color:var(--red);color:var(--text); }
+    .nav-icon { font-size:16px;width:20px;text-align:center; }
+    .role-hidden { display:none!important; }
+    .sidebar-user { padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--bg-card); }
+    .user-avatar { width:34px;height:34px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;overflow:hidden;flex-shrink:0; }
+    .user-avatar img { width:100%;height:100%;object-fit:cover; }
+    .user-info { flex:1;min-width:0; }
+    .user-name { font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .user-role { font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:1px; }
+    .logout-btn { background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0; }
+    .logout-btn:hover { color:var(--red); }
 
-    /* ── SIDEBAR USER (collé en bas) ── */
-    .sidebar-user {
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
-      flex-shrink: 0;
-      background: var(--bg-card);
-    }
-    .user-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--red);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 13px; overflow: hidden; flex-shrink: 0;
-    }
-    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .user-info { flex: 1; min-width: 0; }
-    .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-role { font-size: 11px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; }
-    .logout-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 4px; flex-shrink: 0; }
-    .logout-btn:hover { color: var(--red); }
+    /* MAIN */
+    .main { margin-left:var(--sidebar-width);min-height:100vh;display:flex;flex-direction:column;width:calc(100% - var(--sidebar-width)); }
+    .topbar { position:sticky;top:0;z-index:50;padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);backdrop-filter:blur(10px); }
+    .page-title { font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px; }
+    .topbar-right { display:flex;align-items:center;gap:12px; }
+    .theme-btn { background:var(--bg-card2);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s; }
+    .theme-btn:hover { border-color:var(--red);transform:scale(1.1); }
+    .content { flex:1;padding:28px;width:100%; }
+    .page { display:none;width:100%; }
+    .page.active { display:block; }
 
-    /* ── MAIN ── */
-    .main { margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
-    .topbar {
-      position: sticky; top: 0; z-index: 50;
-      padding: 16px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      background: var(--bg);
-      backdrop-filter: blur(10px);
-    }
-    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 2px; }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .theme-btn {
-      background: var(--bg-card2); border: 1px solid var(--border);
-      color: var(--text); width: 36px; height: 36px; border-radius: 50%;
-      cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
-    }
-    .theme-btn:hover { border-color: var(--red); transform: scale(1.1); }
+    /* COMPOSANTS */
+    .card { background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px; }
+    .card-title { font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin-bottom:16px;color:var(--red); }
+    .grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    .grid-3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px; }
+    .grid-4 { display:grid;grid-template-columns:repeat(4,1fr);gap:16px; }
+    .stat-card { background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center; }
+    .stat-value { font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--red); }
+    .stat-label { font-size:12px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:4px; }
+    .form-group { margin-bottom:16px; }
+    .form-label { display:block;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px; }
+    .form-input,.form-select { width:100%;padding:10px 14px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;transition:border-color .2s; }
+    .form-input:focus,.form-select:focus { outline:none;border-color:var(--red); }
+    .form-select option { background:var(--bg-card2); }
+    .btn { padding:10px 20px;border-radius:8px;border:none;font-family:'Barlow',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px; }
+    .btn-primary { background:var(--red);color:#fff; }
+    .btn-primary:hover { background:var(--red-dark);transform:translateY(-1px); }
+    .btn-success { background:var(--success);color:#fff; }
+    .btn-success:hover { opacity:.9; }
+    .btn-danger { background:var(--red);color:#fff; }
+    .btn-danger:hover { background:var(--red-dark); }
+    .btn-outline { background:transparent;color:var(--text);border:1px solid var(--border); }
+    .btn-outline:hover { border-color:var(--red);color:var(--red); }
+    table { width:100%;border-collapse:collapse; }
+    th { text-align:left;padding:10px 12px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border); }
+    td { padding:12px;font-size:14px;border-bottom:1px solid var(--border); }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:var(--bg-card2); }
+    .badge { display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px; }
+    .badge-red { background:rgba(192,57,43,.2);color:var(--red); }
+    .badge-orange { background:rgba(230,126,34,.2);color:var(--orange); }
+    .badge-green { background:rgba(39,174,96,.2);color:var(--success); }
+    .badge-blue { background:rgba(52,152,219,.2);color:#3498db; }
+    .badge-gold { background:rgba(241,196,15,.2);color:#f1c40f; }
+    .alert { padding:12px 16px;border-radius:8px;font-size:14px;margin-bottom:16px; }
+    .alert-success { background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);color:var(--success); }
+    .alert-error { background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);color:var(--red); }
+    .red-line { height:3px;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:2px;margin-bottom:24px; }
 
-    /* ── CONTENT ── */
-    .content { flex: 1; padding: 28px; }
-    .page { display: none; }
-    .page.active { display: block; }
+    /* CAISSE */
+    .caisse-layout { display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;width:100%; }
+    .caisse-categorie { margin-bottom:24px; }
+    .caisse-categorie-title { font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border); }
+    .caisse-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px; }
+    .caisse-produit { background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;text-align:center; }
+    .caisse-produit:hover { transform:translateY(-2px);border-color:var(--red);box-shadow:0 4px 12px rgba(192,57,43,.2); }
+    .caisse-produit img { width:56px;height:56px;object-fit:contain;margin-bottom:8px; }
+    .caisse-produit-nom { font-size:13px;font-weight:600;margin-bottom:4px; }
+    .caisse-produit-prix { font-size:12px;color:var(--red);font-weight:700; }
+    .caisse-produit-pts { font-size:11px;color:var(--text-muted); }
 
-    /* ── CARDS / COMPONENTS ── */
-    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-    .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; margin-bottom: 16px; color: var(--red); }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
-    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--red); }
-    .stat-label { font-size: 12px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
-    .form-input, .form-select { width: 100%; padding: 10px 14px; background: var(--bg-card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; transition: border-color 0.2s; }
-    .form-input:focus, .form-select:focus { outline: none; border-color: var(--red); }
-    .form-select option { background: var(--bg-card2); }
-    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
-    .btn-primary { background: var(--red); color: white; }
-    .btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); }
-    .btn-success { background: var(--success); color: white; }
-    .btn-success:hover { opacity: 0.9; }
-    .btn-danger { background: var(--red); color: white; }
-    .btn-danger:hover { background: var(--red-dark); }
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 10px 12px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-    td { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--bg-card2); }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
-    .badge-red { background: rgba(192,57,43,0.2); color: var(--red); }
-    .badge-orange { background: rgba(230,126,34,0.2); color: var(--orange); }
-    .badge-green { background: rgba(39,174,96,0.2); color: var(--success); }
-    .badge-blue { background: rgba(52,152,219,0.2); color: #3498db; }
-    .alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
-    .alert-success { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); color: var(--success); }
-    .alert-error { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: var(--red); }
-    .red-line { height: 3px; background: linear-gradient(90deg, var(--red), var(--orange)); border-radius: 2px; margin-bottom: 24px; }
+    /* TICKET */
+    .ticket-wrapper { position:sticky;top:80px; }
+    .ticket-thermal { width:100%;background:#f5f1e8;color:#111;border-radius:12px;padding:24px;font-family:'Courier New',monospace;box-shadow:0 10px 30px rgba(0,0,0,.4); }
+    [data-theme="light"] .ticket-thermal { box-shadow:0 4px 20px rgba(0,0,0,.15); }
+    .ticket-logo { text-align:center;font-size:22px;font-weight:bold;margin-bottom:14px;letter-spacing:2px; }
+    .ticket-info { font-size:12px;margin-bottom:10px;color:#444; }
+    .ticket-separator { border:none;border-top:1px dashed #999;margin:12px 0; }
+    .ticket-articles { min-height:60px; }
+    .ticket-line { display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px; }
+    .ticket-empty { text-align:center;color:#999;font-size:13px;padding:20px 0; }
+    .ticket-total-block { margin-top:10px; }
+    .ticket-total { font-size:18px;font-weight:bold;text-align:right; }
+    .ticket-reduc { font-size:13px;color:#c0392b;text-align:right;margin-top:4px; }
+    .ticket-points-info { font-size:12px;color:#444;text-align:right;margin-top:4px; }
+    .ticket-meta { margin-top:10px;font-size:12px;color:#555; }
+    .ticket-buttons { display:flex;gap:10px;margin-top:18px; }
+    .ticket-buttons .btn { flex:1; }
+    .client-results { margin-bottom:12px; }
 
-    /* ── CAISSE ── */
-    .caisse-layout {
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 24px;
-      align-items: start;
-    }
-    .caisse-produits { min-height: 200px; }
-    .caisse-categorie { margin-bottom: 24px; }
-    .caisse-categorie-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-    .caisse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-    .caisse-produit {
-      background: var(--bg-card2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px; cursor: pointer;
-      transition: all 0.2s; text-align: center;
-    }
-    .caisse-produit:hover { transform: translateY(-2px); border-color: var(--red); box-shadow: 0 4px 12px rgba(192,57,43,0.2); }
-    .caisse-produit img { width: 56px; height: 56px; object-fit: contain; margin-bottom: 8px; }
-    .caisse-produit-nom { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-    .caisse-produit-prix { font-size: 12px; color: var(--red); font-weight: 700; }
+    /* PRODUIT CARDS */
+    .produit-card { background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;position:relative; }
+    .produit-card img { width:56px;height:56px;object-fit:contain;margin-bottom:8px; }
+    .produit-card-nom { font-size:13px;font-weight:600;margin-bottom:4px; }
+    .produit-card-prix { font-size:12px;color:var(--red); }
+    .produit-card-pts { font-size:11px;color:var(--text-muted); }
+    .produit-card-actions { position:absolute;top:6px;right:6px;display:flex;gap:4px; }
+    .produit-card-actions button { background:none;border:none;cursor:pointer;font-size:14px;padding:2px; }
 
-    /* ── TICKET ── */
-    .ticket-wrapper { position: sticky; top: 80px; }
-    .ticket-thermal {
-      width: 100%; background: #f5f1e8; color: #111;
-      border-radius: 12px; padding: 24px;
-      font-family: 'Courier New', monospace;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-    [data-theme="light"] .ticket-thermal { box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-    .ticket-logo { text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 14px; letter-spacing: 2px; }
-    .ticket-info { font-size: 12px; margin-bottom: 10px; color: #444; }
-    .ticket-separator { border: none; border-top: 1px dashed #999; margin: 12px 0; }
-    .ticket-articles { min-height: 60px; }
-    .ticket-line { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
-    .ticket-empty { text-align: center; color: #999; font-size: 13px; padding: 20px 0; }
-    .ticket-total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 10px; }
-    .ticket-meta { margin-top: 10px; font-size: 12px; color: #555; }
-    .ticket-buttons { display: flex; gap: 10px; margin-top: 18px; }
-    .ticket-buttons .btn { flex: 1; }
+    /* STATS */
+    .stats-section { margin-bottom:32px; }
+    .stats-section-title { font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px; }
+    .coffre-card { background:linear-gradient(135deg,rgba(192,57,43,.15),rgba(230,126,34,.1));border:1px solid rgba(192,57,43,.3);border-radius:12px;padding:24px; }
 
-    /* ── PRODUIT CARDS (gestion menu) ── */
-    .produit-card { background: var(--bg-card2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; position: relative; }
-    .produit-card img { width: 56px; height: 56px; object-fit: contain; margin-bottom: 8px; }
-    .produit-card-nom { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-    .produit-card-prix { font-size: 12px; color: var(--red); }
-    .produit-card-pts { font-size: 11px; color: var(--text-muted); }
-    .produit-card-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
-    .produit-card-actions button { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px; }
-
-    /* ── POPUP ── */
-    .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-    .popup-box { width: 480px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
-    .client-results { margin-bottom: 12px; }
-    .main {
-      width: calc(100% - var(--sidebar-width));
-          }
-    .content {
-      width: 100%;
-             }
-    .page {
-      width: 100%;
-          }
-    .caisse-layout {
-      width: 100%;
-                   }
+    /* POPUP */
+    .popup-overlay { position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999; }
+    .popup-box { width:500px;max-width:95vw;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;max-height:90vh;overflow-y:auto; }
+    .popup-title { font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--red);margin-bottom:16px; }
   </style>
 </head>
 <body>
-
 <div id="app" style="display:none;">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
-      <img src="https://upload.redstartrp.fr/uploads/photo-1779909454-241fe4af9eb4.png/storage/v1/object/public/assets/logo.png" style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
+      <img class="sidebar-logo-img" src="https://upload.redstartrp.fr/uploads/photo-1779909454-241fe4af9eb4.png" onerror="this.style.display='none'">
       <div>
+        <div class="sidebar-logo-text">Burger Shot</div>
         <div class="sidebar-logo-sub">Espace Employé</div>
       </div>
     </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section">Général</div>
-      <div class="nav-item active" onclick="showPage('accueil', this)">
-        <span class="nav-icon">🏠</span> Accueil
-      </div>
-      <div class="nav-section">Caisse</div>
-      <div class="nav-item" onclick="showPage('caisse', this)">
-        <span class="nav-icon">🧾</span> Caisse
-      </div>
-      <div class="nav-item" onclick="showPage('clients', this)">
-        <span class="nav-icon">👥</span> Clients
-      </div>
-      <div class="nav-item" onclick="showPage('enregistrer-client', this)">
-        <span class="nav-icon">➕</span> Nouveau Client
-      </div>
-      <div class="nav-section direction-only">Direction</div>
-      <div class="nav-item direction-only" onclick="showPage('employes', this)">
-        <span class="nav-icon">👔</span> Employés
-      </div>
-      <div class="nav-item direction-only" onclick="showPage('ajouter-employe', this)">
-        <span class="nav-icon">➕</span> Ajouter Employé
-      </div>
-      <div class="nav-section direction-only">Menu</div>
-      <div class="nav-item direction-only" onclick="showPage('menu', this)">
-        <span class="nav-icon">🍔</span> Gestion du menu
-      </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <!-- injecté par JS selon rôle -->
     </nav>
-
-    <!-- USER en bas, hors du flux nav -->
     <div class="sidebar-user">
       <div class="user-avatar" id="userAvatar"></div>
       <div class="user-info">
@@ -275,620 +172,1045 @@
     <div class="topbar">
       <div class="page-title" id="pageTitle">Accueil</div>
       <div class="topbar-right">
-        <div style="font-size:13px; color:var(--text-muted);" id="topDate"></div>
+        <div style="font-size:13px;color:var(--text-muted);" id="topDate"></div>
         <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Changer le thème">☀️</button>
       </div>
     </div>
+    <div class="content" id="mainContent">
+      <!-- Pages injectées dynamiquement -->
+    </div>
+  </div>
+</div>
 
-    <div class="content">
-
-      <!-- PAGE ACCUEIL -->
-      <div class="page active" id="page-accueil">
-        <div class="red-line"></div>
-        <div class="grid-3" style="margin-bottom:24px;">
-          <div class="stat-card">
-            <div class="stat-value" id="statClients">—</div>
-            <div class="stat-label">Clients enregistrés</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="statEmployes">—</div>
-            <div class="stat-label">Employés actifs</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="statPass">—</div>
-            <div class="stat-label">Pass actifs</div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">Bienvenue</div>
-          <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">
-            Bienvenue sur l'interface de gestion Burger Shot. Utilisez le menu de gauche pour naviguer entre les différentes sections.
-          </p>
-        </div>
-      </div>
-
-      <!-- PAGE CAISSE -->
-      <div class="page" id="page-caisse">
-        <div class="red-line"></div>
-        <div class="caisse-layout">
-
-          <!-- PRODUITS -->
-          <div class="card caisse-produits">
-            <div class="card-title">Caisse Burger Shot</div>
-            <div class="form-group">
-              <label class="form-label">Recherche client</label>
-              <input class="form-input" id="clientSearch" placeholder="Nom du client...">
-            </div>
-            <div id="clientResults" class="client-results"></div>
-            <div id="caisseProduits">Chargement des produits...</div>
-          </div>
-
-          <!-- TICKET -->
-          <div class="ticket-wrapper">
-            <div class="ticket-thermal">
-              <div class="ticket-logo">🍔 BURGER SHOT</div>
-              <div class="ticket-info">
-                <div id="ticketId">BS-000000000000-001</div>
-                <div id="ticketDate"></div>
-              </div>
-              <hr class="ticket-separator">
-              <div class="ticket-articles" id="ticketArticles">
-                <div class="ticket-empty">Aucune commande</div>
-              </div>
-              <hr class="ticket-separator">
-              <div class="ticket-total">TOTAL : <span id="ticketTotal">0$</span></div>
-              <div class="ticket-meta">
-                <div>Client : <strong id="ticketClient">Inconnu</strong></div>
-                <div>Employé : <strong id="ticketEmploye">—</strong></div>
-              </div>
-              <div class="ticket-buttons">
-                <button class="btn btn-danger" onclick="annulerCommande()">❌ Annuler</button>
-                <button class="btn btn-success" onclick="ouvrirValidation()">✅ Valider</button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- PAGE CLIENTS -->
-      <div class="page" id="page-clients">
-        <div class="red-line"></div>
-        <div class="card">
-          <div class="card-title">Liste des clients</div>
-          <div id="clientsTable">Chargement...</div>
-        </div>
-      </div>
-
-      <!-- PAGE NOUVEAU CLIENT -->
-      <div class="page" id="page-enregistrer-client">
-        <div class="red-line"></div>
-        <div class="card" style="max-width:500px;">
-          <div class="card-title">Enregistrer un client</div>
-          <div id="alertClient"></div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label class="form-label">Nom</label>
-              <input class="form-input" id="clientNom" placeholder="Dupont">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Prénom</label>
-              <input class="form-input" id="clientPrenom" placeholder="Jean">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Date de naissance</label>
-            <input class="form-input" id="clientNaissance" type="date">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Téléphone</label>
-            <input class="form-input" id="clientTel" placeholder="06 00 00 00 00">
-          </div>
-          <div class="form-group">
-            <label class="form-label">ID Discord (optionnel)</label>
-            <input class="form-input" id="clientDiscord" placeholder="123456789">
-          </div>
-          <button class="btn btn-primary" onclick="enregistrerClient()">✅ Enregistrer le client</button>
-        </div>
-      </div>
-
-      <!-- PAGE EMPLOYÉS -->
-      <div class="page" id="page-employes">
-        <div class="red-line"></div>
-        <div class="card">
-          <div class="card-title">Liste des employés</div>
-          <div id="employesTable">Chargement...</div>
-        </div>
-      </div>
-
-      <!-- PAGE AJOUTER EMPLOYÉ -->
-      <div class="page" id="page-ajouter-employe">
-        <div class="red-line"></div>
-        <div class="card" style="max-width:500px;">
-          <div class="card-title">Ajouter un employé</div>
-          <div id="alertEmploye"></div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label class="form-label">Nom</label>
-              <input class="form-input" id="empNom" placeholder="Dupont">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Prénom</label>
-              <input class="form-input" id="empPrenom" placeholder="Jean">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Date de naissance</label>
-            <input class="form-input" id="empNaissance" type="date">
-          </div>
-          <div class="form-group">
-            <label class="form-label">ID Discord</label>
-            <input class="form-input" id="empDiscord" placeholder="123456789012345678">
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label class="form-label">Poste</label>
-              <select class="form-select" id="empPoste">
-                <option value="Employé">Employé</option>
-                <option value="Chef d'équipe">Chef d'équipe</option>
-                <option value="Manager">Manager</option>
-                <option value="Co-Patron">Co-Patron</option>
-                <option value="Patron">Patron</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Contrat</label>
-              <select class="form-select" id="empContrat">
-                <option value="CDD">CDD</option>
-                <option value="CDI">CDI</option>
-              </select>
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="ajouterEmploye()">✅ Ajouter l'employé</button>
-        </div>
-      </div>
-
-      <!-- PAGE GESTION MENU -->
-      <div class="page" id="page-menu">
-        <div class="red-line"></div>
-        <div style="display:flex; gap:24px; align-items:flex-start;">
-          <div class="card" style="min-width:350px; max-width:400px;">
-            <div class="card-title">Ajouter un produit</div>
-            <div id="alertMenu"></div>
-            <div class="form-group">
-              <label class="form-label">Nom du produit</label>
-              <input class="form-input" id="prodNom" placeholder="Burger Classic">
-            </div>
-            <div class="grid-2">
-              <div class="form-group">
-                <label class="form-label">Prix ($)</label>
-                <input class="form-input" id="prodPrix" type="number" placeholder="600">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Points</label>
-                <input class="form-input" id="prodPoints" type="number" placeholder="10">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Catégorie</label>
-              <select class="form-select" id="prodCategorie">
-                <option value="Burger">Burger</option>
-                <option value="Menu">Menu</option>
-                <option value="Boisson">Boisson</option>
-                <option value="Dessert">Dessert</option>
-                <option value="Accompagnement">Accompagnement</option>
-                <option value="Session">Session</option>
-                <option value="Autre">Autre</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Image (PNG/JPG)</label>
-              <input class="form-input" id="prodImage" type="file" accept="image/png,image/jpeg,image/webp" style="padding:6px;" onchange="previewImage()">
-            </div>
-            <div id="prodPreview" style="margin-bottom:16px; display:none;">
-              <img id="prodPreviewImg" style="width:80px; height:80px; object-fit:contain; border-radius:8px; border:1px solid var(--border);">
-            </div>
-            <button class="btn btn-primary" onclick="ajouterProduit()">✅ Ajouter le produit</button>
-          </div>
-          <div class="card" style="flex:1;">
-            <div class="card-title">Produits du menu</div>
-            <div id="produitsGrid">Chargement...</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /app -->
-
-<!-- POPUP VALIDATION -->
+<!-- POPUP VALIDATION COMMANDE -->
 <div id="popupValidation" class="popup-overlay" style="display:none;">
   <div class="popup-box">
-    <div class="card-title">Validation commande</div>
+    <div class="popup-title">✅ Validation commande</div>
     <div id="popupRecap"></div>
-    <div style="display:flex; gap:10px; margin-top:20px;">
-      <button class="btn btn-danger" onclick="fermerPopup()">❌ Retour</button>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-outline" onclick="fermerPopup('popupValidation')">❌ Retour</button>
       <button class="btn btn-success" onclick="validerCommande()">✅ Confirmer</button>
     </div>
   </div>
 </div>
 
-<script>
-  let SUPABASE_URL = '';
-  let SUPABASE_KEY = '';
-  const DIRECTION_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
-  let currentUser = null;
-  let produitsCaisse = [];
-  let commande = [];
-  let selectedClient = null;
+<!-- POPUP PASS CLIENT -->
+<div id="popupPass" class="popup-overlay" style="display:none;">
+  <div class="popup-box">
+    <div class="popup-title">🪪 Enregistrer un Pass</div>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">Sélectionnez le client et le type de pass.</p>
+    <div class="form-group">
+      <label class="form-label">Recherche client</label>
+      <input class="form-input" id="passClientSearch" placeholder="Nom du client...">
+    </div>
+    <div id="passClientResults" style="margin-bottom:12px;"></div>
+    <div id="passClientSelectionne" style="display:none;margin-bottom:12px;padding:10px;background:var(--bg-card2);border-radius:8px;font-size:14px;"></div>
+    <div class="form-group">
+      <label class="form-label">Type de pass</label>
+      <select class="form-select" id="passType"></select>
+    </div>
+    <div id="passInfo" style="font-size:13px;color:var(--text-muted);margin-bottom:16px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline" onclick="fermerPopup('popupPass')">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmerPass()">✅ Enregistrer le pass</button>
+    </div>
+  </div>
+</div>
 
-  window.addEventListener('DOMContentLoaded', () => {
-    SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
-    SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
-    init();
+<script>
+const SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
+const DIRECTION_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
+const GOUVERNEMENT_IDS = []; // Ajoute ici les IDs Discord gouvernement
+
+let currentUser = null;
+let currentRole = 'employe'; // employe | direction | gouvernement
+let produitsCaisse = [];
+let passTypes = [];
+let commande = [];
+let selectedClient = null;
+let selectedPassClient = null;
+let commandeContrat = null; // contrat de réduction sélectionné
+
+// ── NAVIGATION CONFIG ──
+const NAV_CONFIG = {
+  employe: [
+    { section: 'Général' },
+    { id: 'accueil', icon: '🏠', label: 'Accueil' },
+    { section: 'Caisse' },
+    { id: 'caisse', icon: '🧾', label: 'Caisse' },
+    { id: 'clients', icon: '👥', label: 'Clients' },
+    { id: 'enregistrer-client', icon: '➕', label: 'Nouveau Client' },
+    { id: 'stats', icon: '📊', label: 'Statistiques' },
+  ],
+  direction: [
+    { section: 'Général' },
+    { id: 'accueil', icon: '🏠', label: 'Accueil' },
+    { section: 'Caisse' },
+    { id: 'caisse', icon: '🧾', label: 'Caisse' },
+    { id: 'clients', icon: '👥', label: 'Clients' },
+    { id: 'enregistrer-client', icon: '➕', label: 'Nouveau Client' },
+    { section: 'Direction' },
+    { id: 'employes', icon: '👔', label: 'Employés' },
+    { id: 'ajouter-employe', icon: '➕', label: 'Ajouter Employé' },
+    { id: 'contrats', icon: '📄', label: 'Contrats' },
+    { id: 'primes', icon: '💰', label: 'Primes' },
+    { id: 'coffre', icon: '🏦', label: 'Coffre' },
+    { section: 'Menu' },
+    { id: 'menu', icon: '🍔', label: 'Gestion du Menu' },
+    { section: 'Analytics' },
+    { id: 'stats', icon: '📊', label: 'Statistiques' },
+  ],
+  gouvernement: [
+    { section: 'Gouvernement' },
+    { id: 'stats', icon: '📊', label: 'Statistiques' },
+    { id: 'coffre', icon: '🏦', label: 'Finances' },
+  ]
+};
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const username = params.get('username');
+  const avatar = params.get('avatar');
+  const role = params.get('role');
+  if (!id) { window.location.href = '/'; return; }
+
+  currentRole = GOUVERNEMENT_IDS.includes(id) ? 'gouvernement'
+              : (role === 'direction' ? 'direction' : 'employe');
+  currentUser = { id, username, avatar, role: currentRole };
+
+  // Avatar
+  const avatarEl = document.getElementById('userAvatar');
+  if (avatar) {
+    avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png" onerror="this.parentElement.textContent='${username.charAt(0).toUpperCase()}'">`;
+  } else {
+    avatarEl.textContent = username.charAt(0).toUpperCase();
+  }
+  document.getElementById('userName').textContent = username;
+  document.getElementById('userRole').textContent =
+    currentRole === 'direction' ? '⭐ Direction' :
+    currentRole === 'gouvernement' ? '🏛️ Gouvernement' : 'Employé';
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('fr-FR', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
   });
 
-  function init() {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    const username = params.get('username');
-    const avatar = params.get('avatar');
-    const role = params.get('role');
+  buildNav();
+  buildPages();
+  passTypes = await supabaseFetch('pass_types?select=*');
+  document.getElementById('app').style.display = 'flex';
+  showPage(currentRole === 'gouvernement' ? 'stats' : 'accueil');
+});
 
-    if (!id) { window.location.href = '/'; return; }
+// ── NAVIGATION ──
+function buildNav() {
+  const nav = document.getElementById('sidebarNav');
+  const items = NAV_CONFIG[currentRole] || NAV_CONFIG.employe;
+  nav.innerHTML = items.map(item => {
+    if (item.section) return `<div class="nav-section">${item.section}</div>`;
+    return `<div class="nav-item" id="nav-${item.id}" onclick="showPage('${item.id}',this)">
+      <span class="nav-icon">${item.icon}</span> ${item.label}
+    </div>`;
+  }).join('');
+}
 
-    currentUser = { id, username, avatar, role };
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-'+name);
+  if (page) page.classList.add('active');
+  const navEl = el || document.getElementById('nav-'+name);
+  if (navEl) navEl.classList.add('active');
+  const titles = {
+    accueil:'Accueil', caisse:'Caisse', clients:'Clients',
+    'enregistrer-client':'Nouveau Client', employes:'Employés',
+    'ajouter-employe':'Ajouter un Employé', menu:'Gestion du Menu',
+    stats:'Statistiques', coffre:'Coffre', contrats:'Contrats', primes:'Primes'
+  };
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  if (name==='clients') loadClients();
+  if (name==='employes') loadEmployes();
+  if (name==='menu') loadProduits();
+  if (name==='caisse') loadCaisseProduits();
+  if (name==='stats') loadStats();
+  if (name==='coffre') loadCoffre();
+  if (name==='contrats') loadContrats();
+  if (name==='primes') loadPrimes();
+  if (name==='accueil') loadAccueil();
+}
 
-    const avatarEl = document.getElementById('userAvatar');
-    if (avatar) {
-      avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png" onerror="this.parentElement.textContent='${username.charAt(0).toUpperCase()}'">`;
-    } else {
-      avatarEl.textContent = username.charAt(0).toUpperCase();
-    }
+// ── BUILD PAGES ──
+function buildPages() {
+  const content = document.getElementById('mainContent');
+  content.innerHTML = `
+  <!-- ACCUEIL -->
+  <div class="page" id="page-accueil">
+    <div class="red-line"></div>
+    <div class="grid-4" style="margin-bottom:24px;" id="accueilStats"></div>
+    <div class="card">
+      <div class="card-title">Bienvenue</div>
+      <p style="color:var(--text-muted);font-size:14px;line-height:1.6;">
+        Bienvenue sur l'interface de gestion <strong>Burger Shot</strong>. Utilisez le menu de gauche pour naviguer.
+      </p>
+    </div>
+  </div>
 
-    document.getElementById('userName').textContent = username;
-    document.getElementById('userRole').textContent = role === 'direction' ? '⭐ Direction' : 'Employé';
-    document.getElementById('topDate').textContent = new Date().toLocaleDateString('fr-FR', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-    document.getElementById('ticketEmploye').textContent = username;
+  <!-- CAISSE -->
+  <div class="page" id="page-caisse">
+    <div class="red-line"></div>
+    <div class="caisse-layout">
+      <div class="card">
+        <div class="card-title">Caisse Burger Shot</div>
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Recherche client</label>
+            <input class="form-input" id="clientSearch" placeholder="Nom du client...">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Contrat de réduction</label>
+            <select class="form-select" id="caisseContrat" onchange="updateContrat()">
+              <option value="">— Aucun contrat —</option>
+            </select>
+          </div>
+        </div>
+        <div id="clientResults" class="client-results"></div>
+        <div id="caisseProduits">Chargement des produits...</div>
+      </div>
+      <div class="ticket-wrapper">
+        <div class="ticket-thermal">
+          <div class="ticket-logo">🍔 BURGER SHOT</div>
+          <div class="ticket-info">
+            <div id="ticketId">BS-000000000000-001</div>
+            <div id="ticketDate"></div>
+          </div>
+          <hr class="ticket-separator">
+          <div class="ticket-articles" id="ticketArticles">
+            <div class="ticket-empty">Aucune commande</div>
+          </div>
+          <hr class="ticket-separator">
+          <div class="ticket-total-block">
+            <div class="ticket-total">TOTAL : <span id="ticketTotal">0$</span></div>
+            <div class="ticket-reduc" id="ticketReduc" style="display:none;"></div>
+            <div class="ticket-points-info" id="ticketPointsInfo"></div>
+          </div>
+          <div class="ticket-meta">
+            <div>Client : <strong id="ticketClient">Inconnu</strong></div>
+            <div id="ticketPassInfo" style="font-size:11px;color:#666;"></div>
+            <div>Employé : <strong id="ticketEmploye">—</strong></div>
+          </div>
+          <div class="ticket-buttons">
+            <button class="btn btn-danger" onclick="annulerCommande()">❌ Annuler</button>
+            <button class="btn btn-success" onclick="ouvrirValidation()">✅ Valider</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    if (role === 'direction') {
-      document.querySelectorAll('.direction-only').forEach(el => {
-        el.style.display = el.classList.contains('nav-section') ? 'block' : 'flex';
-      });
-    }
+  <!-- CLIENTS -->
+  <div class="page" id="page-clients">
+    <div class="red-line"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div></div>
+      ${currentRole==='direction'||currentRole==='employe' ? `<button class="btn btn-primary" onclick="ouvrirPopupPass()">🪪 Enregistrer un Pass</button>` : ''}
+    </div>
+    <div class="card">
+      <div class="card-title">Liste des clients</div>
+      <div id="clientsTable">Chargement...</div>
+    </div>
+  </div>
 
-    document.getElementById('app').style.display = 'flex';
-    loadStats();
-  }
+  <!-- NOUVEAU CLIENT -->
+  <div class="page" id="page-enregistrer-client">
+    <div class="red-line"></div>
+    <div class="card" style="max-width:500px;">
+      <div class="card-title">Enregistrer un client</div>
+      <div id="alertClient"></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="clientNom" placeholder="Dupont"></div>
+        <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" id="clientPrenom" placeholder="Jean"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Date de naissance</label><input class="form-input" id="clientNaissance" type="date"></div>
+      <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="clientTel" placeholder="06 00 00 00 00"></div>
+      <div class="form-group"><label class="form-label">ID Discord (optionnel)</label><input class="form-input" id="clientDiscord" placeholder="123456789"></div>
+      <button class="btn btn-primary" onclick="enregistrerClient()">✅ Enregistrer</button>
+    </div>
+  </div>
 
-  /* ── THÈME ── */
-  function toggleTheme() {
-    const html = document.documentElement;
-    const btn = document.getElementById('themeBtn');
-    if (html.dataset.theme === 'dark') {
-      html.dataset.theme = 'light';
-      btn.textContent = '🌙';
-    } else {
-      html.dataset.theme = 'dark';
-      btn.textContent = '☀️';
-    }
-  }
+  <!-- EMPLOYÉS -->
+  <div class="page" id="page-employes">
+    <div class="red-line"></div>
+    <div class="card">
+      <div class="card-title">Liste des employés</div>
+      <div id="employesTable">Chargement...</div>
+    </div>
+  </div>
 
-  /* ── NAVIGATION ── */
-  function showPage(name, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('page-' + name).classList.add('active');
-    if (el) el.classList.add('active');
-    const titles = {
-      'accueil': 'Accueil', 'clients': 'Clients',
-      'enregistrer-client': 'Nouveau Client', 'employes': 'Employés',
-      'ajouter-employe': 'Ajouter un Employé', 'menu': 'Gestion du Menu', 'caisse': 'Caisse',
-    };
-    document.getElementById('pageTitle').textContent = titles[name] || name;
-    if (name === 'clients') loadClients();
-    if (name === 'employes') loadEmployes();
-    if (name === 'menu') loadProduits();
-    if (name === 'caisse') loadCaisseProduits();
-  }
+  <!-- AJOUTER EMPLOYÉ -->
+  <div class="page" id="page-ajouter-employe">
+    <div class="red-line"></div>
+    <div class="card" style="max-width:500px;">
+      <div class="card-title">Ajouter un employé</div>
+      <div id="alertEmploye"></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="empNom" placeholder="Dupont"></div>
+        <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" id="empPrenom" placeholder="Jean"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Date de naissance</label><input class="form-input" id="empNaissance" type="date"></div>
+      <div class="form-group"><label class="form-label">ID Discord</label><input class="form-input" id="empDiscord" placeholder="123456789012345678"></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Poste</label>
+          <select class="form-select" id="empPoste">
+            <option value="Employé">Employé</option>
+            <option value="Chef d'équipe">Chef d'équipe</option>
+            <option value="Manager">Manager</option>
+            <option value="Co-Patron">Co-Patron</option>
+            <option value="Patron">Patron</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contrat</label>
+          <select class="form-select" id="empContrat">
+            <option value="CDD">CDD</option>
+            <option value="CDI">CDI</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="ajouterEmploye()">✅ Ajouter</button>
+    </div>
+  </div>
 
-  /* ── SUPABASE ── */
-  async function supabaseFetch(endpoint, options = {}) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation',
-        ...options.headers
-      },
-      ...options
-    });
-    return res.json();
-  }
+  <!-- CONTRATS -->
+  <div class="page" id="page-contrats">
+    <div class="red-line"></div>
+    <div style="display:flex;gap:24px;align-items:flex-start;">
+      <div class="card" style="min-width:320px;max-width:380px;">
+        <div class="card-title">Nouveau contrat</div>
+        <div id="alertContrat"></div>
+        <div class="form-group"><label class="form-label">Nom de l'entreprise</label><input class="form-input" id="contratNom" placeholder="Los Santos Corp"></div>
+        <div class="form-group"><label class="form-label">Réduction (%)</label><input class="form-input" id="contratPct" type="number" min="1" max="100" placeholder="20"></div>
+        <button class="btn btn-primary" onclick="ajouterContrat()">✅ Créer le contrat</button>
+      </div>
+      <div class="card" style="flex:1;">
+        <div class="card-title">Contrats actifs</div>
+        <div id="contratsTable">Chargement...</div>
+      </div>
+    </div>
+  </div>
 
-  /* ── STATS ── */
-  async function loadStats() {
-    try {
-      const clients = await supabaseFetch('clients?select=id');
-      const employes = await supabaseFetch('employes?select=id&actif=eq.true');
-      const passActifs = await supabaseFetch('clients?select=id&pass=not.is.null');
-      document.getElementById('statClients').textContent = Array.isArray(clients) ? clients.length : 0;
-      document.getElementById('statEmployes').textContent = Array.isArray(employes) ? employes.length : 0;
-      document.getElementById('statPass').textContent = Array.isArray(passActifs) ? passActifs.length : 0;
-    } catch(e) {}
-  }
+  <!-- PRIMES -->
+  <div class="page" id="page-primes">
+    <div class="red-line"></div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">Versement des primes — Samedi</div>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">Les primes sont calculées selon le CA de la semaine en cours. Direction 40% • Manager/Chef 30% • CDI 20% • CDD 10%</p>
+      <button class="btn btn-primary" onclick="calculerPrimes()">🔄 Calculer les primes de la semaine</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Primes à verser</div>
+      <div id="primesTable">Chargement...</div>
+    </div>
+  </div>
 
-  /* ── CLIENTS ── */
-  async function loadClients() {
-    const data = await supabaseFetch('clients?select=*&order=created_at.desc');
-    const el = document.getElementById('clientsTable');
-    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun client enregistré.</p>'; return; }
-    el.innerHTML = `<table><thead><tr>
-      <th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th>
-    </tr></thead><tbody>${data.map(c => `<tr>
-      <td>${c.nom}</td><td>${c.prenom}</td><td>${c.telephone || '—'}</td>
-      <td>${c.pass ? `<span class="badge badge-orange">${c.pass}</span>` : '—'}</td>
-      <td><span class="badge badge-blue">${c.points} pts</span></td>
-      <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
+  <!-- COFFRE -->
+  <div class="page" id="page-coffre">
+    <div class="red-line"></div>
+    <div class="grid-3" style="margin-bottom:24px;" id="coffreStats"></div>
+    <div class="card">
+      <div class="card-title">Historique hebdomadaire</div>
+      <div id="coffreHistorique">Chargement...</div>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div class="page" id="page-menu">
+    <div class="red-line"></div>
+    <div style="display:flex;gap:24px;align-items:flex-start;">
+      <div class="card" style="min-width:350px;max-width:400px;">
+        <div class="card-title">Ajouter un produit</div>
+        <div id="alertMenu"></div>
+        <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="prodNom" placeholder="Burger Classic"></div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Prix ($)</label><input class="form-input" id="prodPrix" type="number" placeholder="600"></div>
+          <div class="form-group"><label class="form-label">Points</label><input class="form-input" id="prodPoints" type="number" placeholder="1"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catégorie</label>
+          <select class="form-select" id="prodCategorie">
+            <option>Burger</option><option>Menu</option><option>Boisson</option>
+            <option>Dessert</option><option>Accompagnement</option><option>Session</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Image</label><input class="form-input" id="prodImage" type="file" accept="image/*" style="padding:6px;" onchange="previewImage()"></div>
+        <div id="prodPreview" style="margin-bottom:16px;display:none;"><img id="prodPreviewImg" style="width:80px;height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--border);"></div>
+        <button class="btn btn-primary" onclick="ajouterProduit()">✅ Ajouter</button>
+      </div>
+      <div class="card" style="flex:1;">
+        <div class="card-title">Produits du menu</div>
+        <div id="produitsGrid">Chargement...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="page" id="page-stats">
+    <div class="red-line"></div>
+    <div class="grid-4" style="margin-bottom:24px;" id="statsCards"></div>
+    <div class="grid-2" style="margin-bottom:24px;">
+      <div class="card">
+        <div class="card-title">📦 Commandes de la semaine</div>
+        <div id="statsCommandes">Chargement...</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏦 Finances</div>
+        <div id="statsFinances">Chargement...</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏛️ Taux d'imposition</div>
+      <div id="statsImpots"></div>
+    </div>
+  </div>
+  `;
+}
+
+// ── SUPABASE ──
+async function supabaseFetch(endpoint, options={}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
+    headers: {
+      'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json', 'Prefer': 'return=representation',
+      ...options.headers
+    }, ...options
+  });
+  try { return await res.json(); } catch(e) { return []; }
+}
+
+function getSemaine() {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,'0')}`;
+}
+
+function calcImpot(montant) {
+  if (montant < 200000) return 0;
+  if (montant < 400000) return montant * 0.05;
+  if (montant < 600000) return montant * 0.08;
+  if (montant < 800000) return montant * 0.11;
+  if (montant < 1000000) return montant * 0.14;
+  if (montant < 2500000) return montant * 0.17;
+  return montant * 0.19;
+}
+
+function tauxImpot(montant) {
+  if (montant < 200000) return '0%';
+  if (montant < 400000) return '5%';
+  if (montant < 600000) return '8%';
+  if (montant < 800000) return '11%';
+  if (montant < 1000000) return '14%';
+  if (montant < 2500000) return '17%';
+  return '19%';
+}
+
+// ── THÈME ──
+function toggleTheme() {
+  const html = document.documentElement;
+  const btn = document.getElementById('themeBtn');
+  if (html.dataset.theme === 'dark') { html.dataset.theme='light'; btn.textContent='🌙'; }
+  else { html.dataset.theme='dark'; btn.textContent='☀️'; }
+}
+
+// ── ACCUEIL ──
+async function loadAccueil() {
+  const [clients, employes, passActifs, commandes] = await Promise.all([
+    supabaseFetch('clients?select=id'),
+    supabaseFetch('employes?select=id&actif=eq.true'),
+    supabaseFetch('clients?select=id&pass=not.is.null'),
+    supabaseFetch(`commandes?select=total&semaine=eq.${getSemaine()}`)
+  ]);
+  const ca = Array.isArray(commandes) ? commandes.reduce((a,c)=>a+(c.total||0),0) : 0;
+  document.getElementById('accueilStats').innerHTML = [
+    { v: Array.isArray(clients)?clients.length:0, l: 'Clients' },
+    { v: Array.isArray(employes)?employes.length:0, l: 'Employés actifs' },
+    { v: Array.isArray(passActifs)?passActifs.length:0, l: 'Pass actifs' },
+    { v: ca.toLocaleString('fr-FR')+'$', l: 'CA semaine' },
+  ].map(s=>`<div class="stat-card"><div class="stat-value">${s.v}</div><div class="stat-label">${s.l}</div></div>`).join('');
+}
+
+// ── CLIENTS ──
+async function loadClients() {
+  const data = await supabaseFetch('clients?select=*&order=created_at.desc');
+  const el = document.getElementById('clientsTable');
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--text-muted)">Aucun client.</p>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th></tr></thead><tbody>
+    ${data.map(c=>`<tr>
+      <td>${c.nom}</td><td>${c.prenom}</td><td>${c.telephone||'—'}</td>
+      <td>${c.pass?`<span class="badge badge-gold">${c.pass}</span>`:'—'}</td>
+      <td><span class="badge badge-blue">🎯 ${c.points||0} pts</span></td>
+      <td>${c.created_at?new Date(c.created_at).toLocaleDateString('fr-FR'):'—'}</td>
     </tr>`).join('')}</tbody></table>`;
-  }
+}
 
-  async function enregistrerClient() {
-    const nom = document.getElementById('clientNom').value.trim();
-    const prenom = document.getElementById('clientPrenom').value.trim();
-    const naissance = document.getElementById('clientNaissance').value;
-    const tel = document.getElementById('clientTel').value.trim();
-    const discord = document.getElementById('clientDiscord').value.trim();
-    const alertEl = document.getElementById('alertClient');
-    if (!nom || !prenom) { alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prénom obligatoires.</div>'; return; }
-    await supabaseFetch('clients', { method: 'POST', body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, telephone: tel || null, discord_id: discord || null }) });
-    alertEl.innerHTML = '<div class="alert alert-success">✅ Client enregistré !</div>';
-    ['clientNom','clientPrenom','clientNaissance','clientTel','clientDiscord'].forEach(id => document.getElementById(id).value = '');
-    loadStats();
-  }
+async function enregistrerClient() {
+  const nom=document.getElementById('clientNom').value.trim();
+  const prenom=document.getElementById('clientPrenom').value.trim();
+  const naissance=document.getElementById('clientNaissance').value;
+  const tel=document.getElementById('clientTel').value.trim();
+  const discord=document.getElementById('clientDiscord').value.trim();
+  const alertEl=document.getElementById('alertClient');
+  if (!nom||!prenom) { alertEl.innerHTML='<div class="alert alert-error">⚠️ Nom et prénom obligatoires.</div>'; return; }
+  await supabaseFetch('clients',{method:'POST',body:JSON.stringify({nom,prenom,date_naissance:naissance||null,telephone:tel||null,discord_id:discord||null,points:0})});
+  alertEl.innerHTML='<div class="alert alert-success">✅ Client enregistré !</div>';
+  ['clientNom','clientPrenom','clientNaissance','clientTel','clientDiscord'].forEach(id=>document.getElementById(id).value='');
+}
 
-  /* ── EMPLOYÉS ── */
-  async function loadEmployes() {
-    const data = await supabaseFetch('employes?select=*&order=created_at.desc');
-    const el = document.getElementById('employesTable');
-    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun employé.</p>'; return; }
-    el.innerHTML = `<table><thead><tr>
-      <th>Nom</th><th>Prénom</th><th>Poste</th><th>Contrat</th><th>Embauche</th><th>Statut</th>
-    </tr></thead><tbody>${data.map(e => `<tr>
+// ── EMPLOYÉS ──
+async function loadEmployes() {
+  const data = await supabaseFetch('employes?select=*&order=created_at.desc');
+  const el = document.getElementById('employesTable');
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--text-muted)">Aucun employé.</p>'; return; }
+  el.innerHTML=`<table><thead><tr><th>Nom</th><th>Prénom</th><th>Poste</th><th>Contrat</th><th>Statut</th></tr></thead><tbody>
+    ${data.map(e=>`<tr>
       <td>${e.nom}</td><td>${e.prenom}</td>
       <td><span class="badge badge-orange">${e.poste}</span></td>
-      <td><span class="badge badge-blue">${e.contrat}</span></td>
-      <td>${new Date(e.date_embauche).toLocaleDateString('fr-FR')}</td>
-      <td><span class="badge ${e.actif ? 'badge-green' : 'badge-red'}">${e.actif ? 'Actif' : 'Inactif'}</span></td>
+      <td><span class="badge badge-blue">${e.contrat||'—'}</span></td>
+      <td><span class="badge ${e.actif?'badge-green':'badge-red'}">${e.actif?'Actif':'Inactif'}</span></td>
     </tr>`).join('')}</tbody></table>`;
-  }
+}
 
-  async function ajouterEmploye() {
-    const nom = document.getElementById('empNom').value.trim();
-    const prenom = document.getElementById('empPrenom').value.trim();
-    const naissance = document.getElementById('empNaissance').value;
-    const discord = document.getElementById('empDiscord').value.trim();
-    const poste = document.getElementById('empPoste').value;
-    const contrat = document.getElementById('empContrat').value;
-    const alertEl = document.getElementById('alertEmploye');
-    if (!nom || !prenom || !discord) { alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom, prénom et ID Discord obligatoires.</div>'; return; }
-    await supabaseFetch('employes', { method: 'POST', body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, discord_id: discord, poste, contrat }) });
-    alertEl.innerHTML = '<div class="alert alert-success">✅ Employé ajouté !</div>';
-    ['empNom','empPrenom','empNaissance','empDiscord'].forEach(id => document.getElementById(id).value = '');
-    loadStats();
-  }
+async function ajouterEmploye() {
+  const nom=document.getElementById('empNom').value.trim();
+  const prenom=document.getElementById('empPrenom').value.trim();
+  const naissance=document.getElementById('empNaissance').value;
+  const discord=document.getElementById('empDiscord').value.trim();
+  const poste=document.getElementById('empPoste').value;
+  const contrat=document.getElementById('empContrat').value;
+  const alertEl=document.getElementById('alertEmploye');
+  if (!nom||!prenom||!discord) { alertEl.innerHTML='<div class="alert alert-error">⚠️ Nom, prénom et ID Discord obligatoires.</div>'; return; }
+  await supabaseFetch('employes',{method:'POST',body:JSON.stringify({nom,prenom,date_naissance:naissance||null,discord_id:discord,poste,contrat,actif:true})});
+  alertEl.innerHTML='<div class="alert alert-success">✅ Employé ajouté !</div>';
+  ['empNom','empPrenom','empNaissance','empDiscord'].forEach(id=>document.getElementById(id).value='');
+}
 
-  /* ── MENU / PRODUITS ── */
-  function previewImage() {
-    const file = document.getElementById('prodImage').files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        document.getElementById('prodPreviewImg').src = e.target.result;
-        document.getElementById('prodPreview').style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    }
+// ── MENU ──
+function previewImage() {
+  const file=document.getElementById('prodImage').files[0];
+  if (file) {
+    const reader=new FileReader();
+    reader.onload=e=>{document.getElementById('prodPreviewImg').src=e.target.result;document.getElementById('prodPreview').style.display='block';};
+    reader.readAsDataURL(file);
   }
+}
 
-  async function ajouterProduit() {
-    const nom = document.getElementById('prodNom').value.trim();
-    const prix = document.getElementById('prodPrix').value;
-    const points = document.getElementById('prodPoints').value;
-    const categorie = document.getElementById('prodCategorie').value;
-    const imageFile = document.getElementById('prodImage').files[0];
-    const alertEl = document.getElementById('alertMenu');
-    if (!nom || !prix) { alertEl.innerHTML = '<div class="alert alert-error">⚠️ Nom et prix obligatoires.</div>'; return; }
-    let image_url = null;
-    if (imageFile) {
-      const fileName = `${Date.now()}_${imageFile.name.replace(/\s/g, '_')}`;
-      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/produits/${fileName}`, {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': imageFile.type },
-        body: imageFile
-      });
-      if (uploadRes.ok) image_url = `${SUPABASE_URL}/storage/v1/object/public/produits/${fileName}`;
-    }
-    await supabaseFetch('produits', { method: 'POST', body: JSON.stringify({ nom, prix: parseFloat(prix), points: parseInt(points) || 0, categorie, image_url }) });
-    alertEl.innerHTML = '<div class="alert alert-success">✅ Produit ajouté !</div>';
-    ['prodNom','prodPrix','prodPoints'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('prodImage').value = '';
-    document.getElementById('prodPreview').style.display = 'none';
-    loadProduits();
+async function ajouterProduit() {
+  const nom=document.getElementById('prodNom').value.trim();
+  const prix=document.getElementById('prodPrix').value;
+  const points=document.getElementById('prodPoints').value;
+  const categorie=document.getElementById('prodCategorie').value;
+  const imageFile=document.getElementById('prodImage').files[0];
+  const alertEl=document.getElementById('alertMenu');
+  if (!nom||!prix) { alertEl.innerHTML='<div class="alert alert-error">⚠️ Nom et prix obligatoires.</div>'; return; }
+  let image_url=null;
+  if (imageFile) {
+    const fileName=`${Date.now()}_${imageFile.name.replace(/\s/g,'_')}`;
+    const uploadRes=await fetch(`${SUPABASE_URL}/storage/v1/object/produits/${fileName}`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':imageFile.type},body:imageFile});
+    if (uploadRes.ok) image_url=`${SUPABASE_URL}/storage/v1/object/public/produits/${fileName}`;
   }
+  await supabaseFetch('produits',{method:'POST',body:JSON.stringify({nom,prix:parseFloat(prix),points:parseInt(points)||0,categorie,image_url,actif:true})});
+  alertEl.innerHTML='<div class="alert alert-success">✅ Produit ajouté !</div>';
+  ['prodNom','prodPrix','prodPoints'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('prodImage').value='';document.getElementById('prodPreview').style.display='none';
+  loadProduits();
+}
 
-  async function loadProduits() {
-    const data = await supabaseFetch('produits?select=*&order=categorie.asc,nom.asc');
-    const el = document.getElementById('produitsGrid');
-    if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun produit. Ajoutez-en un !</p>'; return; }
-    const categories = [...new Set(data.map(p => p.categorie))];
-    el.innerHTML = categories.map(cat => `
-      <div style="margin-bottom:24px;">
-        <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${cat}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;">
-          ${data.filter(p => p.categorie === cat).map(p => `
-            <div class="produit-card" style="opacity:${p.actif ? 1 : 0.5};">
-              <div class="produit-card-actions">
-                <button onclick="toggleProduit('${p.id}',${p.actif})" title="${p.actif?'Désactiver':'Activer'}">${p.actif?'✅':'❌'}</button>
-                <button onclick="supprimerProduit('${p.id}')" title="Supprimer">🗑️</button>
-              </div>
-              ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : `<div style="width:56px;height:56px;background:var(--border);border-radius:8px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:28px;">🍔</div>`}
-              <div class="produit-card-nom">${p.nom}</div>
-              <div class="produit-card-prix">${p.prix}$</div>
-              <div class="produit-card-pts">${p.points} pts</div>
+async function loadProduits() {
+  const data=await supabaseFetch('produits?select=*&order=categorie.asc,nom.asc');
+  const el=document.getElementById('produitsGrid');
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--text-muted)">Aucun produit.</p>'; return; }
+  const cats=[...new Set(data.map(p=>p.categorie))];
+  el.innerHTML=cats.map(cat=>`
+    <div style="margin-bottom:24px;">
+      <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${cat}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;">
+        ${data.filter(p=>p.categorie===cat).map(p=>`
+          <div class="produit-card" style="opacity:${p.actif?1:.5};">
+            <div class="produit-card-actions">
+              <button onclick="toggleProduit('${p.id}',${p.actif})">${p.actif?'✅':'❌'}</button>
+              <button onclick="supprimerProduit('${p.id}')">🗑️</button>
             </div>
-          `).join('')}
-        </div>
+            ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:36px;margin-bottom:8px;">🍔</div>`}
+            <div class="produit-card-nom">${p.nom}</div>
+            <div class="produit-card-prix">${p.prix}$</div>
+            <div class="produit-card-pts">🎯 ${p.points} pts</div>
+          </div>`).join('')}
       </div>
-    `).join('');
+    </div>`).join('');
+}
+
+async function toggleProduit(id,actif) {
+  await supabaseFetch(`produits?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});
+  loadProduits();
+}
+async function supprimerProduit(id) {
+  if (!confirm('Supprimer définitivement ?')) return;
+  await supabaseFetch(`produits?id=eq.${id}`,{method:'DELETE'});
+  loadProduits();
+}
+
+// ── CAISSE ──
+async function loadCaisseProduits() {
+  const [data, contrats] = await Promise.all([
+    supabaseFetch('produits?select=*&actif=eq.true&order=categorie.asc'),
+    supabaseFetch('contrats_reduction?select=*&actif=eq.true')
+  ]);
+  produitsCaisse = Array.isArray(data)?data:[];
+
+  // Remplir select contrats
+  const sel = document.getElementById('caisseContrat');
+  if (sel) {
+    sel.innerHTML = '<option value="">— Aucun contrat —</option>' +
+      (Array.isArray(contrats)?contrats:[] ).map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}">${c.nom} (-${c.pourcentage}%)</option>`).join('');
   }
 
-  async function toggleProduit(id, actif) {
-    await supabaseFetch(`produits?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ actif: !actif }) });
-    loadProduits();
-  }
-
-  async function supprimerProduit(id) {
-    if (!confirm('Supprimer ce produit définitivement ?')) return;
-    await supabaseFetch(`produits?id=eq.${id}`, { method: 'DELETE' });
-    loadProduits();
-  }
-
-  /* ── CAISSE ── */
-  async function loadCaisseProduits() {
-    const data = await supabaseFetch('produits?select=*&actif=eq.true&order=categorie.asc');
-    produitsCaisse = Array.isArray(data) ? data : [];
-    const el = document.getElementById('caisseProduits');
-    if (!produitsCaisse.length) { el.innerHTML = 'Aucun produit.'; return; }
-    const categories = [...new Set(produitsCaisse.map(p => p.categorie))];
-    el.innerHTML = categories.map(cat => `
-      <div class="caisse-categorie">
-        <div class="caisse-categorie-title">${cat}</div>
-        <div class="caisse-grid">
-          ${produitsCaisse.filter(p => p.categorie === cat).map(p => `
-            <div class="caisse-produit" onclick="ajouterAuTicketById('${p.id}')">
-              ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : `<div style="font-size:36px;margin-bottom:8px;">🍔</div>`}
-              <div class="caisse-produit-nom">${p.nom}</div>
-              <div class="caisse-produit-prix">${p.prix}$</div>
-            </div>
-          `).join('')}
-        </div>
+  const el=document.getElementById('caisseProduits');
+  if (!produitsCaisse.length) { el.innerHTML='Aucun produit.'; return; }
+  const cats=[...new Set(produitsCaisse.map(p=>p.categorie))];
+  el.innerHTML=cats.map(cat=>`
+    <div class="caisse-categorie">
+      <div class="caisse-categorie-title">${cat}</div>
+      <div class="caisse-grid">
+        ${produitsCaisse.filter(p=>p.categorie===cat).map(p=>`
+          <div class="caisse-produit" onclick="ajouterAuTicket('${p.id}')">
+            ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:36px;margin-bottom:8px;">🍔</div>`}
+            <div class="caisse-produit-nom">${p.nom}</div>
+            <div class="caisse-produit-prix">${p.prix}$</div>
+            <div class="caisse-produit-pts">🎯 ${p.points} pts</div>
+          </div>`).join('')}
       </div>
-    `).join('');
-    genererTicket();
-  }
+    </div>`).join('');
+  genererTicket();
+}
 
-  function ajouterAuTicketById(id) {
-    const produit = produitsCaisse.find(p => p.id === id);
-    if (!produit) return;
-    const exist = commande.find(p => p.id === produit.id);
-    if (exist) { exist.quantite++; } else { commande.push({ ...produit, quantite: 1 }); }
-    renderTicket();
-  }
+function updateContrat() {
+  const sel=document.getElementById('caisseContrat');
+  const opt=sel.options[sel.selectedIndex];
+  commandeContrat = sel.value ? { id:sel.value, pct:parseFloat(opt.dataset.pct), nom:opt.text } : null;
+  renderTicket();
+}
 
-  function renderTicket() {
-    const el = document.getElementById('ticketArticles');
-    if (!commande.length) {
-      el.innerHTML = '<div class="ticket-empty">Aucune commande</div>';
-    } else {
-      el.innerHTML = commande.map(p => `
-        <div class="ticket-line">
-          <div>${p.nom} ×${p.quantite}</div>
-          <div>${p.prix * p.quantite}$</div>
-        </div>
-      `).join('');
-    }
-    const total = commande.reduce((a, b) => a + (b.prix * b.quantite), 0);
-    document.getElementById('ticketTotal').textContent = total + '$';
-    document.getElementById('ticketClient').textContent = selectedClient ? `${selectedClient.prenom} ${selectedClient.nom}` : 'Inconnu';
-    document.getElementById('ticketEmploye').textContent = currentUser ? currentUser.username : '—';
-  }
+function ajouterAuTicket(id) {
+  const p=produitsCaisse.find(p=>p.id===id);
+  if (!p) return;
+  const exist=commande.find(c=>c.id===id);
+  if (exist) exist.quantite++;
+  else commande.push({...p,quantite:1});
+  renderTicket();
+}
 
-  function genererTicket() {
-    const now = new Date();
-    const dd = String(now.getDate()).padStart(2,'0');
-    const mm = String(now.getMonth()+1).padStart(2,'0');
-    const yyyy = now.getFullYear();
-    const hh = String(now.getHours()).padStart(2,'0');
-    const min = String(now.getMinutes()).padStart(2,'0');
-    document.getElementById('ticketId').textContent = `BS-${dd}${mm}${yyyy}${hh}${min}-001`;
-    document.getElementById('ticketDate').textContent = now.toLocaleString('fr-FR');
-    renderTicket();
+function calcTotalCommande() {
+  const brut = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
+  let reduction=0;
+  // Pass du client
+  if (selectedClient?.pass) {
+    const pt=passTypes.find(p=>p.nom===selectedClient.pass);
+    if (pt && pt.reduction>0) reduction=Math.max(reduction,parseFloat(pt.reduction));
   }
+  // Contrat
+  if (commandeContrat) reduction=Math.max(reduction,commandeContrat.pct);
+  const montantReduc=Math.round(brut*reduction/100);
+  return { brut, reduction, montantReduc, net:brut-montantReduc };
+}
 
-  function annulerCommande() {
-    if (!confirm('Annuler la commande ?')) return;
-    commande = [];
-    selectedClient = null;
-    document.getElementById('clientSearch').value = '';
-    renderTicket();
+function calcPoints() {
+  if (!selectedClient || !selectedClient.pass) return 0;
+  const pt=passTypes.find(p=>p.nom===selectedClient.pass);
+  const mult=pt?parseFloat(pt.multiplicateur):0;
+  return Math.round(commande.reduce((a,b)=>a+(b.points*b.quantite),0)*mult);
+}
+
+function renderTicket() {
+  const el=document.getElementById('ticketArticles');
+  if (!commande.length) {
+    el.innerHTML='<div class="ticket-empty">Aucune commande</div>';
+  } else {
+    el.innerHTML=commande.map(p=>`
+      <div class="ticket-line">
+        <div>${p.nom} ×${p.quantite} <span style="font-size:11px;color:#888;">🎯${p.points*p.quantite}pts</span></div>
+        <div>${p.prix*p.quantite}$</div>
+      </div>`).join('');
   }
-
-  function ouvrirValidation() {
-    if (!commande.length) { alert('Aucune commande.'); return; }
-    const total = commande.reduce((a, b) => a + (b.prix * b.quantite), 0);
-    document.getElementById('popupRecap').innerHTML = `
-      ${commande.map(p => `<div class="ticket-line" style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;"><div>${p.nom} ×${p.quantite}</div><div>${p.prix * p.quantite}$</div></div>`).join('')}
-      <hr style="border:none;border-top:1px dashed #999;margin:12px 0;">
-      <div style="font-size:18px;font-weight:bold;text-align:right;">TOTAL : ${total}$</div>
-    `;
-    document.getElementById('popupValidation').style.display = 'flex';
+  const {brut,reduction,montantReduc,net}=calcTotalCommande();
+  const pts=calcPoints();
+  document.getElementById('ticketTotal').textContent=brut+'$';
+  const reducEl=document.getElementById('ticketReduc');
+  if (reduction>0) {
+    reducEl.style.display='block';
+    reducEl.textContent=`Réduction -${reduction}% : -${montantReduc}$ → ${net}$`;
+  } else {
+    reducEl.style.display='none';
   }
+  const ptsEl=document.getElementById('ticketPointsInfo');
+  if (pts>0) ptsEl.textContent=`🎯 +${pts} points gagné${pts>1?'s':''}`;
+  else ptsEl.textContent='';
+  document.getElementById('ticketClient').textContent=selectedClient?`${selectedClient.prenom} ${selectedClient.nom}`:'Inconnu';
+  const passInfoEl=document.getElementById('ticketPassInfo');
+  if (selectedClient?.pass) {
+    const pt=passTypes.find(p=>p.nom===selectedClient.pass);
+    passInfoEl.textContent=`${selectedClient.pass} • ×${pt?pt.multiplicateur:1} pts${pt&&pt.reduction>0?' • -'+pt.reduction+'%':''}`;
+  } else passInfoEl.textContent='';
+  document.getElementById('ticketEmploye').textContent=currentUser?.username||'—';
+}
 
-  function fermerPopup() {
-    document.getElementById('popupValidation').style.display = 'none';
-  }
+function genererTicket() {
+  const now=new Date();
+  const dd=String(now.getDate()).padStart(2,'0');
+  const mm=String(now.getMonth()+1).padStart(2,'0');
+  const yyyy=now.getFullYear();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const min=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('ticketId').textContent=`BS-${dd}${mm}${yyyy}${hh}${min}-001`;
+  document.getElementById('ticketDate').textContent=now.toLocaleString('fr-FR');
+  renderTicket();
+}
 
-  async function validerCommande() {
-    const total = commande.reduce((a, b) => a + (b.prix * b.quantite), 0);
-    await supabaseFetch('commandes', {
-      method: 'POST',
-      body: JSON.stringify({
-        client_id: selectedClient ? selectedClient.id : null,
-        employe_discord_id: currentUser.id,
-        items: JSON.stringify(commande),
-        total,
-        points_gagnes: Math.floor(total / 100),
-        paye_par_points: false
-      })
+function annulerCommande() {
+  if (!confirm('Annuler la commande ?')) return;
+  commande=[];selectedClient=null;commandeContrat=null;
+  document.getElementById('clientSearch').value='';
+  document.getElementById('clientResults').innerHTML='';
+  if (document.getElementById('caisseContrat')) document.getElementById('caisseContrat').value='';
+  renderTicket();
+}
+
+function ouvrirValidation() {
+  if (!commande.length) { alert('Aucune commande.'); return; }
+  const {brut,reduction,montantReduc,net}=calcTotalCommande();
+  const pts=calcPoints();
+  document.getElementById('popupRecap').innerHTML=`
+    ${commande.map(p=>`<div class="ticket-line" style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;">
+      <div>${p.nom} ×${p.quantite}</div><div>${p.prix*p.quantite}$</div>
+    </div>`).join('')}
+    <hr style="border:none;border-top:1px dashed #999;margin:12px 0;">
+    <div style="font-size:15px;text-align:right;">Brut : ${brut}$</div>
+    ${reduction>0?`<div style="font-size:14px;color:var(--red);text-align:right;">Réduction -${reduction}% : -${montantReduc}$</div>`:''}
+    <div style="font-size:18px;font-weight:bold;text-align:right;margin-top:6px;">TOTAL : ${net}$</div>
+    ${pts>0?`<div style="font-size:13px;color:#27ae60;text-align:right;margin-top:4px;">🎯 +${pts} points pour ${selectedClient?.prenom||'le client'}</div>`:''}
+  `;
+  document.getElementById('popupValidation').style.display='flex';
+}
+
+async function validerCommande() {
+  const {brut,reduction,montantReduc,net}=calcTotalCommande();
+  const pts=calcPoints();
+  const semaine=getSemaine();
+  // Enregistrer commande
+  await supabaseFetch('commandes',{method:'POST',body:JSON.stringify({
+    client_id:selectedClient?.id||null,
+    employe_discord_id:currentUser.id,
+    items:JSON.stringify(commande),
+    total:brut,
+    reduction_pct:reduction,
+    total_apres_reduction:net,
+    points_gagnes:pts,
+    paye_par_points:false,
+    contrat_id:commandeContrat?.id||null,
+    semaine
+  })});
+  // Ajouter points au client
+  if (selectedClient && pts>0) {
+    await supabaseFetch(`clients?id=eq.${selectedClient.id}`,{
+      method:'PATCH',
+      body:JSON.stringify({points:(selectedClient.points||0)+pts})
     });
-    fermerPopup();
-    alert('✅ Commande validée !');
-    commande = [];
-    selectedClient = null;
-    document.getElementById('clientSearch').value = '';
-    genererTicket();
   }
+  // Transaction
+  await supabaseFetch('transactions',{method:'POST',body:JSON.stringify({
+    montant:net,type:'vente',employe_discord:currentUser.id,
+    client_id:selectedClient?.id||null,semaine
+  })});
+  // Mettre à jour le CA dans parametres
+  const caData=await supabaseFetch('parametres?cle=eq.ca_semaine');
+  const caActuel=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
+  await supabaseFetch('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:String(caActuel+net)})});
 
-  /* ── RECHERCHE CLIENT ── */
-  document.addEventListener('input', async e => {
-    if (e.target.id === 'clientSearch') {
-      const val = e.target.value.trim();
-      if (val.length < 2) { document.getElementById('clientResults').innerHTML = ''; return; }
-      const data = await supabaseFetch(`clients?select=*&nom=ilike.*${val}*`);
-      document.getElementById('clientResults').innerHTML = Array.isArray(data)
-        ? data.map(c => `
-            <div onclick='selectClient(${JSON.stringify(c)})' style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:14px;">
-              ${c.prenom} ${c.nom}
-            </div>
-          `).join('')
-        : '';
-    }
+  fermerPopup('popupValidation');
+  alert('✅ Commande validée !');
+  commande=[];selectedClient=null;commandeContrat=null;
+  document.getElementById('clientSearch').value='';
+  document.getElementById('clientResults').innerHTML='';
+  if (document.getElementById('caisseContrat')) document.getElementById('caisseContrat').value='';
+  genererTicket();
+}
+
+// ── RECHERCHE CLIENT ──
+document.addEventListener('input', async e=>{
+  if (e.target.id==='clientSearch') {
+    const val=e.target.value.trim();
+    if (val.length<2) { document.getElementById('clientResults').innerHTML=''; return; }
+    const data=await supabaseFetch(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);
+    document.getElementById('clientResults').innerHTML=Array.isArray(data)
+      ?data.map(c=>`<div onclick='selectClient(${JSON.stringify(c)})' style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:14px;">
+          ${c.prenom} ${c.nom} ${c.pass?`<span class="badge badge-gold" style="margin-left:6px;font-size:10px;">${c.pass}</span>`:''} <span style="font-size:11px;color:var(--text-muted);">🎯 ${c.points||0} pts</span>
+        </div>`).join(''):'';
+  }
+  if (e.target.id==='passClientSearch') {
+    const val=e.target.value.trim();
+    if (val.length<2) { document.getElementById('passClientResults').innerHTML=''; return; }
+    const data=await supabaseFetch(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);
+    document.getElementById('passClientResults').innerHTML=Array.isArray(data)
+      ?data.map(c=>`<div onclick='selectPassClient(${JSON.stringify(c)})' style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:14px;">
+          ${c.prenom} ${c.nom}
+        </div>`).join(''):'';
+  }
+});
+
+function selectClient(client) {
+  selectedClient=client;
+  document.getElementById('clientSearch').value=`${client.prenom} ${client.nom}`;
+  document.getElementById('clientResults').innerHTML='';
+  renderTicket();
+}
+
+// ── PASS ──
+function ouvrirPopupPass() {
+  selectedPassClient=null;
+  document.getElementById('passClientSearch').value='';
+  document.getElementById('passClientResults').innerHTML='';
+  document.getElementById('passClientSelectionne').style.display='none';
+  // Remplir select pass types
+  const sel=document.getElementById('passType');
+  sel.innerHTML=passTypes.map(p=>`<option value="${p.id}" data-nom="${p.nom}" data-prix="${p.prix}" data-mult="${p.multiplicateur}" data-reduc="${p.reduction}">${p.nom} — ${p.prix}$</option>`).join('');
+  sel.onchange=updatePassInfo;
+  updatePassInfo();
+  document.getElementById('popupPass').style.display='flex';
+}
+
+function updatePassInfo() {
+  const sel=document.getElementById('passType');
+  const opt=sel.options[sel.selectedIndex];
+  if (!opt) return;
+  const mult=opt.dataset.mult;const reduc=opt.dataset.reduc;
+  document.getElementById('passInfo').textContent=
+    `×${mult} pts par commande${reduc>0?' • -'+reduc+'% de réduction sur chaque commande':''}`;
+}
+
+function selectPassClient(client) {
+  selectedPassClient=client;
+  document.getElementById('passClientSearch').value=`${client.prenom} ${client.nom}`;
+  document.getElementById('passClientResults').innerHTML='';
+  const el=document.getElementById('passClientSelectionne');
+  el.style.display='block';
+  el.innerHTML=`✅ <strong>${client.prenom} ${client.nom}</strong>${client.pass?` — Pass actuel : <span class="badge badge-gold">${client.pass}</span>`:''}`;
+}
+
+async function confirmerPass() {
+  if (!selectedPassClient) { alert('Sélectionnez un client.'); return; }
+  const sel=document.getElementById('passType');
+  const opt=sel.options[sel.selectedIndex];
+  const passNom=opt.dataset.nom;const passId=sel.value;
+  await supabaseFetch(`clients?id=eq.${selectedPassClient.id}`,{
+    method:'PATCH',body:JSON.stringify({pass:passNom,pass_id:passId})
   });
+  fermerPopup('popupPass');
+  alert(`✅ Pass ${passNom} attribué à ${selectedPassClient.prenom} ${selectedPassClient.nom} !`);
+  if (document.getElementById('page-clients').classList.contains('active')) loadClients();
+}
 
-  function selectClient(client) {
-    selectedClient = client;
-    document.getElementById('clientSearch').value = `${client.prenom} ${client.nom}`;
-    document.getElementById('clientResults').innerHTML = '';
-    renderTicket();
+// ── CONTRATS ──
+async function loadContrats() {
+  const data=await supabaseFetch('contrats_reduction?select=*&order=created_at.desc');
+  const el=document.getElementById('contratsTable');
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--text-muted)">Aucun contrat.</p>'; return; }
+  el.innerHTML=`<table><thead><tr><th>Entreprise</th><th>Réduction</th><th>Statut</th><th>Action</th></tr></thead><tbody>
+    ${data.map(c=>`<tr>
+      <td><strong>${c.nom}</strong></td>
+      <td><span class="badge badge-orange">-${c.pourcentage}%</span></td>
+      <td><span class="badge ${c.actif?'badge-green':'badge-red'}">${c.actif?'Actif':'Inactif'}</span></td>
+      <td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="toggleContrat('${c.id}',${c.actif})">${c.actif?'Désactiver':'Activer'}</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function ajouterContrat() {
+  const nom=document.getElementById('contratNom').value.trim();
+  const pct=document.getElementById('contratPct').value;
+  const alertEl=document.getElementById('alertContrat');
+  if (!nom||!pct) { alertEl.innerHTML='<div class="alert alert-error">⚠️ Champs obligatoires.</div>'; return; }
+  await supabaseFetch('contrats_reduction',{method:'POST',body:JSON.stringify({nom,pourcentage:parseFloat(pct),actif:true})});
+  alertEl.innerHTML='<div class="alert alert-success">✅ Contrat créé !</div>';
+  document.getElementById('contratNom').value='';document.getElementById('contratPct').value='';
+  loadContrats();
+}
+
+async function toggleContrat(id,actif) {
+  await supabaseFetch(`contrats_reduction?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});
+  loadContrats();
+}
+
+// ── PRIMES ──
+async function loadPrimes() {
+  const data=await supabaseFetch(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${getSemaine()}&order=created_at.desc`);
+  const el=document.getElementById('primesTable');
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--text-muted)">Aucune prime calculée pour cette semaine. Cliquez sur "Calculer".</p>'; return; }
+  el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Prime</th><th>Versée</th><th>Action</th></tr></thead><tbody>
+    ${data.map(p=>`<tr>
+      <td>${p.employes?.prenom||'—'} ${p.employes?.nom||''}</td>
+      <td>${p.employes?.poste||'—'}</td>
+      <td>${p.employes?.contrat||'—'}</td>
+      <td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td>
+      <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td>
+      <td>${!p.verse?`<button class="btn btn-success" style="padding:6px 12px;font-size:12px;" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function calculerPrimes() {
+  const semaine=getSemaine();
+  const [employes,caData]=await Promise.all([
+    supabaseFetch('employes?select=*&actif=eq.true'),
+    supabaseFetch('parametres?cle=eq.ca_semaine')
+  ]);
+  const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
+  if (ca===0) { alert('CA de la semaine = 0$. Pas de primes à calculer.'); return; }
+
+  const taux={
+    'Patron':0.4,'Co-Patron':0.4,'Manager':0.3,"Chef d'équipe":0.3,'Employé':0
+  };
+  const tauxContrat={'CDI':0.2,'CDD':0.1};
+
+  for (const emp of (Array.isArray(employes)?employes:[])) {
+    // Direction/Management → taux poste, sinon taux contrat
+    const t = (emp.poste==='Employé') ? (tauxContrat[emp.contrat]||0.1) : (taux[emp.poste]||0.1);
+    const montant=Math.round(ca*t);
+    if (montant>0) {
+      // Vérifier si prime déjà calculée
+      const exist=await supabaseFetch(`primes?employe_id=eq.${emp.id}&semaine=eq.${semaine}`);
+      if (!Array.isArray(exist)||!exist.length) {
+        await supabaseFetch('primes',{method:'POST',body:JSON.stringify({
+          employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false
+        })});
+      }
+    }
+  }
+  alert('✅ Primes calculées !');
+  loadPrimes();
+}
+
+async function verserPrime(id) {
+  await supabaseFetch(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})});
+  loadPrimes();
+}
+
+// ── COFFRE ──
+async function loadCoffre() {
+  const [caData, coffreData, primesData, commandesAll] = await Promise.all([
+    supabaseFetch('parametres?cle=eq.ca_semaine'),
+    supabaseFetch('parametres?cle=eq.coffre'),
+    supabaseFetch(`primes?select=montant,verse&semaine=eq.${getSemaine()}`),
+    supabaseFetch(`commandes?select=total_apres_reduction,semaine&semaine=eq.${getSemaine()}`)
+  ]);
+
+  const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
+  const coffre=parseFloat(Array.isArray(coffreData)&&coffreData[0]?coffreData[0].valeur:0)||0;
+  const totalPrimes=Array.isArray(primesData)?primesData.reduce((a,p)=>a+p.montant,0):0;
+  const totalPrimesVers=Array.isArray(primesData)?primesData.filter(p=>p.verse).reduce((a,p)=>a+p.montant,0):0;
+  const impots=Math.round(calcImpot(ca));
+  const netEstime=ca-totalPrimes-impots;
+
+  document.getElementById('coffreStats').innerHTML=`
+    <div class="stat-card"><div class="stat-value">${ca.toLocaleString('fr-FR')}$</div><div class="stat-label">CA semaine brut</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning);">${totalPrimes.toLocaleString('fr-FR')}$</div><div class="stat-label">Primes (avant versement)</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</div><div class="stat-label">Impôts estimés (${tauxImpot(ca)})</div></div>
+    <div class="stat-card coffre-card" style="text-align:center;"><div class="stat-value" style="color:var(--success);">${netEstime.toLocaleString('fr-FR')}$</div><div class="stat-label">Net coffre estimé</div></div>
+  `;
+
+  const hist=await supabaseFetch('caisse?select=*&order=created_at.desc&limit=10');
+  const histEl=document.getElementById('coffreHistorique');
+  if (!Array.isArray(hist)||!hist.length) { histEl.innerHTML='<p style="color:var(--text-muted)">Aucun historique.</p>'; return; }
+  histEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Salaires</th><th>Impôts</th><th>Coffre net</th></tr></thead><tbody>
+    ${hist.map(h=>`<tr>
+      <td>${h.semaine}</td>
+      <td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td>
+      <td><span style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</span></td>
+      <td><span style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</span></td>
+      <td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ── STATS ──
+async function loadStats() {
+  const semaine=getSemaine();
+  const [commandes, clients, employes, caData] = await Promise.all([
+    supabaseFetch(`commandes?select=*&semaine=eq.${semaine}`),
+    supabaseFetch('clients?select=id'),
+    supabaseFetch('employes?select=id&actif=eq.true'),
+    supabaseFetch('parametres?cle=eq.ca_semaine')
+  ]);
+
+  const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
+  const nbCmd=Array.isArray(commandes)?commandes.length:0;
+  const impots=Math.round(calcImpot(ca));
+
+  document.getElementById('statsCards').innerHTML=`
+    <div class="stat-card"><div class="stat-value">${nbCmd}</div><div class="stat-label">Commandes semaine</div></div>
+    <div class="stat-card"><div class="stat-value">${ca.toLocaleString('fr-FR')}$</div><div class="stat-label">CA semaine</div></div>
+    <div class="stat-card"><div class="stat-value">${Array.isArray(clients)?clients.length:0}</div><div class="stat-label">Clients total</div></div>
+    <div class="stat-card"><div class="stat-value">${Array.isArray(employes)?employes.length:0}</div><div class="stat-label">Employés actifs</div></div>
+  `;
+
+  // Commandes récentes
+  const recentEl=document.getElementById('statsCommandes');
+  if (!Array.isArray(commandes)||!commandes.length) {
+    recentEl.innerHTML='<p style="color:var(--text-muted)">Aucune commande cette semaine.</p>';
+  } else {
+    recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Employé</th><th>Total</th><th>Pts</th></tr></thead><tbody>
+      ${commandes.slice(0,8).map(c=>`<tr>
+        <td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td>
+        <td style="font-size:12px;color:var(--text-muted);">${c.employe_discord_id||'—'}</td>
+        <td><strong>${(c.total_apres_reduction||c.total||0)}$</strong></td>
+        <td>${c.points_gagnes||0} pts</td>
+      </tr>`).join('')}</tbody></table>`;
   }
 
-  function logout() {
-    window.location.href = '/';
-  }
+  // Finances
+  document.getElementById('statsFinances').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg-card2);border-radius:8px;">
+        <span>CA brut semaine</span><strong>${ca.toLocaleString('fr-FR')}$</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg-card2);border-radius:8px;">
+        <span>Taux d'imposition</span><strong style="color:var(--red);">${tauxImpot(ca)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:12px;background:rgba(192,57,43,.1);border-radius:8px;border:1px solid rgba(192,57,43,.2);">
+        <span>Impôts estimés</span><strong style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</strong>
+      </div>
+    </div>
+  `;
+
+  // Paliers impôts
+  const paliers=[
+    {min:0,max:199999,taux:'0%'},{min:200000,max:399999,taux:'5%'},
+    {min:400000,max:599999,taux:'8%'},{min:600000,max:799999,taux:'11%'},
+    {min:800000,max:999999,taux:'14%'},{min:1000000,max:2499999,taux:'17%'},
+    {min:2500000,max:Infinity,taux:'19%'}
+  ];
+  document.getElementById('statsImpots').innerHTML=`
+    <table><thead><tr><th>Tranche</th><th>Taux</th><th>Statut</th></tr></thead><tbody>
+    ${paliers.map(p=>`<tr>
+      <td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td>
+      <td><span class="badge badge-blue">${p.taux}</span></td>
+      <td>${ca>=p.min&&ca<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td>
+    </tr>`).join('')}</tbody></table>
+  `;
+}
+
+// ── UTILS ──
+function fermerPopup(id) { document.getElementById(id).style.display='none'; }
+function logout() { window.location.href='/'; }
 </script>
 </body>
 </html>
