@@ -48,7 +48,7 @@
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     if (code) {
-      window.location.href = '/.netlify/functions/callback?code=' + code;
+      window.location.href = '/functions/callback?code=' + code;
     } else {
       window.location.href = '/?error=nocode';
     }
