@@ -703,7 +703,7 @@ let selectedClient = null;
 async function loadCaisseProduits() {
 
   const data = await supabaseFetch('produits?select=*&actif=eq.true&order=categorie.asc');
-
+  produitsCaisse = data;
   const el = document.getElementById('caisseProduits');
 
   if (!Array.isArray(data) || !data.length) {
