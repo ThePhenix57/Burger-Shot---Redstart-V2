@@ -99,4 +99,581 @@
       gap: 10px;
     }
     .user-avatar {
-      widt
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      overflow: hidden;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-role {
+      font-size: 11px;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .logout-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+    }
+    .logout-btn:hover { color: var(--red); }
+
+    /* MAIN */
+    .main {
+      margin-left: 240px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .page-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      letter-spacing: 2px;
+    }
+    .content {
+      flex: 1;
+      padding: 32px;
+    }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* CARDS */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      color: var(--red);
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      color: var(--red);
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* FORMS */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--red);
+    }
+    .form-select option { background: var(--bg-card2); }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Barlow', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .btn-primary { background: var(--red); color: white; }
+    .btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { opacity: 0.9; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-card2); }
+
+    /* BADGES */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .badge-red { background: rgba(192,57,43,0.2); color: var(--red); }
+    .badge-orange { background: rgba(230,126,34,0.2); color: var(--orange); }
+    .badge-green { background: rgba(39,174,96,0.2); color: var(--success); }
+    .badge-blue { background: rgba(52,152,219,0.2); color: #3498db; }
+
+    /* ALERT */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .alert-success { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); color: var(--success); }
+    .alert-error { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: var(--red); }
+
+    .red-line {
+      height: 3px;
+      background: linear-gradient(90deg, var(--red), var(--orange));
+      border-radius: 2px;
+      margin-bottom: 24px;
+    }
+
+    /* ACCESS DENIED */
+    .access-denied {
+      position: fixed;
+      inset: 0;
+      background: #0d0d0d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 999;
+    }
+    .access-denied h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--red);
+      letter-spacing: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="accessDenied" class="access-denied" style="display:none;">
+  <h1>⛔ Accès Refusé</h1>
+  <p style="color:#888;">Vous n'êtes pas autorisé à accéder à cette interface.</p>
+  <a href="/" style="color:var(--red);">Retour à l'accueil</a>
+</div>
+
+<div id="app" style="display:none;">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div>
+        <div class="sidebar-logo-text">Burger Shot</div>
+        <div class="sidebar-logo-sub">Espace Employé</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Général</div>
+      <div class="nav-item active" onclick="showPage('accueil')">
+        <span class="nav-icon">🏠</span> Accueil
+      </div>
+      <div class="nav-section">Caisse</div>
+      <div class="nav-item" onclick="showPage('clients')">
+        <span class="nav-icon">👥</span> Clients
+      </div>
+      <div class="nav-item" onclick="showPage('enregistrer-client')">
+        <span class="nav-icon">➕</span> Nouveau Client
+      </div>
+      <div class="nav-section direction-only">Direction</div>
+      <div class="nav-item direction-only" onclick="showPage('employes')">
+        <span class="nav-icon">👔</span> Employés
+      </div>
+      <div class="nav-item direction-only" onclick="showPage('ajouter-employe')">
+        <span class="nav-icon">➕</span> Ajouter Employé
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar"></div>
+      <div>
+        <div class="user-name" id="userName">—</div>
+        <div class="user-role" id="userRole">—</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Déconnexion">🚪</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">Accueil</div>
+      <div style="font-size:13px; color:var(--text-muted);" id="topDate"></div>
+    </div>
+    <div class="content">
+
+      <!-- PAGE ACCUEIL -->
+      <div class="page active" id="page-accueil">
+        <div class="red-line"></div>
+        <div class="grid-3" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-value" id="statClients">—</div>
+            <div class="stat-label">Clients enregistrés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statEmployes">—</div>
+            <div class="stat-label">Employés actifs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statPass">—</div>
+            <div class="stat-label">Pass actifs</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Bienvenue</div>
+          <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">
+            Bienvenue sur l'interface de gestion Burger Shot. Utilisez le menu de gauche pour naviguer entre les différentes sections.
+          </p>
+        </div>
+      </div>
+
+      <!-- PAGE CLIENTS -->
+      <div class="page" id="page-clients">
+        <div class="red-line"></div>
+        <div class="card">
+          <div class="card-title">Liste des clients</div>
+          <div id="clientsTable">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- PAGE NOUVEAU CLIENT -->
+      <div class="page" id="page-enregistrer-client">
+        <div class="red-line"></div>
+        <div class="card" style="max-width:500px;">
+          <div class="card-title">Enregistrer un client</div>
+          <div id="alertClient"></div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Nom</label>
+              <input class="form-input" id="clientNom" placeholder="Dupont">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prénom</label>
+              <input class="form-input" id="clientPrenom" placeholder="Jean">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date de naissance</label>
+            <input class="form-input" id="clientNaissance" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Téléphone</label>
+            <input class="form-input" id="clientTel" placeholder="06 00 00 00 00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ID Discord (optionnel)</label>
+            <input class="form-input" id="clientDiscord" placeholder="123456789">
+          </div>
+          <button class="btn btn-primary" onclick="enregistrerClient()">✅ Enregistrer le client</button>
+        </div>
+      </div>
+
+      <!-- PAGE EMPLOYÉS (DIRECTION) -->
+      <div class="page" id="page-employes">
+        <div class="red-line"></div>
+        <div class="card">
+          <div class="card-title">Liste des employés</div>
+          <div id="employesTable">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- PAGE AJOUTER EMPLOYÉ (DIRECTION) -->
+      <div class="page" id="page-ajouter-employe">
+        <div class="red-line"></div>
+        <div class="card" style="max-width:500px;">
+          <div class="card-title">Ajouter un employé</div>
+          <div id="alertEmploye"></div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Nom</label>
+              <input class="form-input" id="empNom" placeholder="Dupont">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prénom</label>
+              <input class="form-input" id="empPrenom" placeholder="Jean">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date de naissance</label>
+            <input class="form-input" id="empNaissance" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ID Discord</label>
+            <input class="form-input" id="empDiscord" placeholder="123456789012345678">
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Poste</label>
+              <select class="form-select" id="empPoste">
+                <option value="Employé">Employé</option>
+                <option value="Chef d'équipe">Chef d'équipe</option>
+                <option value="Manager">Manager</option>
+                <option value="Co-Patron">Co-Patron</option>
+                <option value="Patron">Patron</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contrat</label>
+              <select class="form-select" id="empContrat">
+                <option value="CDD">CDD</option>
+                <option value="CDI">CDI</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="ajouterEmploye()">✅ Ajouter l'employé</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
+  const SUPABASE_KEY = ''; // On va remplir ça
+  
+  const DIRECTION_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
+
+  let currentUser = null;
+
+  // Init
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const username = params.get('username');
+    const avatar = params.get('avatar');
+    const role = params.get('role');
+
+    if (!id) {
+      window.location.href = '/';
+      return;
+    }
+
+    currentUser = { id, username, avatar, role };
+
+    // Avatar
+    const avatarEl = document.getElementById('userAvatar');
+    if (avatar) {
+      avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png">`;
+    } else {
+      avatarEl.textContent = username.charAt(0).toUpperCase();
+    }
+
+    document.getElementById('userName').textContent = username;
+    document.getElementById('userRole').textContent = role === 'direction' ? '⭐ Direction' : 'Employé';
+
+    // Date
+    document.getElementById('topDate').textContent = new Date().toLocaleDateString('fr-FR', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // Affiche les menus direction si nécessaire
+    if (role === 'direction') {
+      document.querySelectorAll('.direction-only').forEach(el => el.style.display = 'flex');
+      document.querySelectorAll('.nav-section.direction-only').forEach(el => el.style.display = 'block');
+    }
+
+    document.getElementById('app').style.display = 'flex';
+    loadStats();
+  });
+
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+
+    const titles = {
+      'accueil': 'Accueil',
+      'clients': 'Clients',
+      'enregistrer-client': 'Nouveau Client',
+      'employes': 'Employés',
+      'ajouter-employe': 'Ajouter un Employé'
+    };
+    document.getElementById('pageTitle').textContent = titles[name] || name;
+
+    if (name === 'clients') loadClients();
+    if (name === 'employes') loadEmployes();
+  }
+
+  async function supabaseFetch(endpoint, options = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+        ...options.headers
+      },
+      ...options
+    });
+    return res.json();
+  }
+
+  async function loadStats() {
+    try {
+      const clients = await supabaseFetch('clients?select=id');
+      const employes = await supabaseFetch('employes?select=id&actif=eq.true');
+      const passActifs = await supabaseFetch('clients?select=id&pass=not.is.null');
+      document.getElementById('statClients').textContent = clients.length || 0;
+      document.getElementById('statEmployes').textContent = employes.length || 0;
+      document.getElementById('statPass').textContent = passActifs.length || 0;
+    } catch(e) {}
+  }
+
+  async function loadClients() {
+    const data = await supabaseFetch('clients?select=*&order=created_at.desc');
+    const el = document.getElementById('clientsTable');
+    if (!data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun client enregistré.</p>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr>
+        <th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th>
+      </tr></thead>
+      <tbody>${data.map(c => `<tr>
+        <td>${c.nom}</td>
+        <td>${c.prenom}</td>
+        <td>${c.telephone || '—'}</td>
+        <td>${c.pass ? `<span class="badge badge-orange">${c.pass}</span>` : '—'}</td>
+        <td><span class="badge badge-blue">${c.points} pts</span></td>
+        <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  async function loadEmployes() {
+    const data = await supabaseFetch('employes?select=*&order=created_at.desc');
+    const el = document.getElementById('employesTable');
+    if (!data.length) { el.innerHTML = '<p style="color:var(--text-muted)">Aucun employé.</p>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr>
+        <th>Nom</th><th>Prénom</th><th>Poste</th><th>Contrat</th><th>Embauche</th><th>Statut</th>
+      </tr></thead>
+      <tbody>${data.map(e => `<tr>
+        <td>${e.nom}</td>
+        <td>${e.prenom}</td>
+        <td><span class="badge badge-orange">${e.poste}</span></td>
+        <td><span class="badge badge-blue">${e.contrat}</span></td>
+        <td>${new Date(e.date_embauche).toLocaleDateString('fr-FR')}</td>
+        <td><span class="badge ${e.actif ? 'badge-green' : 'badge-red'}">${e.actif ? 'Actif' : 'Inactif'}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  async function enregistrerClient() {
+    const nom = document.getElementById('clientNom').value.trim();
+    const prenom = document.getElementById('clientPrenom').value.trim();
+    const naissance = document.getElementById('clientNaissance').value;
+    const tel = document.getElementById('clientTel').value.trim();
+    const discord = document.getElementById('clientDiscord').value.trim();
+    const alert = document.getElementById('alertClient');
+
+    if (!nom || !prenom) {
+      alert.innerHTML = '<div class="alert alert-error">⚠️ Nom et prénom obligatoires.</div>';
+      return;
+    }
+
+    await supabaseFetch('clients', {
+      method: 'POST',
+      body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, telephone: tel || null, discord_id: discord || null })
+    });
+
+    alert.innerHTML = '<div class="alert alert-success">✅ Client enregistré !</div>';
+    document.getElementById('clientNom').value = '';
+    document.getElementById('clientPrenom').value = '';
+    document.getElementById('clientNaissance').value = '';
+    document.getElementById('clientTel').value = '';
+    document.getElementById('clientDiscord').value = '';
+    loadStats();
+  }
+
+  async function ajouterEmploye() {
+    const nom = document.getElementById('empNom').value.trim();
+    const prenom = document.getElementById('empPrenom').value.trim();
+    const naissance = document.getElementById('empNaissance').value;
+    const discord = document.getElementById('empDiscord').value.trim();
+    const poste = document.getElementById('empPoste').value;
+    const contrat = document.getElementById('empContrat').value;
+    const alert = document.getElementById('alertEmploye');
+
+    if (!nom || !prenom || !discord) {
+      alert.innerHTML = '<div class="alert alert-error">⚠️ Nom, prénom et ID Discord obligatoires.</div>';
+      return;
+    }
+
+    await supabaseFetch('employes', {
+      method: 'POST',
+      body: JSON.stringify({ nom, prenom, date_naissance: naissance || null, discord_id: discord, poste, contrat })
+    });
+
+    alert.innerHTML = '<div class="alert alert-success">✅ Employé ajouté !</div>';
+    document.getElementById('empNom').value = '';
+    document.getElementById('empPrenom').value = '';
+    document.getElementById('empNaissance').value = '';
+    document.getElementById('empDiscord').value = '';
+    loadStats();
+  }
+
+  function logout() {
+    window.location.href = '/';
+  }
+</script>
+</body>
+</html>
