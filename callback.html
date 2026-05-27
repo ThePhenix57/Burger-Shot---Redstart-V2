@@ -32,26 +32,12 @@
       letter-spacing: 2px;
       color: #c0392b;
     }
-    .sub {
-      font-size: 14px;
-      color: #888;
-    }
+    .sub { font-size: 14px; color: #888; }
   </style>
 </head>
 <body>
   <div class="spinner"></div>
   <div class="text">Vérification en cours...</div>
   <div class="sub">Authentification Discord</div>
-
-  <script>
-    // Redirige vers la fonction Netlify
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    if (code) {
-      window.location.href = '/callback?code=' + code;
-    } else {
-      window.location.href = '/?error=nocode';
-    }
-  </script>
 </body>
 </html>
