@@ -11,15 +11,21 @@
       --bg: #0d0d0d; --bg-card: #111111; --bg-card2: #1a1a1a;
       --text: #f0f0f0; --text-muted: #888; --border: rgba(255,255,255,0.08);
       --success: #27ae60; --warning: #f39c12; --sidebar-width: 240px;
+      --fg-checker: rgba(192,57,43,0.85);
+      --fg-checker2: rgba(255,255,255,0.85);
     }
     [data-theme="light"] {
       --bg: #f0ece6; --bg-card: #ffffff; --bg-card2: #f5f0ea;
       --text: #1a1a1a; --text-muted: #666; --border: rgba(0,0,0,0.1);
+      --fg-checker: rgba(192,57,43,0.8);
+      --fg-checker2: rgba(255,255,255,0.9);
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background .3s,color .3s; }
 
-    /* SIDEBAR */
+    /* ═══════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════ */
     .sidebar {
       position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-width);
       background:var(--bg-card);border-right:1px solid var(--border);
@@ -33,11 +39,10 @@
     .sidebar-logo-text { font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--red);line-height:1; }
     .sidebar-logo-sub { font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-top:2px; }
 
-    /* NAV ZONE — quadrillage rouge/blanc avec séparateur bleu marine */
+    /* NAV ZONE */
     .sidebar-nav-zone {
       flex:1;min-height:0;overflow-y:auto;
       position:relative;
-      /* Quadrillage rouge + blanc semi-transparent */
       background-color: #0d0d0d;
       background-image:
         linear-gradient(rgba(192,57,43,0.13) 1px, transparent 1px),
@@ -55,17 +60,12 @@
         linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
       background-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px;
     }
-
-    /* Séparateur bleu marine entre nav-zone et user-zone */
     .sidebar-nav-separator {
-      height: 3px;
-      flex-shrink: 0;
+      height: 3px; flex-shrink: 0;
       background: linear-gradient(90deg, #0a1628, #1a3a6b, #0d2444, #0a1628);
       box-shadow: 0 0 8px rgba(26,58,107,0.8), 0 0 16px rgba(26,58,107,0.4);
-      position: relative;
-      z-index: 2;
+      position: relative; z-index: 2;
     }
-
     .sidebar-nav { padding:12px 0;display:flex;flex-direction:column;gap:2px; }
     .nav-section {
       padding:10px 16px 4px;font-size:10px;letter-spacing:2px;
@@ -80,35 +80,20 @@
       position:relative;
     }
     [data-theme="light"] .nav-item { color:rgba(26,26,26,0.6); }
-    .nav-item:hover {
-      background:rgba(192,57,43,0.12);
-      color:var(--text);
-      backdrop-filter: blur(4px);
-    }
+    .nav-item:hover { background:rgba(192,57,43,0.12);color:var(--text);backdrop-filter:blur(4px); }
     .nav-item.active {
-      background:rgba(192,57,43,0.18);
-      border-left-color:var(--red);
-      color:#fff;
-      backdrop-filter: blur(4px);
-      box-shadow: inset 0 0 20px rgba(192,57,43,0.1);
+      background:rgba(192,57,43,0.18);border-left-color:var(--red);color:#fff;
+      backdrop-filter:blur(4px);box-shadow:inset 0 0 20px rgba(192,57,43,0.1);
     }
     [data-theme="light"] .nav-item.active { color:var(--text); }
     .nav-icon { font-size:16px;width:20px;text-align:center; }
-    .role-hidden { display:none!important; }
 
-    /* USER ZONE en bas */
-    .sidebar-user-zone {
-      flex-shrink:0;
-      background: var(--bg-card);
-      padding: 14px 16px 10px;
-    }
+    /* USER ZONE */
+    .sidebar-user-zone { flex-shrink:0;background:var(--bg-card);padding:14px 16px 10px; }
     .user-card {
-      display:flex;align-items:center;gap:10px;
-      padding:10px 12px;
-      background:var(--bg-card2);
-      border:1px solid var(--border);
-      border-radius:10px;
-      margin-bottom:10px;
+      display:flex;align-items:center;gap:10px;padding:10px 12px;
+      background:var(--bg-card2);border:1px solid var(--border);
+      border-radius:10px;margin-bottom:10px;
     }
     .user-avatar {
       width:34px;height:34px;border-radius:50%;background:var(--red);
@@ -119,59 +104,97 @@
     .user-info { flex:1;min-width:0; }
     .user-name { font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .user-role { font-size:11px;color:var(--orange);text-transform:uppercase;letter-spacing:1px; }
-
-    /* BOUTON DÉCONNEXION */
     .logout-btn {
-      width:100%;
-      padding:9px 16px;
-      background:#c0392b;
-      color:#fff;
-      border:none;
-      border-radius:8px;
-      font-family:'Barlow',sans-serif;
-      font-size:13px;
-      font-weight:700;
-      letter-spacing:1px;
-      text-transform:uppercase;
-      cursor:pointer;
-      position:relative;
-      overflow:hidden;
-      transition:background .2s, box-shadow .2s;
-      box-shadow:
-        0 0 0 1px rgba(192,57,43,0.6),
-        0 0 8px rgba(192,57,43,0.4),
-        0 0 16px rgba(192,57,43,0.15);
+      width:100%;padding:9px 16px;background:#c0392b;color:#fff;border:none;
+      border-radius:8px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;
+      letter-spacing:1px;text-transform:uppercase;cursor:pointer;
+      position:relative;overflow:hidden;transition:background .2s,box-shadow .2s;
+      box-shadow:0 0 0 1px rgba(192,57,43,0.6),0 0 8px rgba(192,57,43,0.4),0 0 16px rgba(192,57,43,0.15);
     }
     .logout-btn::before {
-      content:'';
-      position:absolute;
-      top:-50%;left:-60%;
-      width:40%;height:200%;
-      background:rgba(255,255,255,0.25);
-      transform:skewX(-20deg);
-      transition:left .4s ease;
+      content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;
+      background:rgba(255,255,255,0.25);transform:skewX(-20deg);transition:left .4s ease;
     }
-    .logout-btn:hover {
-      background:#a93226;
-      box-shadow:
-        0 0 0 1px rgba(192,57,43,0.9),
-        0 0 12px rgba(192,57,43,0.7),
-        0 0 24px rgba(192,57,43,0.3);
-    }
+    .logout-btn:hover { background:#a93226;box-shadow:0 0 0 1px rgba(192,57,43,0.9),0 0 12px rgba(192,57,43,0.7),0 0 24px rgba(192,57,43,0.3); }
     .logout-btn:hover::before { left:130%; }
 
-    /* MAIN */
+    /* ═══════════════════════════════════════════
+       MAIN + TOPBAR FIVE GUYS STYLE
+    ═══════════════════════════════════════════ */
     .main { margin-left:var(--sidebar-width);min-height:100vh;display:flex;flex-direction:column;width:calc(100% - var(--sidebar-width)); }
-    .topbar { position:sticky;top:0;z-index:50;padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);backdrop-filter:blur(10px); }
-    .page-title { font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px; }
+
+    /* TOPBAR Five Guys : damier rouge/blanc + nav horizontale */
+    .topbar {
+      position:sticky;top:0;z-index:50;
+      border-bottom:3px solid var(--red);
+      overflow:hidden;
+      flex-shrink:0;
+    }
+
+    /* Bande damier Five Guys */
+    .topbar-checker {
+      height: 14px;
+      background-color: var(--red);
+      background-image:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0px,
+          transparent 14px,
+          rgba(255,255,255,0.9) 14px,
+          rgba(255,255,255,0.9) 28px
+        );
+      flex-shrink:0;
+    }
+
+    /* Barre principale topbar */
+    .topbar-main {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 24px;
+      background:var(--bg);
+      backdrop-filter:blur(10px);
+      height:56px;
+    }
     .topbar-right { display:flex;align-items:center;gap:12px; }
+    .page-title { font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--red); }
+
+    /* Barre nav horizontale Five Guys */
+    .topbar-nav {
+      display:flex;align-items:center;gap:0;
+      background:var(--red);
+      padding:0 24px;
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .topbar-nav::-webkit-scrollbar { display:none; }
+    .topbar-nav-item {
+      padding:8px 18px;
+      font-family:'Barlow',sans-serif;
+      font-size:12px;font-weight:700;
+      letter-spacing:1.5px;text-transform:uppercase;
+      color:rgba(255,255,255,0.75);
+      cursor:pointer;
+      white-space:nowrap;
+      border-bottom:3px solid transparent;
+      transition:all .2s;
+      position:relative;
+    }
+    .topbar-nav-item:hover { color:#fff;background:rgba(0,0,0,0.15); }
+    .topbar-nav-item.active {
+      color:#fff;
+      background:rgba(0,0,0,0.2);
+      border-bottom-color:#fff;
+    }
+
     .theme-btn { background:var(--bg-card2);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s; }
     .theme-btn:hover { border-color:var(--red);transform:scale(1.1); }
+
     .content { flex:1;padding:28px;width:100%; }
     .page { display:none;width:100%; }
     .page.active { display:block; }
 
-    /* COMPOSANTS */
+    /* ═══════════════════════════════════════════
+       COMPOSANTS COMMUNS
+    ═══════════════════════════════════════════ */
     .card { background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px; }
     .card-title { font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin-bottom:16px;color:var(--red); }
     .grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
@@ -210,17 +233,68 @@
     .alert-error { background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);color:var(--red); }
     .red-line { height:3px;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:2px;margin-bottom:24px; }
 
-    /* CAISSE */
+    /* ═══════════════════════════════════════════
+       CAISSE — Style Five Guys
+    ═══════════════════════════════════════════ */
     .caisse-layout { display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;width:100%; }
-    .caisse-categorie { margin-bottom:24px; }
-    .caisse-categorie-title { font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border); }
-    .caisse-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px; }
-    .caisse-produit { background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;text-align:center; }
-    .caisse-produit:hover { transform:translateY(-2px);border-color:var(--red);box-shadow:0 4px 12px rgba(192,57,43,.2); }
-    .caisse-produit img { width:56px;height:56px;object-fit:contain;margin-bottom:8px; }
-    .caisse-produit-nom { font-size:13px;font-weight:600;margin-bottom:4px; }
-    .caisse-produit-prix { font-size:12px;color:var(--red);font-weight:700; }
-    .caisse-produit-pts { font-size:11px;color:var(--text-muted); }
+    .caisse-categorie { margin-bottom:28px; }
+    .caisse-categorie-title {
+      font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;
+      text-transform:uppercase;color:var(--red);margin-bottom:12px;
+      padding-bottom:8px;border-bottom:2px solid var(--red);
+      display:flex;align-items:center;gap:8px;
+    }
+    /* GRILLE PRODUITS — cartes Five Guys style */
+    .caisse-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px; }
+    .caisse-produit {
+      background:var(--bg-card2);
+      border:2px solid var(--border);
+      border-radius:12px;
+      cursor:pointer;
+      transition:all .2s;
+      overflow:hidden;
+      position:relative;
+      display:flex;flex-direction:column;
+    }
+    .caisse-produit:hover {
+      transform:translateY(-3px);
+      border-color:var(--red);
+      box-shadow:0 8px 24px rgba(192,57,43,.25);
+    }
+    .caisse-produit:active { transform:scale(0.97); }
+
+    /* Zone image Five Guys : fond damier subtle */
+    .caisse-produit-img-zone {
+      width:100%;
+      aspect-ratio:1/1;
+      background-color: var(--bg-card);
+      background-image:
+        repeating-linear-gradient(45deg, rgba(192,57,43,0.04) 0px, rgba(192,57,43,0.04) 1px, transparent 1px, transparent 8px),
+        repeating-linear-gradient(-45deg, rgba(192,57,43,0.04) 0px, rgba(192,57,43,0.04) 1px, transparent 1px, transparent 8px);
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+      border-bottom:1px solid var(--border);
+    }
+    .caisse-produit-img-zone img {
+      width:100%;height:100%;object-fit:contain;
+      padding:10px;
+      transition:transform .2s;
+    }
+    .caisse-produit:hover .caisse-produit-img-zone img { transform:scale(1.08); }
+    .caisse-produit-emoji { font-size:52px;line-height:1; }
+
+    .caisse-produit-info { padding:10px 10px 12px; }
+    .caisse-produit-nom { font-size:13px;font-weight:700;margin-bottom:4px;line-height:1.2; }
+    .caisse-produit-bottom { display:flex;justify-content:space-between;align-items:center;margin-top:4px; }
+    .caisse-produit-prix { font-size:15px;color:var(--red);font-weight:700;font-family:'Bebas Neue',sans-serif;letter-spacing:1px; }
+    .caisse-produit-pts { font-size:10px;color:var(--text-muted);background:var(--bg-card);padding:2px 6px;border-radius:10px; }
+
+    /* Bande rouge Five Guys sur hover */
+    .caisse-produit::after {
+      content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+      background:var(--red);transform:scaleX(0);transition:transform .2s;
+    }
+    .caisse-produit:hover::after { transform:scaleX(1); }
 
     /* TICKET */
     .ticket-wrapper { position:sticky;top:80px; }
@@ -241,7 +315,7 @@
     .ticket-buttons .btn { flex:1; }
     .client-results { margin-bottom:12px; }
 
-    /* PRODUIT CARDS */
+    /* PRODUIT CARDS (menu gestion) */
     .produit-card { background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;position:relative; }
     .produit-card img { width:56px;height:56px;object-fit:contain;margin-bottom:8px; }
     .produit-card-nom { font-size:13px;font-weight:600;margin-bottom:4px; }
@@ -251,8 +325,6 @@
     .produit-card-actions button { background:none;border:none;cursor:pointer;font-size:14px;padding:2px; }
 
     /* STATS */
-    .stats-section { margin-bottom:32px; }
-    .stats-section-title { font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px; }
     .coffre-card { background:linear-gradient(135deg,rgba(192,57,43,.15),rgba(230,126,34,.1));border:1px solid rgba(192,57,43,.3);border-radius:12px;padding:24px; }
 
     /* POPUP */
@@ -274,9 +346,7 @@
       </div>
     </div>
     <div class="sidebar-nav-zone">
-      <nav class="sidebar-nav" id="sidebarNav">
-        <!-- injecté par JS selon rôle -->
-      </nav>
+      <nav class="sidebar-nav" id="sidebarNav"></nav>
     </div>
     <div class="sidebar-nav-separator"></div>
     <div class="sidebar-user-zone">
@@ -293,16 +363,19 @@
 
   <!-- MAIN -->
   <div class="main">
+    <!-- TOPBAR FIVE GUYS -->
     <div class="topbar">
-      <div class="page-title" id="pageTitle">Accueil</div>
-      <div class="topbar-right">
-        <div style="font-size:13px;color:var(--text-muted);" id="topDate"></div>
-        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Changer le thème">☀️</button>
+      <div class="topbar-checker"></div>
+      <div class="topbar-main">
+        <div class="page-title" id="pageTitle">Accueil</div>
+        <div class="topbar-right">
+          <div style="font-size:13px;color:var(--text-muted);" id="topDate"></div>
+          <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Changer le thème">☀️</button>
+        </div>
       </div>
+      <div class="topbar-nav" id="topbarNav"></div>
     </div>
-    <div class="content" id="mainContent">
-      <!-- Pages injectées dynamiquement -->
-    </div>
+    <div class="content" id="mainContent"></div>
   </div>
 </div>
 
@@ -348,15 +421,15 @@ const DIRECTION_IDS = ['280415204477501451','1157333780898529333','3705101447667
 const GOUVERNEMENT_IDS = []; // Ajoute ici les IDs Discord gouvernement
 
 let currentUser = null;
-let currentRole = 'employe'; // employe | direction | gouvernement
+let currentRole = 'employe';
 let produitsCaisse = [];
 let passTypes = [];
 let commande = [];
 let selectedClient = null;
 let selectedPassClient = null;
-let commandeContrat = null; // contrat de réduction sélectionné
+let commandeContrat = null;
 
-// ── NAVIGATION CONFIG ──
+// ── NAV CONFIG ──
 const NAV_CONFIG = {
   employe: [
     { section: 'Général' },
@@ -405,7 +478,6 @@ window.addEventListener('DOMContentLoaded', async () => {
               : (role === 'direction' ? 'direction' : 'employe');
   currentUser = { id, username, avatar, role: currentRole };
 
-  // Avatar
   const avatarEl = document.getElementById('userAvatar');
   if (avatar) {
     avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png" onerror="this.parentElement.textContent='${username.charAt(0).toUpperCase()}'">`;
@@ -430,22 +502,39 @@ window.addEventListener('DOMContentLoaded', async () => {
 // ── NAVIGATION ──
 function buildNav() {
   const nav = document.getElementById('sidebarNav');
+  const topNav = document.getElementById('topbarNav');
   const items = NAV_CONFIG[currentRole] || NAV_CONFIG.employe;
+
+  // Sidebar
   nav.innerHTML = items.map(item => {
     if (item.section) return `<div class="nav-section">${item.section}</div>`;
     return `<div class="nav-item" id="nav-${item.id}" onclick="showPage('${item.id}',this)">
       <span class="nav-icon">${item.icon}</span> ${item.label}
     </div>`;
   }).join('');
+
+  // Topbar nav — uniquement les items (pas les sections)
+  const navItems = items.filter(i => i.id);
+  topNav.innerHTML = navItems.map(item =>
+    `<div class="topbar-nav-item" id="topnav-${item.id}" onclick="showPage('${item.id}')">
+      ${item.icon} ${item.label}
+    </div>`
+  ).join('');
 }
 
 function showPage(name, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.topbar-nav-item').forEach(n => n.classList.remove('active'));
+
   const page = document.getElementById('page-'+name);
   if (page) page.classList.add('active');
-  const navEl = el || document.getElementById('nav-'+name);
-  if (navEl) navEl.classList.add('active');
+
+  const sideEl = el || document.getElementById('nav-'+name);
+  if (sideEl) sideEl.classList.add('active');
+  const topEl = document.getElementById('topnav-'+name);
+  if (topEl) topEl.classList.add('active');
+
   const titles = {
     accueil:'Accueil', caisse:'Caisse', clients:'Clients',
     'enregistrer-client':'Nouveau Client', employes:'Employés',
@@ -453,6 +542,7 @@ function showPage(name, el) {
     stats:'Statistiques', coffre:'Coffre', contrats:'Contrats', primes:'Primes'
   };
   document.getElementById('pageTitle').textContent = titles[name] || name;
+
   if (name==='clients') loadClients();
   if (name==='employes') loadEmployes();
   if (name==='menu') loadProduits();
@@ -475,7 +565,7 @@ function buildPages() {
     <div class="card">
       <div class="card-title">Bienvenue</div>
       <p style="color:var(--text-muted);font-size:14px;line-height:1.6;">
-        Bienvenue sur l'interface de gestion <strong>Burger Shot</strong>. Utilisez le menu de gauche pour naviguer.
+        Bienvenue sur l'interface de gestion <strong>Burger Shot</strong>. Utilisez le menu de gauche ou la barre en haut pour naviguer.
       </p>
     </div>
   </div>
@@ -535,9 +625,8 @@ function buildPages() {
   <!-- CLIENTS -->
   <div class="page" id="page-clients">
     <div class="red-line"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <div></div>
-      ${currentRole==='direction'||currentRole==='employe' ? `<button class="btn btn-primary" onclick="ouvrirPopupPass()">🪪 Enregistrer un Pass</button>` : ''}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button class="btn btn-primary" onclick="ouvrirPopupPass()">🪪 Enregistrer un Pass</button>
     </div>
     <div class="card">
       <div class="card-title">Liste des clients</div>
@@ -629,7 +718,7 @@ function buildPages() {
     <div class="red-line"></div>
     <div class="card" style="margin-bottom:20px;">
       <div class="card-title">Versement des primes — Samedi</div>
-      <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">Les primes sont calculées selon le CA de la semaine en cours. Direction 40% • Manager/Chef 30% • CDI 20% • CDD 10%</p>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">Direction 40% • Manager/Chef 30% • CDI 20% • CDD 10%</p>
       <button class="btn btn-primary" onclick="calculerPrimes()">🔄 Calculer les primes de la semaine</button>
     </div>
     <div class="card">
@@ -887,6 +976,20 @@ async function supprimerProduit(id) {
   loadProduits();
 }
 
+// ── EMOJI PAR CATÉGORIE ──
+const CATEGORIE_EMOJI = {
+  'Burger': '🍔',
+  'Menu': '🍱',
+  'Boisson': '🥤',
+  'Dessert': '🍦',
+  'Accompagnement': '🍟',
+  'Session': '🎮',
+  'Autre': '🛒',
+};
+function getEmoji(categorie) {
+  return CATEGORIE_EMOJI[categorie] || '🍽️';
+}
+
 // ── CAISSE ──
 async function loadCaisseProduits() {
   const [data, contrats] = await Promise.all([
@@ -895,29 +998,41 @@ async function loadCaisseProduits() {
   ]);
   produitsCaisse = Array.isArray(data)?data:[];
 
-  // Remplir select contrats
   const sel = document.getElementById('caisseContrat');
   if (sel) {
     sel.innerHTML = '<option value="">— Aucun contrat —</option>' +
-      (Array.isArray(contrats)?contrats:[] ).map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}">${c.nom} (-${c.pourcentage}%)</option>`).join('');
+      (Array.isArray(contrats)?contrats:[]).map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}">${c.nom} (-${c.pourcentage}%)</option>`).join('');
   }
 
   const el=document.getElementById('caisseProduits');
   if (!produitsCaisse.length) { el.innerHTML='Aucun produit.'; return; }
   const cats=[...new Set(produitsCaisse.map(p=>p.categorie))];
+
   el.innerHTML=cats.map(cat=>`
     <div class="caisse-categorie">
-      <div class="caisse-categorie-title">${cat}</div>
+      <div class="caisse-categorie-title">
+        <span>🍽️</span> ${cat}
+      </div>
       <div class="caisse-grid">
         ${produitsCaisse.filter(p=>p.categorie===cat).map(p=>`
           <div class="caisse-produit" onclick="ajouterAuTicket('${p.id}')">
-            ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:36px;margin-bottom:8px;">🍔</div>`}
-            <div class="caisse-produit-nom">${p.nom}</div>
-            <div class="caisse-produit-prix">${p.prix}$</div>
-            <div class="caisse-produit-pts">🎯 ${p.points} pts</div>
+            <div class="caisse-produit-img-zone">
+              ${p.image_url
+                ? `<img src="${p.image_url}" alt="${p.nom}" onerror="this.parentElement.innerHTML='<span class=\\'caisse-produit-emoji\\'>${getEmoji(p.categorie)}</span>'">`
+                : `<span class="caisse-produit-emoji">${getEmoji(p.categorie)}</span>`
+              }
+            </div>
+            <div class="caisse-produit-info">
+              <div class="caisse-produit-nom">${p.nom}</div>
+              <div class="caisse-produit-bottom">
+                <div class="caisse-produit-prix">${p.prix}$</div>
+                <div class="caisse-produit-pts">🎯 ${p.points}pts</div>
+              </div>
+            </div>
           </div>`).join('')}
       </div>
     </div>`).join('');
+
   genererTicket();
 }
 
@@ -940,12 +1055,10 @@ function ajouterAuTicket(id) {
 function calcTotalCommande() {
   const brut = commande.reduce((a,b)=>a+(b.prix*b.quantite),0);
   let reduction=0;
-  // Pass du client
   if (selectedClient?.pass) {
     const pt=passTypes.find(p=>p.nom===selectedClient.pass);
     if (pt && pt.reduction>0) reduction=Math.max(reduction,parseFloat(pt.reduction));
   }
-  // Contrat
   if (commandeContrat) reduction=Math.max(reduction,commandeContrat.pct);
   const montantReduc=Math.round(brut*reduction/100);
   return { brut, reduction, montantReduc, net:brut-montantReduc };
@@ -976,9 +1089,7 @@ function renderTicket() {
   if (reduction>0) {
     reducEl.style.display='block';
     reducEl.textContent=`Réduction -${reduction}% : -${montantReduc}$ → ${net}$`;
-  } else {
-    reducEl.style.display='none';
-  }
+  } else reducEl.style.display='none';
   const ptsEl=document.getElementById('ticketPointsInfo');
   if (pts>0) ptsEl.textContent=`🎯 +${pts} points gagné${pts>1?'s':''}`;
   else ptsEl.textContent='';
@@ -1033,36 +1144,26 @@ async function validerCommande() {
   const {brut,reduction,montantReduc,net}=calcTotalCommande();
   const pts=calcPoints();
   const semaine=getSemaine();
-  // Enregistrer commande
   await supabaseFetch('commandes',{method:'POST',body:JSON.stringify({
     client_id:selectedClient?.id||null,
     employe_discord_id:currentUser.id,
     items:JSON.stringify(commande),
-    total:brut,
-    reduction_pct:reduction,
-    total_apres_reduction:net,
-    points_gagnes:pts,
-    paye_par_points:false,
-    contrat_id:commandeContrat?.id||null,
-    semaine
+    total:brut,reduction_pct:reduction,
+    total_apres_reduction:net,points_gagnes:pts,
+    paye_par_points:false,contrat_id:commandeContrat?.id||null,semaine
   })});
-  // Ajouter points au client
   if (selectedClient && pts>0) {
     await supabaseFetch(`clients?id=eq.${selectedClient.id}`,{
-      method:'PATCH',
-      body:JSON.stringify({points:(selectedClient.points||0)+pts})
+      method:'PATCH',body:JSON.stringify({points:(selectedClient.points||0)+pts})
     });
   }
-  // Transaction
   await supabaseFetch('transactions',{method:'POST',body:JSON.stringify({
     montant:net,type:'vente',employe_discord:currentUser.id,
     client_id:selectedClient?.id||null,semaine
   })});
-  // Mettre à jour le CA dans parametres
   const caData=await supabaseFetch('parametres?cle=eq.ca_semaine');
   const caActuel=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
   await supabaseFetch('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:String(caActuel+net)})});
-
   fermerPopup('popupValidation');
   alert('✅ Commande validée !');
   commande=[];selectedClient=null;commandeContrat=null;
@@ -1107,7 +1208,6 @@ function ouvrirPopupPass() {
   document.getElementById('passClientSearch').value='';
   document.getElementById('passClientResults').innerHTML='';
   document.getElementById('passClientSelectionne').style.display='none';
-  // Remplir select pass types
   const sel=document.getElementById('passType');
   sel.innerHTML=passTypes.map(p=>`<option value="${p.id}" data-nom="${p.nom}" data-prix="${p.prix}" data-mult="${p.multiplicateur}" data-reduc="${p.reduction}">${p.nom} — ${p.prix}$</option>`).join('');
   sel.onchange=updatePassInfo;
@@ -1119,9 +1219,8 @@ function updatePassInfo() {
   const sel=document.getElementById('passType');
   const opt=sel.options[sel.selectedIndex];
   if (!opt) return;
-  const mult=opt.dataset.mult;const reduc=opt.dataset.reduc;
   document.getElementById('passInfo').textContent=
-    `×${mult} pts par commande${reduc>0?' • -'+reduc+'% de réduction sur chaque commande':''}`;
+    `×${opt.dataset.mult} pts par commande${opt.dataset.reduc>0?' • -'+opt.dataset.reduc+'% de réduction sur chaque commande':''}`;
 }
 
 function selectPassClient(client) {
@@ -1180,7 +1279,7 @@ async function toggleContrat(id,actif) {
 async function loadPrimes() {
   const data=await supabaseFetch(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${getSemaine()}&order=created_at.desc`);
   const el=document.getElementById('primesTable');
-  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--text-muted)">Aucune prime calculée pour cette semaine. Cliquez sur "Calculer".</p>'; return; }
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--text-muted)">Aucune prime calculée. Cliquez sur "Calculer".</p>'; return; }
   el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Prime</th><th>Versée</th><th>Action</th></tr></thead><tbody>
     ${data.map(p=>`<tr>
       <td>${p.employes?.prenom||'—'} ${p.employes?.nom||''}</td>
@@ -1199,29 +1298,20 @@ async function calculerPrimes() {
     supabaseFetch('parametres?cle=eq.ca_semaine')
   ]);
   const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
-  if (ca===0) { alert('CA de la semaine = 0$. Pas de primes à calculer.'); return; }
-
-  const taux={
-    'Patron':0.4,'Co-Patron':0.4,'Manager':0.3,"Chef d'équipe":0.3,'Employé':0
-  };
+  if (ca===0) { alert('CA de la semaine = 0$. Pas de primes.'); return; }
+  const taux={'Patron':0.4,'Co-Patron':0.4,'Manager':0.3,"Chef d'équipe":0.3,'Employé':0};
   const tauxContrat={'CDI':0.2,'CDD':0.1};
-
   for (const emp of (Array.isArray(employes)?employes:[])) {
-    // Direction/Management → taux poste, sinon taux contrat
-    const t = (emp.poste==='Employé') ? (tauxContrat[emp.contrat]||0.1) : (taux[emp.poste]||0.1);
+    const t=(emp.poste==='Employé')?(tauxContrat[emp.contrat]||0.1):(taux[emp.poste]||0.1);
     const montant=Math.round(ca*t);
     if (montant>0) {
-      // Vérifier si prime déjà calculée
       const exist=await supabaseFetch(`primes?employe_id=eq.${emp.id}&semaine=eq.${semaine}`);
       if (!Array.isArray(exist)||!exist.length) {
-        await supabaseFetch('primes',{method:'POST',body:JSON.stringify({
-          employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false
-        })});
+        await supabaseFetch('primes',{method:'POST',body:JSON.stringify({employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false})});
       }
     }
   }
-  alert('✅ Primes calculées !');
-  loadPrimes();
+  alert('✅ Primes calculées !');loadPrimes();
 }
 
 async function verserPrime(id) {
@@ -1231,34 +1321,27 @@ async function verserPrime(id) {
 
 // ── COFFRE ──
 async function loadCoffre() {
-  const [caData, coffreData, primesData, commandesAll] = await Promise.all([
+  const [caData,coffreData,primesData] = await Promise.all([
     supabaseFetch('parametres?cle=eq.ca_semaine'),
     supabaseFetch('parametres?cle=eq.coffre'),
-    supabaseFetch(`primes?select=montant,verse&semaine=eq.${getSemaine()}`),
-    supabaseFetch(`commandes?select=total_apres_reduction,semaine&semaine=eq.${getSemaine()}`)
+    supabaseFetch(`primes?select=montant,verse&semaine=eq.${getSemaine()}`)
   ]);
-
   const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
-  const coffre=parseFloat(Array.isArray(coffreData)&&coffreData[0]?coffreData[0].valeur:0)||0;
   const totalPrimes=Array.isArray(primesData)?primesData.reduce((a,p)=>a+p.montant,0):0;
-  const totalPrimesVers=Array.isArray(primesData)?primesData.filter(p=>p.verse).reduce((a,p)=>a+p.montant,0):0;
   const impots=Math.round(calcImpot(ca));
   const netEstime=ca-totalPrimes-impots;
-
   document.getElementById('coffreStats').innerHTML=`
     <div class="stat-card"><div class="stat-value">${ca.toLocaleString('fr-FR')}$</div><div class="stat-label">CA semaine brut</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--warning);">${totalPrimes.toLocaleString('fr-FR')}$</div><div class="stat-label">Primes (avant versement)</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</div><div class="stat-label">Impôts estimés (${tauxImpot(ca)})</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning);">${totalPrimes.toLocaleString('fr-FR')}$</div><div class="stat-label">Primes totales</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</div><div class="stat-label">Impôts (${tauxImpot(ca)})</div></div>
     <div class="stat-card coffre-card" style="text-align:center;"><div class="stat-value" style="color:var(--success);">${netEstime.toLocaleString('fr-FR')}$</div><div class="stat-label">Net coffre estimé</div></div>
   `;
-
   const hist=await supabaseFetch('caisse?select=*&order=created_at.desc&limit=10');
   const histEl=document.getElementById('coffreHistorique');
   if (!Array.isArray(hist)||!hist.length) { histEl.innerHTML='<p style="color:var(--text-muted)">Aucun historique.</p>'; return; }
   histEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Salaires</th><th>Impôts</th><th>Coffre net</th></tr></thead><tbody>
     ${hist.map(h=>`<tr>
-      <td>${h.semaine}</td>
-      <td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td>
+      <td>${h.semaine}</td><td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td>
       <td><span style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</span></td>
       <td><span style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</span></td>
       <td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td>
@@ -1268,39 +1351,32 @@ async function loadCoffre() {
 // ── STATS ──
 async function loadStats() {
   const semaine=getSemaine();
-  const [commandes, clients, employes, caData] = await Promise.all([
+  const [commandes,clients,employes,caData] = await Promise.all([
     supabaseFetch(`commandes?select=*&semaine=eq.${semaine}`),
     supabaseFetch('clients?select=id'),
     supabaseFetch('employes?select=id&actif=eq.true'),
     supabaseFetch('parametres?cle=eq.ca_semaine')
   ]);
-
   const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;
   const nbCmd=Array.isArray(commandes)?commandes.length:0;
   const impots=Math.round(calcImpot(ca));
-
   document.getElementById('statsCards').innerHTML=`
     <div class="stat-card"><div class="stat-value">${nbCmd}</div><div class="stat-label">Commandes semaine</div></div>
     <div class="stat-card"><div class="stat-value">${ca.toLocaleString('fr-FR')}$</div><div class="stat-label">CA semaine</div></div>
     <div class="stat-card"><div class="stat-value">${Array.isArray(clients)?clients.length:0}</div><div class="stat-label">Clients total</div></div>
     <div class="stat-card"><div class="stat-value">${Array.isArray(employes)?employes.length:0}</div><div class="stat-label">Employés actifs</div></div>
   `;
-
-  // Commandes récentes
   const recentEl=document.getElementById('statsCommandes');
   if (!Array.isArray(commandes)||!commandes.length) {
     recentEl.innerHTML='<p style="color:var(--text-muted)">Aucune commande cette semaine.</p>';
   } else {
-    recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Employé</th><th>Total</th><th>Pts</th></tr></thead><tbody>
+    recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th><th>Pts</th></tr></thead><tbody>
       ${commandes.slice(0,8).map(c=>`<tr>
         <td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td>
-        <td style="font-size:12px;color:var(--text-muted);">${c.employe_discord_id||'—'}</td>
         <td><strong>${(c.total_apres_reduction||c.total||0)}$</strong></td>
         <td>${c.points_gagnes||0} pts</td>
       </tr>`).join('')}</tbody></table>`;
   }
-
-  // Finances
   document.getElementById('statsFinances').innerHTML=`
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg-card2);border-radius:8px;">
@@ -1314,8 +1390,6 @@ async function loadStats() {
       </div>
     </div>
   `;
-
-  // Paliers impôts
   const paliers=[
     {min:0,max:199999,taux:'0%'},{min:200000,max:399999,taux:'5%'},
     {min:400000,max:599999,taux:'8%'},{min:600000,max:799999,taux:'11%'},
