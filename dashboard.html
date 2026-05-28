@@ -18,7 +18,7 @@
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background .3s,color .3s; }
- 
+
     /* ═══ TOPBAR ═══ */
     .topbar { position:sticky; top:0; z-index:100; border-bottom:3px solid var(--red); overflow:hidden; }
     .topbar-checker { height:14px; background-color:var(--red); background-image:repeating-linear-gradient(90deg,transparent 0px,transparent 14px,rgba(255,255,255,0.9) 14px,rgba(255,255,255,0.9) 28px); }
@@ -43,13 +43,13 @@
     .topbar-nav-item { padding:8px 16px; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.75); cursor:pointer; white-space:nowrap; border-bottom:3px solid transparent; transition:all .2s; }
     .topbar-nav-item:hover { color:#fff; background:rgba(0,0,0,0.15); }
     .topbar-nav-item.active { color:#fff; background:rgba(0,0,0,0.2); border-bottom-color:#fff; }
- 
+
     /* ═══ LAYOUT ═══ */
     .main { min-height:100vh; display:flex; flex-direction:column; }
     .content { flex:1; padding:28px; width:100%; }
     .page { display:none; width:100%; }
     .page.active { display:block; }
- 
+
     /* ═══ COMPOSANTS ═══ */
     .card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; }
     .card-title { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; margin-bottom:16px; color:var(--red); }
@@ -88,7 +88,7 @@
     .alert-success { background:rgba(39,174,96,.1); border:1px solid rgba(39,174,96,.3); color:var(--success); }
     .alert-error { background:rgba(192,57,43,.1); border:1px solid rgba(192,57,43,.3); color:var(--red); }
     .red-line { height:3px; background:linear-gradient(90deg,var(--red),var(--orange)); border-radius:2px; margin-bottom:24px; }
- 
+
     /* ═══ ACCUEIL HERO ═══ */
     .accueil-hero {
       background:var(--bg-card);
@@ -131,7 +131,7 @@
     .hero-meta { display:flex; align-items:center; gap:12px; margin-top:8px; font-size:13px; color:var(--text-muted); }
     .hero-role-badge { padding:3px 10px; background:rgba(192,57,43,0.15); border:1px solid rgba(192,57,43,0.3); border-radius:20px; color:var(--red); font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
     .hero-date { font-size:13px; color:var(--text-muted); }
- 
+
     /* 3 grandes stat cards */
     .accueil-stats-top { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
     .big-stat-card {
@@ -151,10 +151,10 @@
     .big-stat-label { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
     .big-stat-value { font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:2px; line-height:1; color:var(--accent-color, var(--red)); }
     .big-stat-sub { font-size:12px; color:var(--text-muted); margin-top:6px; }
- 
+
     /* Layout accueil bas : gauche + centre + droite */
     .accueil-bottom { display:grid; grid-template-columns:220px 1fr 220px; gap:0; align-items:start; }
- 
+
     /* Colonnes latérales */
     .accueil-col {
       display:flex; flex-direction:column; gap:6px;
@@ -177,7 +177,7 @@
     .col-item-dot.orange { background:var(--orange); }
     .col-item-dot.blue { background:#3498db; }
     .col-item-dot.gold { background:#f1c40f; }
- 
+
     /* Séparateurs verticaux en pointillés */
     .accueil-divider {
       display:flex; flex-direction:column; align-items:center;
@@ -192,7 +192,7 @@
       );
       min-height:200px;
     }
- 
+
     /* Centre accueil : dernières commandes */
     .accueil-center { padding:0 16px; }
     .accueil-center-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
@@ -208,7 +208,7 @@
     .commande-name { font-weight:600; }
     .commande-sub { font-size:11px; color:var(--text-muted); margin-top:1px; }
     .commande-price { font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--red); letter-spacing:1px; }
- 
+
     /* ═══ CAISSE ═══ */
     .caisse-layout { display:grid; grid-template-columns:1fr 360px; gap:24px; align-items:start; }
     .caisse-categorie { margin-bottom:28px; }
@@ -228,7 +228,7 @@
     .caisse-produit-pts { font-size:10px; color:var(--text-muted); background:var(--bg-card); padding:2px 6px; border-radius:10px; }
     .caisse-produit::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--red); transform:scaleX(0); transition:transform .2s; }
     .caisse-produit:hover::after { transform:scaleX(1); }
- 
+
     /* TICKET */
     .ticket-wrapper { position:sticky; top:90px; }
     .ticket-thermal { width:100%; background:#f5f1e8; color:#111; border-radius:12px; padding:24px; font-family:'Courier New',monospace; box-shadow:0 10px 30px rgba(0,0,0,.4); }
@@ -246,7 +246,7 @@
     .ticket-buttons { display:flex; gap:10px; margin-top:18px; }
     .ticket-buttons .btn { flex:1; }
     .client-results { margin-bottom:12px; }
- 
+
     /* PRODUIT CARDS */
     .produit-card { background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; position:relative; }
     .produit-card img { width:56px; height:56px; object-fit:contain; margin-bottom:8px; }
@@ -255,7 +255,7 @@
     .produit-card-pts { font-size:11px; color:var(--text-muted); }
     .produit-card-actions { position:absolute; top:6px; right:6px; display:flex; gap:4px; }
     .produit-card-actions button { background:none; border:none; cursor:pointer; font-size:14px; padding:2px; }
- 
+
     .coffre-card { background:linear-gradient(135deg,rgba(192,57,43,.15),rgba(230,126,34,.1)); border:1px solid rgba(192,57,43,.3); border-radius:12px; padding:24px; }
     .popup-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; z-index:9999; }
     .popup-box { width:500px; max-width:95vw; background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:24px; max-height:90vh; overflow-y:auto; }
@@ -264,7 +264,7 @@
 </head>
 <body>
 <div id="app" style="display:none;flex-direction:column;">
- 
+
   <div class="topbar">
     <div class="topbar-checker"></div>
     <div class="topbar-main">
@@ -290,12 +290,12 @@
     </div>
     <div class="topbar-nav" id="topbarNav"></div>
   </div>
- 
+
   <div class="main">
     <div class="content" id="mainContent"></div>
   </div>
 </div>
- 
+
 <!-- POPUP VALIDATION -->
 <div id="popupValidation" class="popup-overlay" style="display:none;">
   <div class="popup-box">
@@ -307,7 +307,7 @@
     </div>
   </div>
 </div>
- 
+
 <!-- POPUP PASS -->
 <div id="popupPass" class="popup-overlay" style="display:none;">
   <div class="popup-box">
@@ -324,13 +324,13 @@
     </div>
   </div>
 </div>
- 
+
 <script>
 const SUPABASE_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
 const DIRECTION_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
 const GOUVERNEMENT_IDS = [];
- 
+
 let currentUser = null;
 let currentRole = 'employe';
 let produitsCaisse = [];
@@ -339,7 +339,7 @@ let commande = [];
 let selectedClient = null;
 let selectedPassClient = null;
 let commandeContrat = null;
- 
+
 // ── FORMAT TÉLÉPHONE (555) 555-5555 ──
 function formatPhone(val) {
   if (!val) return '—';
@@ -356,7 +356,7 @@ function formatPhoneInput(input) {
   if (d.length <= 6) { input.value = `(${d.slice(0,3)}) ${d.slice(3)}`; return; }
   input.value = `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
 }
- 
+
 // ── NAV CONFIG ──
 const NAV_CONFIG = {
   employe: [
@@ -384,7 +384,7 @@ const NAV_CONFIG = {
     {id:'coffre',icon:'🏦',label:'Finances'},
   ]
 };
- 
+
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
@@ -393,10 +393,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   const avatar = params.get('avatar');
   const role = params.get('role');
   if (!id) { window.location.href='/'; return; }
- 
+
   currentRole = GOUVERNEMENT_IDS.includes(id) ? 'gouvernement'
               : (role==='direction' ? 'direction' : 'employe');
- 
+
   let displayName = username;
   try {
     const empData = await supabaseFetch(`employes?discord_id=eq.${id}&select=nom,prenom`);
@@ -404,9 +404,9 @@ window.addEventListener('DOMContentLoaded', async () => {
       displayName = `${empData[0].prenom} ${empData[0].nom}`;
     }
   } catch(e){}
- 
+
   currentUser = { id, username, displayName, avatar, role: currentRole };
- 
+
   const avatarEl = document.getElementById('userAvatar');
   if (avatar) {
     avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${id}/${avatar}.png" onerror="this.parentElement.textContent='${displayName.charAt(0).toUpperCase()}'">`;
@@ -417,14 +417,14 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('userRole').textContent =
     currentRole==='direction' ? '⭐ Direction' :
     currentRole==='gouvernement' ? '🏛️ Gouvernement' : 'Employé';
- 
+
   buildNav();
   buildPages();
   passTypes = await supabaseFetch('pass_types?select=*');
   document.getElementById('app').style.display = 'flex';
   showPage(currentRole==='gouvernement' ? 'stats' : 'accueil');
 });
- 
+
 // ── NAV ──
 function buildNav() {
   const topNav = document.getElementById('topbarNav');
@@ -435,7 +435,7 @@ function buildNav() {
     </div>`
   ).join('');
 }
- 
+
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.topbar-nav-item').forEach(n=>n.classList.remove('active'));
@@ -455,14 +455,14 @@ function showPage(name) {
   if (name==='primes') loadPrimes();
   if (name==='accueil') loadAccueil();
 }
- 
+
 // ── BUILD PAGES ──
 function buildPages() {
   document.getElementById('mainContent').innerHTML = `
- 
+
   <!-- ACCUEIL -->
   <div class="page" id="page-accueil"></div>
- 
+
   <!-- CAISSE -->
   <div class="page" id="page-caisse">
     <div class="red-line"></div>
@@ -507,7 +507,7 @@ function buildPages() {
       </div>
     </div>
   </div>
- 
+
   <!-- CLIENTS -->
   <div class="page" id="page-clients">
     <div class="red-line"></div>
@@ -516,7 +516,7 @@ function buildPages() {
     </div>
     <div class="card"><div class="card-title">Liste des clients</div><div id="clientsTable">Chargement...</div></div>
   </div>
- 
+
   <!-- NOUVEAU CLIENT -->
   <div class="page" id="page-enregistrer-client">
     <div class="red-line"></div>
@@ -533,13 +533,13 @@ function buildPages() {
       <button class="btn btn-primary" onclick="enregistrerClient()">✅ Enregistrer</button>
     </div>
   </div>
- 
+
   <!-- EMPLOYÉS -->
   <div class="page" id="page-employes">
     <div class="red-line"></div>
     <div class="card"><div class="card-title">Liste des employés</div><div id="employesTable">Chargement...</div></div>
   </div>
- 
+
   <!-- AJOUTER EMPLOYÉ -->
   <div class="page" id="page-ajouter-employe">
     <div class="red-line"></div>
@@ -572,7 +572,7 @@ function buildPages() {
       <button class="btn btn-primary" onclick="ajouterEmploye()">✅ Ajouter</button>
     </div>
   </div>
- 
+
   <!-- CONTRATS -->
   <div class="page" id="page-contrats">
     <div class="red-line"></div>
@@ -587,7 +587,7 @@ function buildPages() {
       <div class="card" style="flex:1;"><div class="card-title">Contrats actifs</div><div id="contratsTable">Chargement...</div></div>
     </div>
   </div>
- 
+
   <!-- PRIMES -->
   <div class="page" id="page-primes">
     <div class="red-line"></div>
@@ -598,14 +598,14 @@ function buildPages() {
     </div>
     <div class="card"><div class="card-title">Primes à verser</div><div id="primesTable">Chargement...</div></div>
   </div>
- 
+
   <!-- COFFRE -->
   <div class="page" id="page-coffre">
     <div class="red-line"></div>
     <div class="grid-3" style="margin-bottom:24px;" id="coffreStats"></div>
     <div class="card"><div class="card-title">Historique hebdomadaire</div><div id="coffreHistorique">Chargement...</div></div>
   </div>
- 
+
   <!-- MENU -->
   <div class="page" id="page-menu">
     <div class="red-line"></div>
@@ -629,7 +629,7 @@ function buildPages() {
       <div class="card" style="flex:1;"><div class="card-title">Produits du menu</div><div id="produitsGrid">Chargement...</div></div>
     </div>
   </div>
- 
+
   <!-- STATS -->
   <div class="page" id="page-stats">
     <div class="red-line"></div>
@@ -642,48 +642,48 @@ function buildPages() {
   </div>
   `;
 }
- 
+
 // ── ACCUEIL ──
 async function loadAccueil() {
   const el = document.getElementById('page-accueil');
   el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text-muted);">Chargement...</div>';
- 
+
   // Requêtes indépendantes avec fallback pour éviter le blocage
   const safeFetch = async (url) => { try { const r = await supabaseFetch(url); return Array.isArray(r) ? r : []; } catch(e) { return []; } };
- 
+
   const [clients, employes, passActifs, commandes] = await Promise.all([
     safeFetch('clients?select=id'),
     safeFetch('employes?select=id,poste,contrat&actif=eq.true'),
     safeFetch('clients?select=id&pass=not.is.null'),
     safeFetch('commandes?select=id,total,total_apres_reduction,items,created_at&order=created_at.desc&limit=8')
   ]);
- 
+
   const ca = Array.isArray(commandes) ? commandes.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0) : 0;
   const nbCmd = Array.isArray(commandes) ? commandes.length : 0;
   const nbEmp = Array.isArray(employes) ? employes.length : 0;
- 
+
   // Compter postes direction
   const dirPositions = ['Patron','Co-Patron','Manager',"Chef d'équipe"];
   const nbDir = Array.isArray(employes) ? employes.filter(e=>dirPositions.includes(e.poste)).length : 0;
   const nbEmpBase = nbEmp - nbDir;
   const nbCDI = Array.isArray(employes) ? employes.filter(e=>e.contrat==='CDI').length : 0;
   const nbCDD = Array.isArray(employes) ? employes.filter(e=>e.contrat==='CDD').length : 0;
- 
+
   // Nom affiché
   const firstName = (currentUser.displayName||'').split(' ')[0] || currentUser.username;
- 
+
   // Date
   const now = new Date();
   const dateStr = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
- 
+
   // Avatar hero
   const avatarHTML = currentUser.avatar
-    ? `<img src="https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png" onerror="this.parentElement.textContent='${firstName.charAt(0).toUpperCase()()}'"">`
+    ? `<img src="https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png" onerror="this.parentElement.textContent='${firstName.charAt(0).toUpperCase()}'">`
     : firstName.charAt(0).toUpperCase();
- 
+
   // Role badge
   const roleBadge = currentRole==='direction' ? '⭐ Direction' : currentRole==='gouvernement' ? '🏛️ Gouvernement' : '🧾 Employé';
- 
+
   // Dernières commandes HTML
   const commandesHTML = Array.isArray(commandes) && commandes.length
     ? commandes.map(c => {
@@ -704,7 +704,7 @@ async function loadAccueil() {
           </div>`;
       }).join('')
     : '<div style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;">Aucune commande cette semaine</div>';
- 
+
   // Colonnes latérales
   // Gauche = items employé
   const colEmployeItems = [
@@ -714,7 +714,7 @@ async function loadAccueil() {
     {dot:'red', label:`${Array.isArray(clients)?clients.length:0} clients enregistrés`},
     {dot:'gold', label:`${Array.isArray(passActifs)?passActifs.length:0} pass actifs`},
   ];
- 
+
   // Droite = items direction
   const colDirectionItems = [
     {dot:'red', label:`CA semaine : ${ca.toLocaleString('fr-FR')}$`},
@@ -722,7 +722,7 @@ async function loadAccueil() {
     {dot:'gold', label:`${nbDir} poste${nbDir>1?'s':''} d'encadrement`},
     {dot:'green', label:`Taux : ${tauxImpot(ca)}`},
   ];
- 
+
   el.innerHTML = `
     <!-- HERO -->
     <div class="accueil-hero">
@@ -738,7 +738,7 @@ async function loadAccueil() {
         </div>
       </div>
     </div>
- 
+
     <!-- 3 GRANDES STATS -->
     <div class="accueil-stats-top">
       <div class="big-stat-card" style="--accent-color:var(--warning);--accent-bg:rgba(243,156,18,0.12);--accent-border:rgba(243,156,18,0.3);">
@@ -760,7 +760,7 @@ async function loadAccueil() {
         <div class="big-stat-sub">pass actifs sur ${Array.isArray(clients)?clients.length:0} clients</div>
       </div>
     </div>
- 
+
     <!-- BAS : colonne gauche | séparateur | centre | séparateur | colonne droite -->
     <div class="accueil-bottom">
       <!-- COLONNE GAUCHE : Employés -->
@@ -772,12 +772,12 @@ async function loadAccueil() {
             <span>${i.label}</span>
           </div>`).join('')}
       </div>
- 
+
       <!-- SÉPARATEUR GAUCHE -->
       <div class="accueil-divider">
         <div class="accueil-divider-line"></div>
       </div>
- 
+
       <!-- CENTRE : dernières commandes -->
       <div class="accueil-center">
         <div class="accueil-center-header">
@@ -786,12 +786,12 @@ async function loadAccueil() {
         </div>
         ${commandesHTML}
       </div>
- 
+
       <!-- SÉPARATEUR DROIT -->
       <div class="accueil-divider">
         <div class="accueil-divider-line"></div>
       </div>
- 
+
       <!-- COLONNE DROITE : Direction -->
       <div class="accueil-col" style="text-align:right;align-items:flex-end;">
         <div class="accueil-col-title" style="text-align:right;">⭐ Côté Direction</div>
@@ -803,11 +803,11 @@ async function loadAccueil() {
       </div>
     </div>
   `;
- 
+
   // Corriger le layout pour 5 colonnes (gauche, sep, centre, sep, droite)
   el.querySelector('.accueil-bottom').style.gridTemplateColumns = '200px 40px 1fr 40px 200px';
 }
- 
+
 // ── SUPABASE ──
 async function supabaseFetch(endpoint, options={}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
@@ -815,7 +815,7 @@ async function supabaseFetch(endpoint, options={}) {
   });
   try { return await res.json(); } catch(e){ return []; }
 }
- 
+
 function getSemaine() {
   const now=new Date(); const d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
   const dayNum=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-dayNum);
@@ -826,7 +826,7 @@ function getSemaine() {
 function calcImpot(m){if(m<200000)return 0;if(m<400000)return m*.05;if(m<600000)return m*.08;if(m<800000)return m*.11;if(m<1000000)return m*.14;if(m<2500000)return m*.17;return m*.19;}
 function tauxImpot(m){if(m<200000)return'0%';if(m<400000)return'5%';if(m<600000)return'8%';if(m<800000)return'11%';if(m<1000000)return'14%';if(m<2500000)return'17%';return'19%';}
 function toggleTheme(){const h=document.documentElement,b=document.getElementById('themeBtn');h.dataset.theme=h.dataset.theme==='dark'?(b.textContent='🌙','light'):(b.textContent='☀️','dark');}
- 
+
 // ── CLIENTS ──
 async function loadClients() {
   const data=await supabaseFetch('clients?select=*&order=created_at.desc');
@@ -851,7 +851,7 @@ async function enregistrerClient() {
   alertEl.innerHTML='<div class="alert alert-success">✅ Client enregistré !</div>';
   ['clientNom','clientPrenom','clientNaissance','clientTel','clientDiscord'].forEach(id=>document.getElementById(id).value='');
 }
- 
+
 // ── EMPLOYÉS ──
 async function loadEmployes() {
   const data=await supabaseFetch('employes?select=*&order=created_at.desc');
@@ -878,7 +878,7 @@ async function ajouterEmploye() {
   alertEl.innerHTML='<div class="alert alert-success">✅ Employé ajouté !</div>';
   ['empNom','empPrenom','empNaissance','empTel','empDiscord'].forEach(id=>document.getElementById(id).value='');
 }
- 
+
 // ── MENU ──
 function previewImage(){const f=document.getElementById('prodImage').files[0];if(f){const r=new FileReader();r.onload=e=>{document.getElementById('prodPreviewImg').src=e.target.result;document.getElementById('prodPreview').style.display='block';};r.readAsDataURL(f);}}
 async function ajouterProduit(){
@@ -908,10 +908,10 @@ async function loadProduits(){
 }
 async function toggleProduit(id,actif){await supabaseFetch(`produits?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadProduits();}
 async function supprimerProduit(id){if(!confirm('Supprimer définitivement ?'))return;await supabaseFetch(`produits?id=eq.${id}`,{method:'DELETE'});loadProduits();}
- 
+
 const CATEGORIE_EMOJI={'Burger':'🍔','Menu':'🍱','Boisson':'🥤','Dessert':'🍦','Accompagnement':'🍟','Session':'🎮','Autre':'🛒'};
 function getEmoji(c){return CATEGORIE_EMOJI[c]||'🍽️';}
- 
+
 // ── CAISSE ──
 async function loadCaisseProduits(){
   const [data,contrats]=await Promise.all([supabaseFetch('produits?select=*&actif=eq.true&order=categorie.asc'),supabaseFetch('contrats_reduction?select=*&actif=eq.true')]);
@@ -950,36 +950,36 @@ function genererTicket(){const now=new Date();const dd=String(now.getDate()).pad
 function annulerCommande(){if(!confirm('Annuler la commande ?'))return;commande=[];selectedClient=null;commandeContrat=null;document.getElementById('clientSearch').value='';document.getElementById('clientResults').innerHTML='';if(document.getElementById('caisseContrat'))document.getElementById('caisseContrat').value='';renderTicket();}
 function ouvrirValidation(){if(!commande.length){alert('Aucune commande.');return;}const {brut,reduction,montantReduc,net}=calcTotalCommande();const pts=calcPoints();document.getElementById('popupRecap').innerHTML=`${commande.map(p=>`<div class="ticket-line" style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;"><div>${p.nom} ×${p.quantite}</div><div>${p.prix*p.quantite}$</div></div>`).join('')}<hr style="border:none;border-top:1px dashed #999;margin:12px 0;"><div style="font-size:15px;text-align:right;">Brut : ${brut}$</div>${reduction>0?`<div style="font-size:14px;color:var(--red);text-align:right;">Réduction -${reduction}% : -${montantReduc}$</div>`:''}<div style="font-size:18px;font-weight:bold;text-align:right;margin-top:6px;">TOTAL : ${net}$</div>${pts>0?`<div style="font-size:13px;color:#27ae60;text-align:right;margin-top:4px;">🎯 +${pts} points pour ${selectedClient?.prenom||'le client'}</div>`:''}`;document.getElementById('popupValidation').style.display='flex';}
 async function validerCommande(){const {brut,reduction,montantReduc,net}=calcTotalCommande();const pts=calcPoints();const semaine=getSemaine();await supabaseFetch('commandes',{method:'POST',body:JSON.stringify({client_id:selectedClient?.id||null,employe_discord_id:currentUser.id,items:JSON.stringify(commande),total:brut,reduction_pct:reduction,total_apres_reduction:net,points_gagnes:pts,paye_par_points:false,contrat_id:commandeContrat?.id||null,semaine})});if(selectedClient&&pts>0)await supabaseFetch(`clients?id=eq.${selectedClient.id}`,{method:'PATCH',body:JSON.stringify({points:(selectedClient.points||0)+pts})});await supabaseFetch('transactions',{method:'POST',body:JSON.stringify({montant:net,type:'vente',employe_discord:currentUser.id,client_id:selectedClient?.id||null,semaine})});const caData=await supabaseFetch('parametres?cle=eq.ca_semaine');const caActuel=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;await supabaseFetch('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:String(caActuel+net)})});fermerPopup('popupValidation');alert('✅ Commande validée !');commande=[];selectedClient=null;commandeContrat=null;document.getElementById('clientSearch').value='';document.getElementById('clientResults').innerHTML='';if(document.getElementById('caisseContrat'))document.getElementById('caisseContrat').value='';genererTicket();}
- 
+
 // ── RECHERCHE CLIENT ──
 document.addEventListener('input',async e=>{
   if(e.target.id==='clientSearch'){const val=e.target.value.trim();if(val.length<2){document.getElementById('clientResults').innerHTML='';return;}const data=await supabaseFetch(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);document.getElementById('clientResults').innerHTML=Array.isArray(data)?data.map(c=>`<div onclick='selectClient(${JSON.stringify(c)})' style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:14px;">${c.prenom} ${c.nom}${c.pass?`<span class="badge badge-gold" style="margin-left:6px;font-size:10px;">${c.pass}</span>`:''} <span style="font-size:11px;color:var(--text-muted);">🎯 ${c.points||0} pts</span></div>`).join(''):'';}
   if(e.target.id==='passClientSearch'){const val=e.target.value.trim();if(val.length<2){document.getElementById('passClientResults').innerHTML='';return;}const data=await supabaseFetch(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);document.getElementById('passClientResults').innerHTML=Array.isArray(data)?data.map(c=>`<div onclick='selectPassClient(${JSON.stringify(c)})' style="padding:10px;background:var(--bg-card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:14px;">${c.prenom} ${c.nom}</div>`).join(''):'';}
 });
 function selectClient(c){selectedClient=c;document.getElementById('clientSearch').value=`${c.prenom} ${c.nom}`;document.getElementById('clientResults').innerHTML='';renderTicket();}
- 
+
 // ── PASS ──
 function ouvrirPopupPass(){selectedPassClient=null;document.getElementById('passClientSearch').value='';document.getElementById('passClientResults').innerHTML='';document.getElementById('passClientSelectionne').style.display='none';const sel=document.getElementById('passType');sel.innerHTML=passTypes.map(p=>`<option value="${p.id}" data-nom="${p.nom}" data-prix="${p.prix}" data-mult="${p.multiplicateur}" data-reduc="${p.reduction}">${p.nom} — ${p.prix}$</option>`).join('');sel.onchange=updatePassInfo;updatePassInfo();document.getElementById('popupPass').style.display='flex';}
 function updatePassInfo(){const sel=document.getElementById('passType');const opt=sel.options[sel.selectedIndex];if(!opt)return;document.getElementById('passInfo').textContent=`×${opt.dataset.mult} pts par commande${opt.dataset.reduc>0?' • -'+opt.dataset.reduc+'% de réduction sur chaque commande':''}`;}
 function selectPassClient(c){selectedPassClient=c;document.getElementById('passClientSearch').value=`${c.prenom} ${c.nom}`;document.getElementById('passClientResults').innerHTML='';const el=document.getElementById('passClientSelectionne');el.style.display='block';el.innerHTML=`✅ <strong>${c.prenom} ${c.nom}</strong>${c.pass?` — Pass actuel : <span class="badge badge-gold">${c.pass}</span>`:''}`;}
 async function confirmerPass(){if(!selectedPassClient){alert('Sélectionnez un client.');return;}const sel=document.getElementById('passType');const opt=sel.options[sel.selectedIndex];const passNom=opt.dataset.nom;const passId=sel.value;await supabaseFetch(`clients?id=eq.${selectedPassClient.id}`,{method:'PATCH',body:JSON.stringify({pass:passNom,pass_id:passId})});fermerPopup('popupPass');alert(`✅ Pass ${passNom} attribué à ${selectedPassClient.prenom} ${selectedPassClient.nom} !`);if(document.getElementById('page-clients').classList.contains('active'))loadClients();}
- 
+
 // ── CONTRATS ──
 async function loadContrats(){const data=await supabaseFetch('contrats_reduction?select=*&order=created_at.desc');const el=document.getElementById('contratsTable');if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--text-muted)">Aucun contrat.</p>';return;}el.innerHTML=`<table><thead><tr><th>Entreprise</th><th>Réduction</th><th>Statut</th><th>Action</th></tr></thead><tbody>${data.map(c=>`<tr><td><strong>${c.nom}</strong></td><td><span class="badge badge-orange">-${c.pourcentage}%</span></td><td><span class="badge ${c.actif?'badge-green':'badge-red'}">${c.actif?'Actif':'Inactif'}</span></td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="toggleContrat('${c.id}',${c.actif})">${c.actif?'Désactiver':'Activer'}</button></td></tr>`).join('')}</tbody></table>`;}
 async function ajouterContrat(){const nom=document.getElementById('contratNom').value.trim();const pct=document.getElementById('contratPct').value;const alertEl=document.getElementById('alertContrat');if(!nom||!pct){alertEl.innerHTML='<div class="alert alert-error">⚠️ Champs obligatoires.</div>';return;}await supabaseFetch('contrats_reduction',{method:'POST',body:JSON.stringify({nom,pourcentage:parseFloat(pct),actif:true})});alertEl.innerHTML='<div class="alert alert-success">✅ Contrat créé !</div>';document.getElementById('contratNom').value='';document.getElementById('contratPct').value='';loadContrats();}
 async function toggleContrat(id,actif){await supabaseFetch(`contrats_reduction?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadContrats();}
- 
+
 // ── PRIMES ──
 async function loadPrimes(){const data=await supabaseFetch(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${getSemaine()}&order=created_at.desc`);const el=document.getElementById('primesTable');if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--text-muted)">Aucune prime calculée. Cliquez sur "Calculer".</p>';return;}el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Prime</th><th>Versée</th><th>Action</th></tr></thead><tbody>${data.map(p=>`<tr><td>${p.employes?.prenom||'—'} ${p.employes?.nom||''}</td><td>${p.employes?.poste||'—'}</td><td>${p.employes?.contrat||'—'}</td><td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td><td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td><td>${!p.verse?`<button class="btn btn-success" style="padding:6px 12px;font-size:12px;" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td></tr>`).join('')}</tbody></table>`;}
 async function calculerPrimes(){const semaine=getSemaine();const [employes,caData]=await Promise.all([supabaseFetch('employes?select=*&actif=eq.true'),supabaseFetch('parametres?cle=eq.ca_semaine')]);const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;if(ca===0){alert('CA de la semaine = 0$. Pas de primes.');return;}const taux={'Patron':0.4,'Co-Patron':0.4,'Manager':0.3,"Chef d'équipe":0.3,'Employé':0};const tauxC={'CDI':0.2,'CDD':0.1};for(const emp of(Array.isArray(employes)?employes:[])){const t=(emp.poste==='Employé')?(tauxC[emp.contrat]||0.1):(taux[emp.poste]||0.1);const montant=Math.round(ca*t);if(montant>0){const exist=await supabaseFetch(`primes?employe_id=eq.${emp.id}&semaine=eq.${semaine}`);if(!Array.isArray(exist)||!exist.length)await supabaseFetch('primes',{method:'POST',body:JSON.stringify({employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false})});}}alert('✅ Primes calculées !');loadPrimes();}
 async function verserPrime(id){await supabaseFetch(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})});loadPrimes();}
- 
+
 // ── COFFRE ──
 async function loadCoffre(){const [caData,,primesData]=await Promise.all([supabaseFetch('parametres?cle=eq.ca_semaine'),supabaseFetch('parametres?cle=eq.coffre'),supabaseFetch(`primes?select=montant,verse&semaine=eq.${getSemaine()}`)]);const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;const totalPrimes=Array.isArray(primesData)?primesData.reduce((a,p)=>a+p.montant,0):0;const impots=Math.round(calcImpot(ca));const net=ca-totalPrimes-impots;document.getElementById('coffreStats').innerHTML=`<div class="stat-card"><div class="stat-value">${ca.toLocaleString('fr-FR')}$</div><div class="stat-label">CA semaine brut</div></div><div class="stat-card"><div class="stat-value" style="color:var(--warning);">${totalPrimes.toLocaleString('fr-FR')}$</div><div class="stat-label">Primes totales</div></div><div class="stat-card"><div class="stat-value" style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</div><div class="stat-label">Impôts (${tauxImpot(ca)})</div></div><div class="stat-card coffre-card" style="text-align:center;"><div class="stat-value" style="color:var(--success);">${net.toLocaleString('fr-FR')}$</div><div class="stat-label">Net coffre estimé</div></div>`;const hist=await supabaseFetch('caisse?select=*&order=created_at.desc&limit=10');const histEl=document.getElementById('coffreHistorique');if(!Array.isArray(hist)||!hist.length){histEl.innerHTML='<p style="color:var(--text-muted)">Aucun historique.</p>';return;}histEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Salaires</th><th>Impôts</th><th>Coffre net</th></tr></thead><tbody>${hist.map(h=>`<tr><td>${h.semaine}</td><td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td><td><span style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</span></td><td><span style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</span></td><td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td></tr>`).join('')}</tbody></table>`;}
- 
+
 // ── STATS ──
 async function loadStats(){const semaine=getSemaine();const [commandes,clients,employes,caData]=await Promise.all([supabaseFetch(`commandes?select=*&semaine=eq.${semaine}`),supabaseFetch('clients?select=id'),supabaseFetch('employes?select=id&actif=eq.true'),supabaseFetch('parametres?cle=eq.ca_semaine')]);const ca=parseFloat(Array.isArray(caData)&&caData[0]?caData[0].valeur:0)||0;const nbCmd=Array.isArray(commandes)?commandes.length:0;const impots=Math.round(calcImpot(ca));document.getElementById('statsCards').innerHTML=`<div class="stat-card"><div class="stat-value">${nbCmd}</div><div class="stat-label">Commandes semaine</div></div><div class="stat-card"><div class="stat-value">${ca.toLocaleString('fr-FR')}$</div><div class="stat-label">CA semaine</div></div><div class="stat-card"><div class="stat-value">${Array.isArray(clients)?clients.length:0}</div><div class="stat-label">Clients total</div></div><div class="stat-card"><div class="stat-value">${Array.isArray(employes)?employes.length:0}</div><div class="stat-label">Employés actifs</div></div>`;const recentEl=document.getElementById('statsCommandes');if(!Array.isArray(commandes)||!commandes.length){recentEl.innerHTML='<p style="color:var(--text-muted)">Aucune commande cette semaine.</p>';}else{recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th><th>Pts</th></tr></thead><tbody>${commandes.slice(0,8).map(c=>`<tr><td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td><td><strong>${(c.total_apres_reduction||c.total||0)}$</strong></td><td>${c.points_gagnes||0} pts</td></tr>`).join('')}</tbody></table>`;}document.getElementById('statsFinances').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px;"><div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg-card2);border-radius:8px;"><span>CA brut semaine</span><strong>${ca.toLocaleString('fr-FR')}$</strong></div><div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg-card2);border-radius:8px;"><span>Taux d'imposition</span><strong style="color:var(--red);">${tauxImpot(ca)}</strong></div><div style="display:flex;justify-content:space-between;padding:12px;background:rgba(192,57,43,.1);border-radius:8px;border:1px solid rgba(192,57,43,.2);"><span>Impôts estimés</span><strong style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</strong></div></div>`;const paliers=[{min:0,max:199999,taux:'0%'},{min:200000,max:399999,taux:'5%'},{min:400000,max:599999,taux:'8%'},{min:600000,max:799999,taux:'11%'},{min:800000,max:999999,taux:'14%'},{min:1000000,max:2499999,taux:'17%'},{min:2500000,max:Infinity,taux:'19%'}];document.getElementById('statsImpots').innerHTML=`<table><thead><tr><th>Tranche</th><th>Taux</th><th>Statut</th></tr></thead><tbody>${paliers.map(p=>`<tr><td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td><td><span class="badge badge-blue">${p.taux}</span></td><td>${ca>=p.min&&ca<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td></tr>`).join('')}</tbody></table>`;}
- 
+
 function fermerPopup(id){document.getElementById(id).style.display='none';}
 function logout(){window.location.href='/';}
 </script>
