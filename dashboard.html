@@ -648,11 +648,14 @@ async function loadAccueil() {
   const el = document.getElementById('page-accueil');
   el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text-muted);">Chargement...</div>';
  
+  // Requêtes indépendantes avec fallback pour éviter le blocage
+  const safeFetch = async (url) => { try { const r = await supabaseFetch(url); return Array.isArray(r) ? r : []; } catch(e) { return []; } };
+ 
   const [clients, employes, passActifs, commandes] = await Promise.all([
-    supabaseFetch('clients?select=id'),
-    supabaseFetch('employes?select=id,poste,contrat&actif=eq.true'),
-    supabaseFetch('clients?select=id&pass=not.is.null'),
-    supabaseFetch(`commandes?select=*&semaine=eq.${getSemaine()}&order=created_at.desc&limit=8`)
+    safeFetch('clients?select=id'),
+    safeFetch('employes?select=id,poste,contrat&actif=eq.true'),
+    safeFetch('clients?select=id&pass=not.is.null'),
+    safeFetch('commandes?select=id,total,total_apres_reduction,items,created_at&order=created_at.desc&limit=8')
   ]);
  
   const ca = Array.isArray(commandes) ? commandes.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0) : 0;
@@ -982,4 +985,3 @@ function logout(){window.location.href='/';}
 </script>
 </body>
 </html>
- 
