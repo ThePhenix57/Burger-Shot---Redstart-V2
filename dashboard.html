@@ -1666,6 +1666,9 @@ async function loadEmployes() {
     const quotaMax = e.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
     const quotaDone = e.quota_validee||0;
     const quotaPct = quotaMax>0 ? Math.min(100,Math.round((quotaDone/quotaMax)*100)) : 0;
+    const tauxPoste = {'Patron':.4,'Co-Patron':.35,'Manager':.25,"Chef d'équipe":.15,'Employé':.10};
+    const taux = tauxPoste[e.poste] ?? .10;
+    const caEmp = caWeek[e.discord_id] || 0;
 
     return `<div class="emp-card">
       <div class="emp-card-header">
@@ -1695,10 +1698,14 @@ async function loadEmployes() {
             <div class="emp-stat-lbl">CA total</div>
           </div>
         </div>
-        
+
         <div class="emp-prime">
           <div>
-            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Prime actuelle</div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">CA apporté sem.</div>
+            <div class="emp-prime-val" style="color:var(--blue);">${caEmp.toLocaleString('fr-FR')}$</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Prime (${Math.round(taux*100)}%)</div>
             <div class="emp-prime-val">${primeActuelle.toLocaleString('fr-FR')}$</div>
           </div>
           <button class="btn btn-outline btn-sm" onclick="voirPrimeEmploye('${e.discord_id}','${e.prenom} ${e.nom}')">Détails</button>
@@ -1721,7 +1728,7 @@ async function loadEmployes() {
             <option${e.contrat==='CDI'?' selected':''}>CDI</option>
           </select>
         </div>
-        
+
         <div class="emp-card-actions">
           <button class="btn btn-outline btn-sm" onclick="toggleEmploye('${e.id}',${e.actif})">${e.actif?'🔴 Désactiver':'🟢 Activer'}</button>
           <button class="btn btn-danger btn-sm" onclick="virer('${e.id}','${e.prenom} ${e.nom}')">🚪 Virer</button>
