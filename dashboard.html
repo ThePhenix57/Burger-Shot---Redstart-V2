@@ -519,20 +519,13 @@ async function sb(endpoint, opts = {}) {
    INIT
 ══════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async () => {
-  const p = new URLSearchParams(location.search);
-  const id = p.get('id'), username = p.get('username'), avatar = p.get('avatar');
-  if (!id) { location.href = '/'; return; }
-
-  ROLE = GOUV_IDS.includes(id) ? 'gouvernement' : DIR_IDS.includes(id) ? 'direction' : 'employe';
-
-  // Récupère nom complet depuis Supabase
-  let displayName = username;
-  try {
-    const emp = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
-    if (emp?.[0]) displayName = `${emp[0].prenom} ${emp[0].nom}`;
-  } catch {}
-
-  USER = { id, username, displayName, avatar, role: ROLE };
+const cookie = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('bs_user='));
+if (!cookie) { location.href = '/'; return; }
+const { id, username, avatar, nom, prenom } = JSON.parse(atob(cookie.split('=')[1]));
+if (!id) { location.href = '/'; return; }
+ROLE = GOUV_IDS.includes(id) ? 'gouvernement' : DIR_IDS.includes(id) ? 'direction' : 'employe';
+const displayName = (prenom && nom) ? `${prenom} ${nom}` : username;
+USER = { id, username, displayName, avatar, role: ROLE };
 
   // Avatar
   const av = document.getElementById('topAvatar');
