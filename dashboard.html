@@ -556,8 +556,7 @@ function buildNav() {
   nav.style.justifyContent = 'space-between';
   nav.innerHTML =
     `<div class="nav-group">${left.map(renderItem).join('')}</div>` +
-    `<div style="position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;height:100%;"><img src="https://upload.redstartrp.fr/uploads/photo-1780269854-a31c4ccbae7b.png" style="height:26px;object-fit:contain;"></div>` +
-    `<div class="nav-group">${right.map(renderItem).join('')}</div>`;
+`<div style="position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;height:100%;"><img src="https://upload.redstartrp.fr/uploads/photo-1780269854-a31c4ccbae7b.png" style="height:26px;object-fit:contain;filter:brightness(0) invert(1);"></div>`    `<div class="nav-group">${right.map(renderItem).join('')}</div>`;
 }
 
 function showPage(name) {
