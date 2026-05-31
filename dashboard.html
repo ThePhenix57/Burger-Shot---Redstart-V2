@@ -432,7 +432,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch {}
   }
 
-  const displayName = (prenom && nom) ? `${prenom} ${nom}` : username;
+  // Récupère le nom RP depuis la table employes
+const empRP = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
+const nomRP = empRP?.[0]?.nom;
+const prenomRP = empRP?.[0]?.prenom;
+const displayName = (prenomRP && nomRP) ? `${prenomRP} ${nomRP}` : (prenom && nom) ? `${prenom} ${nom}` : username;
   USER = { id, username, displayName, avatar, role: ROLE };
 
   // Avatar
@@ -1047,7 +1051,7 @@ function renderTicket() {
     const pt = passTypes.find(p=>p.nom===clientActif.pass);
     piEl.textContent=`${clientActif.pass} • ×${pt?.multiplicateur||1}pts${pt?.reduction>0?` • -${pt.reduction}%`:''}`;
   } else piEl.textContent='';
-  document.getElementById('tktEmploye').textContent = USER?.displayName||'—';
+  document.getElementById('tktEmploye').textContent = USER?.displayName||USER?.username||'—';
 }
 
 function genTicket() {
