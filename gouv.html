@@ -95,7 +95,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="step-title">👤 Vos informations</div>
       <div id="userInfoDisplay"></div>
       <div class="g2">
-        <div class="form-group"><label class="form-label">Nom RP</label><input class="form-input" id="gNom" placeholder="DUPONT"></div>
+        <div class="form-group"><label class="form-label">NOM RP (MAJ)</label><input class="form-input" id="gNom" placeholder="DUPONT"></div>
         <div class="form-group"><label class="form-label">Prénom RP</label><input class="form-input" id="gPrenom" placeholder="Jean"></div>
       </div>
       <div class="form-group">
@@ -123,7 +123,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Ou lien URL de la preuve</label>
+        <label class="form-label">Ou lien URL de la preuve (c'est mieux)</label>
         <input class="form-input" id="gPreuveUrl" placeholder="https://...">
       </div>
       <button class="btn btn-primary" onclick="soumettre()">✅ Soumettre ma demande</button>
@@ -152,12 +152,10 @@ const DISCORD_CLIENT_ID = 'TON_CLIENT_ID_ICI';
 const REDIRECT_URI = encodeURIComponent(window.location.origin + '/gouv.html');
 
 const FONCTIONS = [
-  {id:'maire', icon:'🏛️', label:'Maire'},
-  {id:'adjoint', icon:'🤝', label:'Adjoint au Maire'},
-  {id:'ministre', icon:'📋', label:'Ministre'},
-  {id:'conseiller', icon:'💼', label:'Conseiller'},
-  {id:'inspecteur', icon:'🔍', label:'Inspecteur'},
-  {id:'secretaire', icon:'📝', label:'Secrétaire'},
+  {id:'maire', icon:'🏛️', label:'Gouverneur'},
+  {id:'adjoint', icon:'🤝', label:'Vice Gouverneur'},
+  {id:'directeur IRIS', icon:'📋', label:'Dir. IRIS'},
+  {id:'Agent IRIS', icon:'💼', label:'IRIS'},
   {id:'autre', icon:'➕', label:'Autre'},
 ];
 
