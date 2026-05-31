@@ -1373,18 +1373,179 @@ async function voirCommandesClient(clientId, clientName) {
   }).join('');
 }
 
-function genPDFCommandeArchive(c) {
-  if (typeof c==='string') try{c=JSON.parse(c);}catch{return;}
-  const items = (() => { try { return JSON.parse(c.items||'[]'); } catch { return []; } })();
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Facture BS</title></head><body>
-<h2>🍔 BURGER SHOT — Facture archive</h2>
-<p>${new Date(c.created_at).toLocaleString('fr-FR')}</p>
-<table width="100%">${items.map(p=>`<tr><td>${p.nom} ×${p.qte}</td><td>${p.prix*p.qte}$</td></tr>`).join('')}</table>
-<p><strong>TOTAL: ${(c.total_apres_reduction||c.total||0)}$</strong>${c.points_gagnes>0?`<br>🎯 +${c.points_gagnes} pts`:''}</p>
-</body></html>`;
+function genPDFCommandeArchive(c, pts) {
+  const now = new Date();
+  const tva = Math.round(c.net * .20);
+  const numFacture = `BS-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+  const dateStr = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  const heureStr = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Facture ${numFacture}</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; width: 210mm; min-height: 297mm; background: #fff; color: #1a1a1a; font-size: 13px; }
+  .page { width: 210mm; min-height: 297mm; padding: 14mm 14mm 14mm 14mm; display: flex; flex-direction: column; }
+  
+  /* HEADER */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10mm; border-bottom: 3px solid #c0392b; margin-bottom: 8mm; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo-circle { width: 56px; height: 56px; background: #c0392b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 22px; letter-spacing: -1px; flex-shrink: 0; }
+  .company-name { font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #c0392b; text-transform: uppercase; line-height: 1; }
+  .company-sub { font-size: 11px; color: #888; letter-spacing: 1px; margin-top: 3px; }
+  .company-addr { font-size: 11px; color: #555; margin-top: 6px; line-height: 1.6; }
+  .header-right { text-align: right; }
+  .invoice-label { font-size: 11px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .invoice-num { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+  .invoice-date { font-size: 12px; color: #555; margin-top: 4px; }
+
+  /* PARTIES */
+  .parties { display: flex; justify-content: space-between; margin-bottom: 8mm; gap: 20px; }
+  .party-block { flex: 1; background: #f9f5f0; border-radius: 8px; padding: 10px 14px; border-left: 3px solid #c0392b; }
+  .party-title { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 5px; }
+  .party-name { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
+  .party-info { font-size: 12px; color: #555; line-height: 1.6; }
+
+  /* TABLEAU */
+  .table-wrap { margin-bottom: 6mm; flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #1a1a1a; color: #fff; }
+  thead th { padding: 10px 12px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-align: left; }
+  thead th:last-child { text-align: right; }
+  tbody tr { border-bottom: 1px solid #eee; }
+  tbody tr:nth-child(even) { background: #fdf9f5; }
+  tbody td { padding: 10px 12px; font-size: 13px; color: #1a1a1a; }
+  tbody td:last-child { text-align: right; font-weight: 600; }
+  .col-w { width: 50px; text-align: center !important; }
+  .col-pu { width: 80px; text-align: right !important; }
+
+  /* TOTAUX */
+  .totaux { display: flex; justify-content: flex-end; margin-bottom: 8mm; }
+  .totaux-block { min-width: 260px; }
+  .totaux-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #eee; }
+  .totaux-line:last-child { border-bottom: none; }
+  .totaux-line.total-final { background: #c0392b; color: #fff; margin-top: 4px; padding: 10px 12px; border-radius: 6px; font-size: 15px; font-weight: 700; border-bottom: none; }
+  .totaux-label { color: #555; }
+  .totaux-val { font-weight: 600; color: #1a1a1a; }
+  .totaux-line.total-final .totaux-label,
+  .totaux-line.total-final .totaux-val { color: #fff; }
+  .reduc-line { color: #c0392b !important; }
+
+  /* POINTS */
+  .pts-block { background: #eaf5ee; border: 1px solid #a8d5ba; border-radius: 6px; padding: 8px 14px; margin-bottom: 6mm; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1d6a3a; font-weight: 600; }
+
+  /* FOOTER */
+  .footer { margin-top: auto; padding-top: 6mm; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: flex-end; }
+  .footer-left { font-size: 10px; color: #aaa; line-height: 1.7; }
+  .footer-badge { background: #c0392b; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; }
+
+  /* CHECKER */
+  .checker { height: 5px; background: repeating-linear-gradient(90deg, #c0392b 0, #c0392b 10px, #fff 10px, #fff 20px); margin-bottom: 0; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="checker"></div>
+<div class="page">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-circle">BS</div>
+      <div>
+        <div class="company-name">Burger Shot</div>
+        <div class="company-sub">Restaurant · Los Santos</div>
+        <div class="company-addr">
+          Hawick Avenue & Power Street<br>
+          Los Santos, San Andreas<br>
+          Direction : Burger Shot Corp.
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="invoice-label">Facture</div>
+      <div class="invoice-num">${numFacture}</div>
+      <div class="invoice-date">${dateStr}</div>
+      <div class="invoice-date" style="color:#888;">${heureStr}</div>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div class="party-block">
+      <div class="party-title">Client</div>
+      <div class="party-name">${clientActif ? `${clientActif.prenom} ${clientActif.nom}` : 'Client comptant'}</div>
+      <div class="party-info">
+        ${clientActif?.telephone ? clientActif.telephone + '<br>' : ''}
+        ${clientActif?.pass ? `Pass : ${clientActif.pass}` : ''}
+        ${!clientActif ? 'Vente au comptant' : ''}
+      </div>
+    </div>
+    <div class="party-block">
+      <div class="party-title">Encaissé par</div>
+      <div class="party-name">${USER?.displayName || '—'}</div>
+      <div class="party-info">
+        Employé Burger Shot<br>
+        ${contratActif ? `Contrat : ${contratActif.nom}` : ''}
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Désignation</th>
+          <th class="col-w">Qté</th>
+          <th class="col-pu">P.U.</th>
+          <th>Total HT</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${commande.map(p => `
+        <tr>
+          <td>${p.nom}${p.contenu ? `<div style="font-size:10px;color:#999;margin-top:2px;">${p.contenu}</div>` : ''}</td>
+          <td class="col-w" style="text-align:center;">${p.qte}</td>
+          <td class="col-pu" style="text-align:right;">${p.prix.toLocaleString('fr-FR')}$</td>
+          <td style="text-align:right;">${(p.prix * p.qte).toLocaleString('fr-FR')}$</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="totaux">
+    <div class="totaux-block">
+      <div class="totaux-line"><span class="totaux-label">Sous-total HT</span><span class="totaux-val">${c.brut.toLocaleString('fr-FR')}$</span></div>
+      ${c.r > 0 ? `<div class="totaux-line"><span class="totaux-label reduc-line">Réduction (${c.r}%)</span><span class="totaux-val reduc-line">−${c.montantR.toLocaleString('fr-FR')}$</span></div>` : ''}
+      <div class="totaux-line"><span class="totaux-label">TVA (20%)</span><span class="totaux-val">${tva.toLocaleString('fr-FR')}$</span></div>
+      <div class="totaux-line total-final"><span class="totaux-label">TOTAL TTC</span><span class="totaux-val">${c.net.toLocaleString('fr-FR')}$</span></div>
+    </div>
+  </div>
+
+  ${pts > 0 ? `<div class="pts-block">★ +${pts} points de fidélité attribués sur ce reçu — Merci pour votre visite !</div>` : ''}
+
+  <div class="footer">
+    <div class="footer-left">
+      Burger Shot © ${now.getFullYear()} — Document confidentiel<br>
+      Conservez ce reçu pour tout échange ou remboursement.<br>
+      Merci de votre fidélité !
+    </div>
+    <div class="footer-badge">Burger Shot</div>
+  </div>
+
+</div>
+</body>
+</html>`;
+
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html],{type:'text/html'}));
-  a.download = `BS_Facture_${c.id||Date.now()}.html`;
+  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
+  a.download = `BS_Facture_${numFacture}.html`;
   a.click();
 }
 
