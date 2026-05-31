@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gouvernement — Inscription</title>
+<link rel="icon" href="https://upload.redstartrp.fr/uploads/photo-1779965966-13fd724e49fb.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#c0392b; --red-dark:#922b21;
+  --bg:#0d0d0d; --card:#141414; --card2:#1c1c1c;
+  --text:#f1f1f1; --muted:#777; --border:rgba(255,255,255,.07);
+  --radius:12px; --success:#27ae60; --orange:#e67e22;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.checker{height:10px;background:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:10px 10px;position:fixed;top:0;left:0;right:0;}
+.wrap{width:100%;max-width:520px;}
+.logo-wrap{text-align:center;margin-bottom:32px;}
+.logo-wrap img{height:80px;filter:drop-shadow(0 0 20px rgba(192,57,43,.5));}
+.title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;color:var(--red);margin-top:12px;}
+.subtitle{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--orange));}
+.step{display:none;} .step.active{display:block;}
+.step-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red);margin-bottom:20px;letter-spacing:1px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.form-input,.form-select{width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;transition:border-color .2s;}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--red);}
+.form-select option{background:var(--card2);}
+.btn{width:100%;padding:12px;border-radius:8px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px;margin-top:8px;}
+.btn-primary{background:var(--red);color:#fff;}
+.btn-primary:hover{background:var(--red-dark);}
+.btn-discord{background:#5865F2;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;}
+.btn-discord:hover{background:#4752c4;}
+.btn-discord svg{width:22px;height:22px;fill:#fff;}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:14px;}
+.alert-ok{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);color:var(--success);}
+.alert-err{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);color:var(--red);}
+.user-info{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card2);border-radius:10px;margin-bottom:20px;border:1px solid var(--border);}
+.user-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;}
+.user-avatar img{width:100%;height:100%;object-fit:cover;}
+.user-name{font-weight:700;font-size:15px;}
+.user-discord{font-size:11px;color:var(--muted);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fonctions-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.fonction-card{background:var(--card2);border:2px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:.2s;text-align:center;}
+.fonction-card:hover{border-color:var(--red);}
+.fonction-card.selected{border-color:var(--red);background:rgba(192,57,43,.1);}
+.fonction-card-icon{font-size:22px;margin-bottom:4px;}
+.fonction-card-label{font-size:11px;font-weight:700;letter-spacing:.5px;}
+.upload-zone{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:.2s;position:relative;}
+.upload-zone:hover{border-color:var(--red);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-preview{max-width:100%;border-radius:8px;margin-top:10px;display:none;}
+.step-indicator{display:flex;gap:6px;justify-content:center;margin-bottom:24px;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.2s;}
+.step-dot.active{background:var(--red);width:24px;border-radius:4px;}
+.step-dot.done{background:var(--success);}
+</style>
+</head>
+<body>
+<div class="checker"></div>
+
+<div class="wrap">
+  <div class="logo-wrap">
+    <img src="https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png" alt="Burger Shot">
+    <div class="title">Espace Gouvernement</div>
+    <div class="subtitle">Demande d'accès au dashboard</div>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+  </div>
+
+  <div class="card">
+    <div id="alertMain"></div>
+
+    <!-- STEP 0 : Connexion Discord -->
+    <div class="step active" id="step0">
+      <div class="step-title">🔐 Connexion Discord</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Connectez-vous avec votre compte Discord pour commencer votre demande d'accès gouvernement.</p>
+      <button class="btn btn-discord" onclick="loginDiscord()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.101 18.079.11 18.1.127 18.113a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Se connecter avec Discord
+      </button>
+    </div>
+
+    <!-- STEP 1 : Infos personnelles -->
+    <div class="step" id="step1">
+      <div class="step-title">👤 Vos informations</div>
+      <div id="userInfoDisplay"></div>
+      <div class="g2">
+        <div class="form-group"><label class="form-label">Nom RP</label><input class="form-input" id="gNom" placeholder="DUPONT"></div>
+        <div class="form-group"><label class="form-label">Prénom RP</label><input class="form-input" id="gPrenom" placeholder="Jean"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fonction au gouvernement</label>
+        <div class="fonctions-grid" id="fonctionsGrid"></div>
+      </div>
+      <div class="form-group" id="autreFonctionWrap" style="display:none;">
+        <label class="form-label">Précisez votre fonction</label>
+        <input class="form-input" id="gAutreFonction" placeholder="Ex: Inspecteur des finances...">
+      </div>
+      <button class="btn btn-primary" onclick="goStep2()">Continuer →</button>
+    </div>
+
+    <!-- STEP 2 : Preuve -->
+    <div class="step" id="step2">
+      <div class="step-title">📸 Preuve de fonction</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Fournissez une capture d'écran prouvant votre poste au gouvernement (badge, document officiel, etc.)</p>
+      <div class="form-group">
+        <label class="form-label">Upload preuve (image)</label>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" accept="image/*" onchange="handleUpload(this)">
+          <div style="font-size:28px;margin-bottom:6px;">📁</div>
+          <div style="font-size:13px;color:var(--muted);">Cliquez ou glissez une image</div>
+          <img class="upload-preview" id="uploadPreview">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ou lien URL de la preuve</label>
+        <input class="form-input" id="gPreuveUrl" placeholder="https://...">
+      </div>
+      <button class="btn btn-primary" onclick="soumettre()">✅ Soumettre ma demande</button>
+    </div>
+
+    <!-- STEP 3 : Confirmation -->
+    <div class="step" id="step3">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:64px;margin-bottom:16px;">✅</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--success);letter-spacing:2px;">Demande envoyée !</div>
+        <p style="color:var(--muted);font-size:13px;margin-top:12px;line-height:1.6;">Votre demande a été transmise à la direction du Burger Shot.<br>Vous serez notifié une fois votre accès validé.</p>
+        <div style="margin-top:20px;padding:14px;background:var(--card2);border-radius:10px;font-size:13px;color:var(--muted);">
+          <strong style="color:var(--text);">Récapitulatif</strong><br>
+          <div id="recapContent" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
+
+const DISCORD_CLIENT_ID = 'TON_CLIENT_ID_ICI';
+const REDIRECT_URI = encodeURIComponent(window.location.origin + '/gouv.html');
+
+const FONCTIONS = [
+  {id:'maire', icon:'🏛️', label:'Maire'},
+  {id:'adjoint', icon:'🤝', label:'Adjoint au Maire'},
+  {id:'ministre', icon:'📋', label:'Ministre'},
+  {id:'conseiller', icon:'💼', label:'Conseiller'},
+  {id:'inspecteur', icon:'🔍', label:'Inspecteur'},
+  {id:'secretaire', icon:'📝', label:'Secrétaire'},
+  {id:'autre', icon:'➕', label:'Autre'},
+];
+
+let currentUser = null;
+let selectedFonction = null;
+let preuveBase64 = null;
+
+async function sb(endpoint, opts={}) {
+  const r = await fetch(`${SB_URL}/rest/v1/${endpoint}`, {
+    headers: {apikey:SB_KEY, Authorization:`Bearer ${SB_KEY}`, 'Content-Type':'application/json', Prefer:'return=representation', ...(opts.headers||{})},
+    method: opts.method||'GET', body: opts.body
+  });
+  try { return await r.json(); } catch { return []; }
+}
+
+// Gestion OAuth Discord
+function loginDiscord() {
+  const state = Math.random().toString(36).slice(2);
+  sessionStorage.setItem('discord_state', state);
+  const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=identify&state=${state}`;
+  window.location.href = url;
+}
+
+async function handleCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  if (!code) return;
+  // Nettoie l'URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+  // Récupère le token via ton backend ou utilise le localStorage si déjà connecté
+  const stored = localStorage.getItem('bs_user');
+  if (stored) {
+    try {
+      currentUser = JSON.parse(stored);
+      goStep1();
+      return;
+    } catch {}
+  }
+  document.getElementById('alertMain').innerHTML = '<div class="alert alert-err">⚠️ Connectez-vous d\'abord sur la page principale, puis revenez ici.</div>';
+}
+
+function goStep1() {
+  if (!currentUser) {
+    // Vérifie localStorage
+    const stored = localStorage.getItem('bs_user');
+    if (stored) { try { currentUser = JSON.parse(stored); } catch {} }
+  }
+  if (!currentUser) {
+    document.getElementById('alertMain').innerHTML = '<div class="alert alert-err">⚠️ Vous devez d\'abord vous connecter via la page principale.</div>';
+    return;
+  }
+  setStep(1);
+  // Affiche infos user
+  const avatarHtml = currentUser.avatar
+    ? `<img src="https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png">`
+    : currentUser.username?.charAt(0).toUpperCase();
+  document.getElementById('userInfoDisplay').innerHTML = `
+    <div class="user-info">
+      <div class="user-avatar">${avatarHtml}</div>
+      <div>
+        <div class="user-name">${currentUser.username}</div>
+        <div class="user-discord">ID: ${currentUser.id}</div>
+      </div>
+    </div>`;
+  // Fonctions
+  document.getElementById('fonctionsGrid').innerHTML = FONCTIONS.map(f => `
+    <div class="fonction-card" id="fc-${f.id}" onclick="selectFonction('${f.id}','${f.label}')">
+      <div class="fonction-card-icon">${f.icon}</div>
+      <div class="fonction-card-label">${f.label}</div>
+    </div>`).join('');
+}
+
+function selectFonction(id, label) {
+  document.querySelectorAll('.fonction-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(`fc-${id}`).classList.add('selected');
+  selectedFonction = label;
+  document.getElementById('autreFonctionWrap').style.display = id === 'autre' ? 'block' : 'none';
+}
+
+function goStep2() {
+  const nom = document.getElementById('gNom').value.trim();
+  const prenom = document.getElementById('gPrenom').value.trim();
+  if (!nom || !prenom) { document.getElementById('alertMain').innerHTML='<div class="alert alert-err">⚠️ Nom et prénom obligatoires.</div>'; return; }
+  if (!selectedFonction) { document.getElementById('alertMain').innerHTML='<div class="alert alert-err">⚠️ Sélectionnez votre fonction.</div>'; return; }
+  document.getElementById('alertMain').innerHTML = '';
+  setStep(2);
+}
+
+function handleUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    preuveBase64 = e.target.result;
+    const prev = document.getElementById('uploadPreview');
+    prev.src = preuveBase64;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function soumettre() {
+  const nom = document.getElementById('gNom').value.trim();
+  const prenom = document.getElementById('gPrenom').value.trim();
+  const preuveUrl = document.getElementById('gPreuveUrl').value.trim() || preuveBase64 || null;
+  const fonctionFinale = selectedFonction === 'Autre'
+    ? document.getElementById('gAutreFonction').value.trim()
+    : selectedFonction;
+  if (!preuveUrl) { document.getElementById('alertMain').innerHTML='<div class="alert alert-err">⚠️ Fournissez une preuve (image ou URL).</div>'; return; }
+
+  // Vérifie si déjà une demande en attente
+  const existing = await sb(`gouvernement_demandes?discord_id=eq.${currentUser.id}&statut=eq.en_attente`);
+  if (existing?.length) {
+    document.getElementById('alertMain').innerHTML='<div class="alert alert-err">⚠️ Vous avez déjà une demande en attente.</div>';
+    return;
+  }
+
+  await sb('gouvernement_demandes', {method:'POST', body:JSON.stringify({
+    discord_id: currentUser.id,
+    username: currentUser.username,
+    avatar: currentUser.avatar || null,
+    nom, prenom,
+    fonction: fonctionFinale,
+    preuve_url: preuveUrl,
+    statut: 'en_attente'
+  })});
+
+  document.getElementById('recapContent').innerHTML = `
+    <div>${prenom} ${nom}</div>
+    <div style="color:var(--orange);">${fonctionFinale}</div>
+    <div style="font-size:11px;margin-top:4px;">Discord : ${currentUser.username} (${currentUser.id})</div>`;
+  setStep(3);
+}
+
+function setStep(n) {
+  document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i===n));
+  document.querySelectorAll('.step-dot').forEach((d,i) => {
+    d.classList.toggle('active', i===n);
+    d.classList.toggle('done', i<n);
+  });
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  const stored = localStorage.getItem('bs_user');
+  if (stored) {
+    try { currentUser = JSON.parse(stored); goStep1(); return; } catch {}
+  }
+  handleCallback();
+});
+</script>
+</body>
+</html>
