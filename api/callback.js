@@ -36,6 +36,7 @@ export default async function handler(req, res) {
       headers: { Authorization: `Bearer ${token.access_token}` },
     });
     const du = await userRes.json();
+    console.log('Discord user:', du.id, du.username);
 
     // 3) Direction / gouvernement ou employé Supabase
     const DIR_IDS  = ['280415204477501451','1157333780898529333','370510144766738432'];
@@ -49,11 +50,12 @@ export default async function handler(req, res) {
         { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
       );
       const empArr = await empRes.json();
+      console.log('Supabase result:', JSON.stringify(empArr));
       if (!Array.isArray(empArr) || !empArr.length) return res.redirect('/?error=not_registered');
       empRow = empArr[0];
     }
 
-    // 4) Encode les données en base64 dans un cookie de session puis redirige proprement
+    // 4) Pose un cookie HTTP avec les données user (valable 8h)
     const userData = Buffer.from(JSON.stringify({
       id:       du.id,
       username: du.username,
@@ -62,8 +64,8 @@ export default async function handler(req, res) {
       prenom:   empRow?.prenom || '',
     })).toString('base64');
 
-    // On passe par /auth.html (page intermédiaire invisible) qui stocke en sessionStorage
-    res.redirect(`/auth.html#${userData}`);
+    res.setHeader('Set-Cookie', `bs_user=${userData}; Path=/; Max-Age=28800; SameSite=Lax; HttpOnly=false`);
+    res.redirect('/dashboard.html');
 
   } catch (err) {
     console.error('CALLBACK ERROR:', err.message);
