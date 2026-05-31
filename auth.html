@@ -1,1 +1,29 @@
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Burger Shot — Chargement</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#0d0d0d;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Barlow',sans-serif;color:#f1f1f1;}
+  .spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:#c0392b;border-radius:50%;animation:s .7s linear infinite;}
+  @keyframes s{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="spin"></div>
+<script>
+  try {
+    const hash = location.hash.slice(1);
+    if (!hash) { location.href = '/?error=no_session'; }
+    else {
+      const data = JSON.parse(atob(hash));
+      sessionStorage.setItem('bs_user', JSON.stringify(data));
+      location.replace('/dashboard.html');
+    }
+  } catch(e) {
+    location.href = '/?error=parse_error';
+  }
+</script>
+</body>
+</html>
