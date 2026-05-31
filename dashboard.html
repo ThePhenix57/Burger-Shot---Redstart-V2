@@ -898,7 +898,7 @@ function toggleTheme() {
   h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
   b.textContent = h.dataset.theme === 'dark' ? '☀️' : '🌙';
 }
-function logout() { location.href='/'; }
+function logout() { sessionStorage.removeItem('bs_user'); location.href='/'; }
 
 function getEmoji(cat) { return CAT_EMOJI[cat] || '🍽️'; }
 
