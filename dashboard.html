@@ -651,7 +651,16 @@ function buildPages() {
     </div>
   </div>
   <div class="card"><div id="calContainer"></div></div>
-  <div class="card" style="margin-top:20px;"><div class="card-title">Événements du mois</div><div id="calListe"></div></div></div>`;
+      <div class="card" style="margin-top:20px;">
+      <div class="card-title">🏦 Coffre</div>
+      <div class="g4" id="coffreStats" style="margin-bottom:20px;"></div>
+      <div class="card-title">Historique</div>
+      <div id="coffreHisto"></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">🏛️ Demandes Gouvernement</div>
+      <div id="gouvDemandes"><div class="loading"><div class="spin"></div></div></div>
+    </div></div>`;
 
   // STATS
   html += `<div class="page" id="page-stats"><div class="red-line"></div>
@@ -2318,6 +2327,40 @@ async function loadQuotaTickets() {
 
   if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun ticket en attente.</p>';return;}
 
+  // Charge les demandes gouvernement
+const demandes = await sb('gouvernement_demandes?statut=eq.en_attente&order=created_at.desc') || [];
+const demandesEl = document.getElementById('gouvDemandes');
+if (demandesEl) {
+  if (!demandes.length) { demandesEl.innerHTML='<p style="color:var(--muted)">Aucune demande en attente.</p>'; }
+  else demandesEl.innerHTML = demandes.map(d => `
+    <div style="padding:16px;background:var(--card2);border-radius:10px;margin-bottom:10px;border-left:3px solid var(--orange);">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div>
+          <strong style="font-size:15px;">${d.prenom} ${d.nom}</strong>
+          <span class="badge badge-orange" style="margin-left:8px;">${d.fonction}</span>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Discord : ${d.username} · ${d.discord_id}</div>
+          <div style="font-size:11px;color:var(--muted);">${new Date(d.created_at).toLocaleString('fr-FR')}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-success btn-sm" onclick="validerGouv('${d.id}','${d.discord_id}','${d.nom}','${d.prenom}')">✅ Valider</button>
+          <button class="btn btn-danger btn-sm" onclick="refuserGouv('${d.id}')">❌ Refuser</button>
+        </div>
+      </div>
+      ${d.preuve_url ? `<img src="${d.preuve_url}" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain;border:1px solid var(--border);" onerror="this.style.display='none'">` : ''}
+    </div>`).join('');
+}
+  async function validerGouv(id, discordId, nom, prenom) {
+  await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'valide'})});
+  // Ajoute dans la liste des IDs gouvernement (optionnel, ou juste noter dans la table)
+  alert(`✅ ${prenom} ${nom} validé comme membre du gouvernement !`);
+  loadGestion();
+}
+
+async function refuserGouv(id) {
+  await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'refuse'})});
+  loadGestion();
+}
+  
   // Récupère les infos employés
   const discordIds=[...new Set(data.map(t=>t.employe_discord_id).filter(Boolean))];
   let empMap={};
