@@ -521,7 +521,18 @@ async function sb(endpoint, opts = {}) {
 window.addEventListener('DOMContentLoaded', async () => {
 const cookie = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('bs_user='));
 if (!cookie) { location.href = '/'; return; }
-const { id, username, avatar, nom, prenom } = JSON.parse(atob(cookie.split('=')[1]));
+
+let userData;
+try {
+  const raw = cookie.split('=').slice(1).join('='); // gère les = dans le base64
+  userData = JSON.parse(atob(decodeURIComponent(raw)));
+} catch(e) {
+  console.error('Cookie parse error:', e);
+  location.href = '/';
+  return;
+}
+
+const { id, username, avatar, nom, prenom } = userData;
 if (!id) { location.href = '/'; return; }
 ROLE = GOUV_IDS.includes(id) ? 'gouvernement' : DIR_IDS.includes(id) ? 'direction' : 'employe';
 const displayName = (prenom && nom) ? `${prenom} ${nom}` : username;
