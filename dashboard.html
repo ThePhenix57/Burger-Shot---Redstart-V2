@@ -1086,7 +1086,7 @@ function ouvrirValidation() {
 
 async function confirmerCommande(avecPDF=false) {
   const c = calcCmd(); const pts = calcPts(); const semaine = getSemaine();
-  await sb('commandes',{method:'POST',body:JSON.stringify({
+  const cmdResult = await sb('commandes',{method:'POST',body:JSON.stringify({
     client_id:clientActif?.id||null,
     employe_discord_id:USER.id,
     items:JSON.stringify(commande),
@@ -1098,6 +1098,7 @@ async function confirmerCommande(avecPDF=false) {
     semaine,
     tva:Math.round(c.net*.20)
   })});
+console.log('COMMANDE RESULT:', cmdResult);
 
   if (clientActif && pts>0) {
     await sb(`clients?id=eq.${clientActif.id}`,{method:'PATCH',body:JSON.stringify({points:(clientActif.points||0)+pts})});
