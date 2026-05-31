@@ -42,7 +42,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .topbar-actions{display:flex;align-items:center;gap:8px;}
 
 /* NAV */
-.topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;}
+.topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;position:relative;}
 .topbar-nav::-webkit-scrollbar{display:none;}
 .nav-group{display:flex;align-items:center;}
 .nav-logo-center{display:flex;align-items:center;justify-content:center;padding:4px 80px;pointer-events:none;}
@@ -556,7 +556,7 @@ function buildNav() {
   nav.style.justifyContent = 'space-between';
   nav.innerHTML =
     `<div class="nav-group">${left.map(renderItem).join('')}</div>` +
-    `<div class="nav-logo-center" style="padding:4px 80px;"><img src="${LOGO}" alt="BS"></div>` +
+    `<div style="position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;height:100%;"><img src="https://upload.redstartrp.fr/uploads/photo-1780269854-a31c4ccbae7b.png" style="height:26px;object-fit:contain;"></div>` +
     `<div class="nav-group">${right.map(renderItem).join('')}</div>`;
 }
 
