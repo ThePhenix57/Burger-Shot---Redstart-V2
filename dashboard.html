@@ -7,175 +7,81 @@
 <link rel="icon" href="https://upload.redstartrp.fr/uploads/photo-1779965966-13fd724e49fb.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════
-   VARIABLES & RESET
-═══════════════════════════════════════ */
 :root {
   --red:#c0392b; --red-dark:#922b21; --red-light:#e74c3c;
   --orange:#e67e22; --success:#27ae60; --warning:#f39c12; --blue:#3498db;
   --bg:#0d0d0d; --card:#141414; --card2:#1c1c1c; --card3:#222;
   --text:#f1f1f1; --muted:#777; --border:rgba(255,255,255,.07);
-  --shadow:0 4px 24px rgba(0,0,0,.4);
-  --radius:12px;
+  --shadow:0 4px 24px rgba(0,0,0,.4); --radius:12px;
 }
 [data-theme="light"] {
   --bg:#ede9e3; --card:#fff; --card2:#f5f1eb; --card3:#eee;
-  --text:#111; --muted:#666; --border:rgba(0,0,0,.08);
-  --shadow:0 4px 24px rgba(0,0,0,.1);
+  --text:#111; --muted:#666; --border:rgba(0,0,0,.08); --shadow:0 4px 24px rgba(0,0,0,.1);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s;}
 a{text-decoration:none;color:inherit;}
-button{font-family:'Barlow',sans-serif;}
-input,select,textarea{font-family:'Barlow',sans-serif;}
+button,input,select,textarea{font-family:'Barlow',sans-serif;}
 
-/* ═══════════════════════════════════════
-   TOPBAR
-═══════════════════════════════════════ */
+/* TOPBAR */
 .topbar{position:sticky;top:0;z-index:200;}
-
-/* Ligne damier */
-.checker-bar{
-  height:12px;
-  background:repeating-linear-gradient(90deg,var(--red) 0,var(--red) 12px,#fff 12px,#fff 24px);
-}
-
-/* Barre principale */
-.topbar-main{
-  display:flex;align-items:center;
-  background:var(--card);
-  border-bottom:1px solid var(--border);
-  padding:0 28px;
-  height:64px;
-  gap:20px;
-}
-
-/* Logo centré */
-.topbar-logo{
-  position:absolute;left:60%;transform:translateX(-40%);
-  display:flex;flex-direction:column;align-items:center;
-  pointer-events:none;
-}
+.checker-bar{height:12px;background:repeating-linear-gradient(90deg,var(--red) 0,var(--red) 12px,#fff 12px,#fff 24px);}
+.topbar-main{display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:64px;gap:20px;position:relative;}
+.topbar-logo{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;}
 .topbar-logo img{height:44px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(192,57,43,.4));}
-.topbar-logo-sub{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:1px;}
-
-/* Identité droite */
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px;position:relative;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px;}
 .topbar-user{display:flex;flex-direction:column;align-items:flex-end;}
 .topbar-user-name{font-size:14px;font-weight:700;letter-spacing:.5px;}
 .topbar-user-role{font-size:10px;color:var(--orange);text-transform:uppercase;letter-spacing:1.5px;margin-top:1px;}
-.topbar-avatar{
-  width:38px;height:38px;border-radius:50%;
-  background:var(--red);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:15px;
-  overflow:hidden;
-  border:2px solid rgba(192,57,43,.5);
-  flex-shrink:0;
-}
+.topbar-avatar{width:38px;height:38px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;overflow:hidden;border:2px solid rgba(192,57,43,.5);flex-shrink:0;}
 .topbar-avatar img{width:100%;height:100%;object-fit:cover;}
-.topbar-actions{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.btn-theme{
-  width:30px;height:30px;border-radius:50%;
-  background:var(--card2);border:1px solid var(--border);
-  color:var(--text);font-size:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:.2s;
-}
+.btn-theme{width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
 .btn-theme:hover{border-color:var(--red);}
-.btn-logout{
-  padding:4px 12px;
-  background:rgba(192,57,43,.15);
-  border:1px solid rgba(192,57,43,.3);
-  border-radius:20px;
-  color:var(--red);
-  font-size:10px;font-weight:700;
-  letter-spacing:1px;text-transform:uppercase;
-  cursor:pointer;transition:.2s;
-  white-space:nowrap;
-}
+.btn-logout{padding:4px 12px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:20px;color:var(--red);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:.2s;white-space:nowrap;}
 .btn-logout:hover{background:var(--red);color:#fff;}
+.topbar-actions{display:flex;align-items:center;gap:8px;}
 
-/* Nav bar */
-.topbar-nav{
-  display:flex;align-items:center;
-  background:var(--red);
-  min-height:38px;
-  overflow-x:auto;
-  scrollbar-width:none;
-  position:relative;
-}
+/* NAV */
+.topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;}
 .topbar-nav::-webkit-scrollbar{display:none;}
 .nav-group{display:flex;align-items:center;}
-.nav-spacer{flex:1;}
-.nav-logo-center{
-  display:flex;align-items:center;justify-content:center;
-  padding:4px 20px;pointer-events:none;
-}
+.nav-logo-center{display:flex;align-items:center;justify-content:center;padding:4px 20px;pointer-events:none;}
 .nav-logo-center img{height:22px;filter:brightness(0) invert(1);opacity:.85;}
-.nav-item{
-  padding:9px 16px;
-  font-size:11px;font-weight:700;
-  letter-spacing:1.5px;text-transform:uppercase;
-  color:rgba(255,255,255,.75);
-  cursor:pointer;white-space:nowrap;
-  border-bottom:3px solid transparent;
-  transition:.15s;flex-shrink:0;
-  display:flex;align-items:center;gap:6px;
-}
+.nav-item{padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.75);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:.15s;flex-shrink:0;display:flex;align-items:center;gap:6px;}
 .nav-item:hover{color:#fff;background:rgba(0,0,0,.15);}
 .nav-item.active{color:#fff;background:rgba(0,0,0,.2);border-bottom-color:#fff;}
+.nav-badge{background:rgba(255,255,255,.25);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-weight:800;}
 
-/* ═══════════════════════════════════════
-   LAYOUT
-═══════════════════════════════════════ */
+/* LAYOUT */
 .content{padding:28px;width:100%;max-width:1400px;margin:0 auto;}
 .page{display:none;}
 .page.active{display:block;}
 
-/* ═══════════════════════════════════════
-   COMPOSANTS RÉUTILISABLES
-═══════════════════════════════════════ */
+/* COMPOSANTS */
 .red-line{height:3px;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:2px;margin-bottom:24px;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
 .card-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--red);margin-bottom:16px;}
-
-/* Grilles */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
 
-/* Stats */
-.stat-card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:20px;position:relative;overflow:hidden;
-}
+/* STAT CARD */
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;background:var(--accent,var(--red));}
-.stat-icon{
-  width:38px;height:38px;border-radius:9px;
-  display:flex;align-items:center;justify-content:center;font-size:17px;
-  background:var(--accent-bg,rgba(192,57,43,.12));
-  border:1px solid var(--accent-border,rgba(192,57,43,.25));
-  margin-bottom:12px;
-}
+.stat-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;background:var(--accent-bg,rgba(192,57,43,.12));border:1px solid var(--accent-border,rgba(192,57,43,.25));margin-bottom:12px;}
 .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:5px;}
 .stat-value{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;color:var(--accent,var(--red));line-height:1;}
 .stat-sub{font-size:12px;color:var(--muted);margin-top:5px;}
 
-/* Formulaires */
+/* FORMULAIRES */
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.form-input,.form-select{
-  width:100%;padding:10px 14px;
-  background:var(--card2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-size:14px;
-  transition:border-color .2s;
-}
+.form-input,.form-select{width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;transition:border-color .2s;}
 .form-input:focus,.form-select:focus{outline:none;border-color:var(--red);}
 .form-select option{background:var(--card2);}
 textarea.form-input{resize:vertical;min-height:80px;}
 
-/* Boutons */
+/* BOUTONS */
 .btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:7px;}
 .btn-primary{background:var(--red);color:#fff;}
 .btn-primary:hover{background:var(--red-dark);transform:translateY(-1px);}
@@ -187,8 +93,9 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .btn-sm{padding:6px 12px;font-size:11px;}
 .btn-orange{background:var(--orange);color:#fff;}
 .btn-orange:hover{opacity:.9;}
+.btn-blue{background:var(--blue);color:#fff;}
 
-/* Badges */
+/* BADGES */
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;}
 .badge-red{background:rgba(192,57,43,.2);color:var(--red);}
 .badge-green{background:rgba(39,174,96,.2);color:var(--success);}
@@ -197,71 +104,46 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .badge-gold{background:rgba(241,196,15,.2);color:#f1c40f;}
 .badge-purple{background:rgba(155,89,182,.2);color:#9b59b6;}
 
-/* Tableaux */
+/* TABLEAUX */
 table{width:100%;border-collapse:collapse;}
 th{text-align:left;padding:10px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
 td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--card2);}
 
-/* Alertes */
+/* ALERTES */
 .alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:14px;}
 .alert-ok{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);color:var(--success);}
 .alert-err{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);color:var(--red);}
 .alert-warn{background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);color:var(--orange);}
 
-/* Popups */
+/* POPUPS */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px);}
 .popup{width:520px;max-width:96vw;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;max-height:90vh;overflow-y:auto;}
 .popup-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--red);margin-bottom:18px;}
 
-/* Loading */
+/* LOADING */
 .loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--muted);gap:10px;font-size:14px;}
 .spin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ═══════════════════════════════════════
-   ACCUEIL — HERO
-═══════════════════════════════════════ */
-.hero{
-  background:var(--card);border:1px solid var(--border);border-radius:16px;
-  padding:28px 32px;display:flex;align-items:center;gap:24px;
-  margin-bottom:24px;position:relative;overflow:hidden;
-}
+/* HERO */
+.hero{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;display:flex;align-items:center;gap:24px;margin-bottom:24px;position:relative;overflow:hidden;}
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--orange),var(--red));}
-.hero::after{
-  content:'BURGER SHOT';position:absolute;right:20px;top:50%;transform:translateY(-50%);
-  font-family:'Bebas Neue',sans-serif;font-size:110px;letter-spacing:6px;
-  color:rgba(192,57,43,.04);pointer-events:none;white-space:nowrap;line-height:1;
-}
-.hero-avatar{
-  width:68px;height:68px;border-radius:50%;background:var(--red);
-  display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;
-  overflow:hidden;border:3px solid rgba(192,57,43,.4);
-  box-shadow:0 0 24px rgba(192,57,43,.3);flex-shrink:0;
-}
+.hero::after{content:'BURGER SHOT';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-family:'Bebas Neue',sans-serif;font-size:110px;letter-spacing:6px;color:rgba(192,57,43,.04);pointer-events:none;white-space:nowrap;line-height:1;}
+.hero-avatar{width:68px;height:68px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;overflow:hidden;border:3px solid rgba(192,57,43,.4);box-shadow:0 0 24px rgba(192,57,43,.3);flex-shrink:0;}
 .hero-avatar img{width:100%;height:100%;object-fit:cover;}
 .hero-name{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:2px;line-height:1;}
 .hero-name span{color:var(--red);}
 .hero-sub{font-size:12px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
 .hero-tags{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
 
-/* ═══════════════════════════════════════
-   CAISSE
-═══════════════════════════════════════ */
+/* CAISSE */
 .caisse-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;}
 .caisse-cat{margin-bottom:24px;}
-.caisse-cat-title{
-  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:var(--red);
-  margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--red);
-  display:flex;align-items:center;gap:7px;
-}
+.caisse-cat-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:var(--red);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--red);display:flex;align-items:center;gap:7px;}
 .caisse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
-.prod-card{
-  background:var(--card2);border:2px solid var(--border);border-radius:10px;
-  cursor:pointer;transition:.2s;overflow:hidden;display:flex;flex-direction:column;
-  position:relative;
-}
+.prod-card{background:var(--card2);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:.2s;overflow:hidden;display:flex;flex-direction:column;position:relative;}
 .prod-card:hover{transform:translateY(-3px);border-color:var(--red);box-shadow:0 8px 24px rgba(192,57,43,.2);}
 .prod-card:active{transform:scale(.97);}
 .prod-img{width:100%;aspect-ratio:1;background:var(--card);display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--border);}
@@ -276,13 +158,9 @@ tr:hover td{background:var(--card2);}
 .prod-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transition:.2s;}
 .prod-card:hover::after{transform:scaleX(1);}
 
-/* Ticket */
+/* TICKET */
 .ticket-wrap{position:sticky;top:114px;}
-.ticket{
-  background:#f7f2e8;color:#111;border-radius:12px;padding:22px;
-  font-family:'Courier New',monospace;
-  box-shadow:0 10px 40px rgba(0,0,0,.5);
-}
+.ticket{background:#f7f2e8;color:#111;border-radius:12px;padding:22px;font-family:'Courier New',monospace;box-shadow:0 10px 40px rgba(0,0,0,.5);}
 .ticket-head{text-align:center;margin-bottom:14px;}
 .ticket-logo-txt{font-size:20px;font-weight:900;letter-spacing:2px;}
 .ticket-addr{font-size:11px;color:#555;margin-top:3px;}
@@ -290,73 +168,79 @@ tr:hover td{background:var(--card2);}
 .ticket-lines{min-height:50px;}
 .t-line{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px;}
 .t-empty{text-align:center;color:#999;font-size:13px;padding:18px 0;}
-.ticket-totals{}
 .t-total{font-size:17px;font-weight:900;text-align:right;}
 .t-reduc{font-size:12px;color:#c0392b;text-align:right;margin-top:3px;}
 .t-pts{font-size:11px;color:#555;text-align:right;margin-top:3px;}
-.ticket-footer{margin-top:10px;font-size:11px;color:#666;}
 .ticket-btns{display:flex;gap:8px;margin-top:16px;}
 .ticket-btns .btn{flex:1;justify-content:center;}
 
-/* ═══════════════════════════════════════
-   QUOTA EMPLOYÉ
-═══════════════════════════════════════ */
-.quota-card{
-  background:linear-gradient(135deg,rgba(192,57,43,.1),rgba(230,126,34,.08));
-  border:1px solid rgba(192,57,43,.25);border-radius:14px;padding:24px;
-}
-.quota-progress-wrap{margin:16px 0;}
-.quota-bar-bg{height:12px;background:var(--card3);border-radius:6px;overflow:hidden;}
-.quota-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:6px;transition:width .5s ease;}
-.quota-pct{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);line-height:1;margin-top:6px;}
+/* EMPLOYEE CARDS */
+.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.emp-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.2s;}
+.emp-card:hover{border-color:rgba(192,57,43,.4);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.emp-card-header{background:linear-gradient(135deg,rgba(192,57,43,.15),rgba(230,126,34,.08));padding:18px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
+.emp-avatar{width:48px;height:48px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;border:2px solid rgba(192,57,43,.4);}
+.emp-name{font-size:16px;font-weight:800;letter-spacing:.3px;}
+.emp-discord{font-size:10px;color:var(--muted);margin-top:1px;}
+.emp-card-body{padding:16px 20px;}
+.emp-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.emp-stat{text-align:center;background:var(--card2);border-radius:8px;padding:8px 4px;}
+.emp-stat-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--red);}
+.emp-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.emp-prime{display:flex;align-items:center;justify-content:space-between;background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:8px;padding:8px 12px;margin-bottom:12px;}
+.emp-prime-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);}
+.emp-card-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.emp-selects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.emp-selects select{padding:6px 10px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;}
+.emp-selects select:focus{outline:none;border-color:var(--red);}
 
-/* ═══════════════════════════════════════
-   CALENDRIER
-═══════════════════════════════════════ */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;}
-.cal-day-name{text-align:center;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 0;}
-.cal-day{
-  min-height:70px;background:var(--card2);border:1px solid var(--border);border-radius:8px;
-  padding:6px;cursor:pointer;transition:.2s;position:relative;
-}
-.cal-day:hover{border-color:var(--red);}
-.cal-day.today{border-color:var(--red);background:rgba(192,57,43,.08);}
-.cal-day.other-month{opacity:.35;}
-.cal-day-num{font-size:12px;font-weight:700;margin-bottom:4px;}
-.cal-event{
-  font-size:9px;background:var(--red);color:#fff;
-  border-radius:3px;padding:2px 4px;margin-bottom:2px;
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-}
+/* QUOTA PAGE */
+.quota-hero{background:linear-gradient(135deg,rgba(192,57,43,.12),rgba(230,126,34,.08));border:1px solid rgba(192,57,43,.25);border-radius:16px;padding:28px;margin-bottom:24px;}
+.quota-pct-big{font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--red);line-height:1;letter-spacing:2px;}
+.quota-bar-bg{height:14px;background:var(--card3);border-radius:7px;overflow:hidden;margin:10px 0;}
+.quota-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:7px;transition:width .6s ease;}
 
-/* ═══════════════════════════════════════
-   STATS — Heatmap
-═══════════════════════════════════════ */
-.heatmap-grid{display:grid;grid-template-columns:60px repeat(7,1fr);gap:2px;margin-top:10px;}
-.heatmap-cell{
-  height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;transition:.2s;
-}
-.heatmap-label{font-size:10px;color:var(--muted);display:flex;align-items:center;}
+/* QUOTA TICKET CARD */
+.quota-ticket{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;border-left:3px solid var(--orange);transition:.2s;}
+.quota-ticket.pending{border-left-color:var(--warning);}
+.quota-ticket.validated{border-left-color:var(--success);opacity:.6;}
+.quota-ticket.refused{border-left-color:var(--red);opacity:.5;}
 
-/* ═══════════════════════════════════════
-   GESTION PRODUITS (direction)
-═══════════════════════════════════════ */
-.menu-prod-card{
-  background:var(--card2);border:1px solid var(--border);border-radius:10px;
-  padding:12px;text-align:center;position:relative;
-}
+/* CALENDRIER */
+.cal-table{width:100%;border-collapse:separate;border-spacing:4px;}
+.cal-th{text-align:center;padding:8px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.cal-td{vertical-align:top;width:14.28%;}
+.cal-cell{min-height:90px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;transition:.2s;position:relative;}
+.cal-cell:hover{border-color:var(--red);background:rgba(192,57,43,.06);}
+.cal-cell.today{border-color:var(--red);background:rgba(192,57,43,.1);}
+.cal-cell.today .cal-cell-num{color:var(--red);font-weight:900;}
+.cal-cell.other-month{opacity:.35;}
+.cal-cell.other-month:hover{opacity:.6;}
+.cal-cell-num{font-size:14px;font-weight:700;margin-bottom:5px;}
+.cal-event-pill{font-size:9px;background:var(--red);color:#fff;border-radius:4px;padding:2px 6px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;}
+.cal-event-pill.resa{background:var(--blue);}
+.cal-event-pill.reunion{background:#9b59b6;}
+.cal-cell-add{position:absolute;bottom:4px;right:4px;width:18px;height:18px;background:rgba(192,57,43,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:.2s;}
+.cal-cell:hover .cal-cell-add{opacity:1;}
+
+/* MENU PROD */
+.menu-prod-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;position:relative;}
 .menu-prod-card img{width:56px;height:56px;object-fit:contain;margin-bottom:6px;}
 .menu-prod-actions{position:absolute;top:6px;right:6px;display:flex;gap:3px;}
 .menu-prod-actions button{background:none;border:none;cursor:pointer;font-size:14px;padding:2px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px;}
 </style>
 </head>
 <body>
 
-<!-- ═══ TOPBAR ═══ -->
+<!-- TOPBAR -->
 <div class="topbar">
   <div class="checker-bar"></div>
-  <div class="topbar-main" style="position:relative;">
+  <div class="topbar-main">
     <div class="topbar-logo">
       <img src="https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png" alt="Burger Shot" onerror="this.style.display='none'">
     </div>
@@ -375,20 +259,19 @@ tr:hover td{background:var(--card2);}
   <nav class="topbar-nav" id="topNav"></nav>
 </div>
 
-<!-- ═══ CONTENU ═══ -->
 <div class="content" id="mainContent"></div>
 
-<!-- ══════════════════════════════════════════
-     POPUPS
-══════════════════════════════════════════ -->
+<!-- ═══ OVERLAYS ═══ -->
+
 <!-- Validation commande -->
 <div id="ovValidation" class="overlay" style="display:none;">
   <div class="popup">
     <div class="popup-title">✅ Valider la commande</div>
     <div id="validationRecap"></div>
-    <div style="display:flex;gap:10px;margin-top:20px;">
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
       <button class="btn btn-outline" onclick="closeOverlay('ovValidation')">❌ Annuler</button>
-      <button class="btn btn-success" onclick="confirmerCommande()">✅ Confirmer & Encaisser</button>
+      <button class="btn btn-success" onclick="confirmerCommande(false)">✅ Confirmer</button>
+      <button class="btn btn-blue" onclick="confirmerCommande(true)">✅ Confirmer + PDF</button>
     </div>
   </div>
 </div>
@@ -397,16 +280,10 @@ tr:hover td{background:var(--card2);}
 <div id="ovPass" class="overlay" style="display:none;">
   <div class="popup">
     <div class="popup-title">🪪 Attribuer un Pass</div>
-    <div class="form-group">
-      <label class="form-label">Recherche client</label>
-      <input class="form-input" id="passSearch" placeholder="Nom du client...">
-    </div>
+    <div class="form-group"><label class="form-label">Recherche client</label><input class="form-input" id="passSearch" placeholder="Nom du client..."></div>
     <div id="passResults" style="margin-bottom:12px;"></div>
     <div id="passClientInfo" style="display:none;margin-bottom:12px;padding:10px;background:var(--card2);border-radius:8px;font-size:14px;"></div>
-    <div class="form-group">
-      <label class="form-label">Type de pass</label>
-      <select class="form-select" id="passTypeSelect"></select>
-    </div>
+    <div class="form-group"><label class="form-label">Type de pass</label><select class="form-select" id="passTypeSelect"></select></div>
     <div id="passTypeInfo" style="font-size:12px;color:var(--muted);margin-bottom:16px;"></div>
     <div style="display:flex;gap:10px;">
       <button class="btn btn-outline" onclick="closeOverlay('ovPass')">Annuler</button>
@@ -415,22 +292,15 @@ tr:hover td{background:var(--card2);}
   </div>
 </div>
 
-<!-- Quota ticket -->
+<!-- Quota employé -->
 <div id="ovQuota" class="overlay" style="display:none;">
   <div class="popup">
-    <div class="popup-title">🚚 Déclarer un remplissage camion</div>
-    <div class="form-group">
-      <label class="form-label">Plaque du camion</label>
-      <input class="form-input" id="quotaPlaque" placeholder="AB-123-CD">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Quantité livrée</label>
-      <input class="form-input" id="quotaQte" type="number" placeholder="Ex: 150">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Notes (optionnel)</label>
-      <textarea class="form-input" id="quotaNotes" placeholder="Détails..."></textarea>
-    </div>
+    <div class="popup-title">🚚 Déclarer un remplissage</div>
+    <div id="quotaFormInfo" style="margin-bottom:16px;padding:12px;background:var(--card2);border-radius:8px;font-size:13px;color:var(--muted);">Chargement...</div>
+    <div class="form-group"><label class="form-label">Plaque du camion</label><input class="form-input" id="quotaPlaque" placeholder="AB-123-CD"></div>
+    <div class="form-group"><label class="form-label">Quantité livrée (unités)</label><input class="form-input" id="quotaQte" type="number" placeholder="Ex: 150" oninput="updateQuotaPreview()"></div>
+    <div id="quotaPreview" style="display:none;margin-bottom:14px;padding:12px;background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.25);border-radius:8px;font-size:13px;"></div>
+    <div class="form-group"><label class="form-label">Notes (optionnel)</label><textarea class="form-input" id="quotaNotes" placeholder="Détails..."></textarea></div>
     <div style="display:flex;gap:10px;">
       <button class="btn btn-outline" onclick="closeOverlay('ovQuota')">Annuler</button>
       <button class="btn btn-primary" onclick="soumettreQuota()">📤 Soumettre</button>
@@ -457,7 +327,7 @@ tr:hover td{background:var(--card2);}
   </div>
 </div>
 
-<!-- Ajouter réservation -->
+<!-- Réservation calendrier -->
 <div id="ovResa" class="overlay" style="display:none;">
   <div class="popup">
     <div class="popup-title">📅 Ajouter un événement</div>
@@ -481,27 +351,52 @@ tr:hover td{background:var(--card2);}
   </div>
 </div>
 
+<!-- Commandes client -->
+<div id="ovClientCmds" class="overlay" style="display:none;">
+  <div class="popup" style="width:680px;">
+    <div class="popup-title">📦 Commandes du client</div>
+    <div id="clientCmdsContent"><div class="loading"><div class="spin"></div></div></div>
+    <div style="margin-top:16px;"><button class="btn btn-outline" onclick="closeOverlay('ovClientCmds')">Fermer</button></div>
+  </div>
+</div>
+
+<!-- Gestion prime employé -->
+<div id="ovEmpPrime" class="overlay" style="display:none;">
+  <div class="popup">
+    <div class="popup-title" id="ovEmpPrimeTitle">Prime employé</div>
+    <div id="ovEmpPrimeContent"></div>
+    <div style="margin-top:16px;display:flex;gap:10px;">
+      <button class="btn btn-outline" onclick="closeOverlay('ovEmpPrime')">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    CONFIG
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
-const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
+const DIR_IDS  = ['280415204477501451','1157333780898529333','370510144766738432'];
 const GOUV_IDS = [];
-
 const LOGO = 'https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png';
-const CAT_EMOJI = {Burger:'🍔',Menu:'🍱',Boisson:'🥤',Dessert:'🍦',Accompagnement:'🍟',Session:'🎮',Autre:'🛒'};
 
-let USER = null, ROLE = 'employe';
+// Postes par niveau (ordre croissant)
+const POSTES = ['Employé', "Chef d'équipe", 'Manager', 'Co-Patron', 'Patron'];
+const NIVEAU_POSTE = { 'Employé':0, "Chef d'équipe":1, 'Manager':2, 'Co-Patron':3, 'Patron':4 };
+
+let USER = null, ROLE = 'employe', USER_NIVEAU = 0;
 let produits = [], passTypes = [], commande = [], clientActif = null, contratActif = null;
 let passClientActif = null;
 let calYear, calMonth;
 let lastPrimes = [];
+let autoRefreshInterval = null;
+let quotaConfig = { cdd_quota:100, cdi_quota:200, cdd_prime:500, cdi_prime:800 };
+let pendingQuotaCount = 0;
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    SUPABASE
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function sb(endpoint, opts = {}) {
   const r = await fetch(`${SB_URL}/rest/v1/${endpoint}`, {
     headers: {
@@ -515,21 +410,28 @@ async function sb(endpoint, opts = {}) {
   try { return await r.json(); } catch { return []; }
 }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    INIT
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async () => {
   const raw = localStorage.getItem('bs_user');
   if (!raw) { location.href = '/'; return; }
-
   let userData;
-  try { userData = JSON.parse(raw); } 
+  try { userData = JSON.parse(raw); }
   catch(e) { localStorage.removeItem('bs_user'); location.href = '/'; return; }
-
   const { id, username, avatar, nom, prenom } = userData;
   if (!id) { location.href = '/'; return; }
 
   ROLE = GOUV_IDS.includes(id) ? 'gouvernement' : DIR_IDS.includes(id) ? 'direction' : 'employe';
+
+  // Récupère niveau du poste pour les employés
+  if (ROLE === 'employe') {
+    try {
+      const empData = await sb(`employes?discord_id=eq.${id}&select=poste`);
+      if (empData?.[0]?.poste) USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
+    } catch {}
+  }
+
   const displayName = (prenom && nom) ? `${prenom} ${nom}` : username;
   USER = { id, username, displayName, avatar, role: ROLE };
 
@@ -547,22 +449,63 @@ window.addEventListener('DOMContentLoaded', async () => {
     ROLE === 'direction' ? '⭐ Direction' :
     ROLE === 'gouvernement' ? '🏛️ Gouvernement' : '🧾 Employé';
 
-  // Load data
+  // Config quota
+  await loadQuotaConfig();
+
   passTypes = await sb('pass_types?select=*') || [];
 
   buildNav();
   buildPages();
   showPage(ROLE === 'gouvernement' ? 'stats' : 'accueil');
+
+  // Auto-refresh toutes les 30s
+  autoRefreshInterval = setInterval(autoRefresh, 30000);
+
+  // Listeners
+  document.addEventListener('input', e => {
+    if (e.target.id === 'mImg') updateMenuImgPreview(e.target.value);
+    if (e.target.id === 'caisseClientSearch') searchCaisseClient(e.target.value);
+    if (e.target.id === 'passSearch') searchPassClient(e.target.value);
+  });
 });
 
-/* ══════════════════════════════════════════
+async function loadQuotaConfig() {
+  const configs = await sb('parametres?cle=in.(quota_cdd,quota_cdi,prime_quota_cdd,prime_quota_cdi)') || [];
+  configs.forEach(c => {
+    if (c.cle === 'quota_cdd')       quotaConfig.cdd_quota = parseFloat(c.valeur) || 100;
+    if (c.cle === 'quota_cdi')       quotaConfig.cdi_quota = parseFloat(c.valeur) || 200;
+    if (c.cle === 'prime_quota_cdd') quotaConfig.cdd_prime = parseFloat(c.valeur) || 500;
+    if (c.cle === 'prime_quota_cdi') quotaConfig.cdi_prime = parseFloat(c.valeur) || 800;
+  });
+}
+
+async function autoRefresh() {
+  // Refresh badge quota en attente
+  if (ROLE === 'direction' || USER_NIVEAU >= 1) {
+    const tickets = await sb('quotas_tickets?select=id&statut=eq.en_attente');
+    pendingQuotaCount = Array.isArray(tickets) ? tickets.length : 0;
+    const badge = document.getElementById('quota-badge');
+    if (badge) badge.textContent = pendingQuotaCount || '';
+  }
+  // Refresh stats si page active
+  const activePage = document.querySelector('.page.active');
+  if (activePage?.id === 'page-stats') loadStats();
+  if (activePage?.id === 'page-accueil') loadAccueil();
+  if (activePage?.id === 'page-gestion') {
+    loadQuotaTickets();
+    loadCoffre();
+  }
+}
+
+/* ══════════════════════════════════════════════
    NAVIGATION
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 const NAV = {
   employe: [
     {id:'accueil',icon:'🏠',label:'Accueil'},
     {id:'caisse',icon:'🧾',label:'Caisse'},
     {id:'clients',icon:'👥',label:'Clients'},
+    {id:'quota',icon:'🚚',label:'Mon Quota'},
     {id:'calendrier',icon:'📅',label:'Calendrier'},
     {id:'stats',icon:'📊',label:'Stats'},
   ],
@@ -588,11 +531,14 @@ function buildNav() {
   const nav = document.getElementById('topNav');
   const items = NAV[ROLE] || NAV.employe;
 
+  const renderItem = i => {
+    const badgeHtml = i.id === 'gestion' ? `<span class="nav-badge" id="quota-badge"></span>` : '';
+    return `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
+  };
+
   if (ROLE === 'employe') {
     nav.style.justifyContent = 'center';
-    nav.innerHTML = items.map(i =>
-      `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}</div>`
-    ).join('');
+    nav.innerHTML = items.map(renderItem).join('');
     return;
   }
 
@@ -605,9 +551,9 @@ function buildNav() {
 
   nav.style.justifyContent = 'space-between';
   nav.innerHTML =
-    `<div class="nav-group">${left.map(i => `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}</div>`).join('')}</div>` +
+    `<div class="nav-group">${left.map(renderItem).join('')}</div>` +
     `<div class="nav-logo-center"><img src="${LOGO}" alt="BS"></div>` +
-    `<div class="nav-group">${right.map(i => `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}</div>`).join('')}</div>`;
+    `<div class="nav-group">${right.map(renderItem).join('')}</div>`;
 }
 
 function showPage(name) {
@@ -615,28 +561,28 @@ function showPage(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const page = document.getElementById(`page-${name}`);
   if (page) page.classList.add('active');
-  const nav = document.getElementById(`nav-${name}`);
-  if (nav) nav.classList.add('active');
+  const navItem = document.getElementById(`nav-${name}`);
+  if (navItem) navItem.classList.add('active');
 
   const loads = {
-    accueil: loadAccueil, caisse: loadCaisse, clients: loadClients,
-    employes: loadEmployes, menu: loadMenu, stats: loadStats,
-    coffre: loadCoffre, contrats: loadContrats, gestion: loadGestion,
-    calendrier: loadCalendrier,
+    accueil:loadAccueil, caisse:loadCaisse, clients:loadClients,
+    employes:loadEmployes, menu:loadMenu, stats:loadStats,
+    coffre:loadCoffre, contrats:loadContrats, gestion:loadGestion,
+    calendrier:loadCalendrier, quota:loadQuotaPage,
   };
   loads[name]?.();
 }
 
-/* ══════════════════════════════════════════
-   BUILD PAGES HTML
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   BUILD PAGES
+══════════════════════════════════════════════ */
 function buildPages() {
   const dir = ROLE === 'direction';
   const gouv = ROLE === 'gouvernement';
   let html = '';
 
   // ACCUEIL
-  html += `<div class="page" id="page-accueil"><div class="red-line"></div><div id="accueilContent"><div class="loading"><div class="spin"></div> Chargement...</div></div></div>`;
+  html += `<div class="page" id="page-accueil"><div class="red-line"></div><div id="accueilContent"><div class="loading"><div class="spin"></div></div></div></div>`;
 
   // CAISSE
   html += `<div class="page" id="page-caisse"><div class="red-line"></div>
@@ -653,18 +599,12 @@ function buildPages() {
     </div>
     <div class="ticket-wrap">
       <div class="ticket">
-        <div class="ticket-head">
-          <div class="ticket-logo-txt">🍔 BURGER SHOT</div>
-          <div class="ticket-addr">Los Santos · RedStart RP</div>
-        </div>
-        <div style="font-size:11px;color:#666;margin-bottom:8px;">
-          <div id="tktId">BS-000000</div>
-          <div id="tktDate"></div>
-        </div>
+        <div class="ticket-head"><div class="ticket-logo-txt">🍔 BURGER SHOT</div><div class="ticket-addr">Los Santos · RedStart RP</div></div>
+        <div style="font-size:11px;color:#666;margin-bottom:8px;"><div id="tktId">BS-000000</div><div id="tktDate"></div></div>
         <hr class="t-sep">
         <div class="ticket-lines" id="tktLines"><div class="t-empty">Aucun article</div></div>
         <hr class="t-sep">
-        <div class="ticket-totals">
+        <div>
           <div class="t-total">TOTAL : <span id="tktTotal">0$</span></div>
           <div class="t-reduc" id="tktReduc" style="display:none;"></div>
           <div class="t-pts" id="tktPts"></div>
@@ -688,24 +628,28 @@ function buildPages() {
     <button class="btn btn-primary" onclick="openOverlay('ovPass')">🪪 Attribuer un Pass</button>
     <button class="btn btn-outline" onclick="openOverlay('ovNewClient')">➕ Nouveau Client</button>
   </div>
-  <div class="card"><div class="card-title">Liste des clients</div>
-  <div style="margin-bottom:14px;"><input class="form-input" id="clientsSearch" placeholder="🔍 Rechercher..." oninput="filtrerClients(this.value)" style="max-width:300px;"></div>
-  <div id="clientsTable"><div class="loading"><div class="spin"></div></div></div></div></div>`;
+  <div class="card">
+    <div class="card-title">Liste des clients</div>
+    <div style="margin-bottom:14px;"><input class="form-input" id="clientsSearch" placeholder="🔍 Rechercher..." oninput="filtrerClients(this.value)" style="max-width:300px;"></div>
+    <div id="clientsTable"><div class="loading"><div class="spin"></div></div></div>
+  </div></div>`;
 
-  // CALENDRIER (tous)
+  // QUOTA EMPLOYÉ
+  html += `<div class="page" id="page-quota"><div class="red-line"></div><div id="quotaPageContent"><div class="loading"><div class="spin"></div></div></div></div>`;
+
+  // CALENDRIER
   html += `<div class="page" id="page-calendrier"><div class="red-line"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
     <div style="display:flex;align-items:center;gap:12px;">
       <button class="btn btn-outline btn-sm" onclick="calNav(-1)">◀</button>
-      <div id="calTitle" style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--red);"></div>
+      <div id="calTitle" style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--red);"></div>
       <button class="btn btn-outline btn-sm" onclick="calNav(1)">▶</button>
     </div>
-    ${dir ? `<button class="btn btn-primary" onclick="openOverlay('ovResa')">➕ Ajouter</button>` : ''}
   </div>
   <div class="card"><div id="calContainer"></div></div>
   <div class="card" style="margin-top:20px;"><div class="card-title">Événements du mois</div><div id="calListe"></div></div></div>`;
 
-  // STATS (tous)
+  // STATS
   html += `<div class="page" id="page-stats"><div class="red-line"></div>
   <div class="g4" id="statsCards" style="margin-bottom:24px;"></div>
   <div class="g2" style="margin-bottom:24px;">
@@ -716,7 +660,7 @@ function buildPages() {
   <div class="card"><div class="card-title">🏛️ Paliers d'imposition</div><div id="statsImpots"></div></div></div>`;
 
   if (dir || gouv) {
-    // EMPLOYES
+    // EMPLOYÉS
     html += `<div class="page" id="page-employes"><div class="red-line"></div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
       <button class="btn btn-outline" onclick="openAddEmploye()">➕ Ajouter un employé</button>
@@ -735,18 +679,12 @@ function buildPages() {
         </div>
         <div class="form-group"><label class="form-label">ID Discord</label><input class="form-input" id="empDiscord" placeholder="123456789012345678"></div>
         <div class="g2">
-          <div class="form-group"><label class="form-label">Poste</label>
-            <select class="form-select" id="empPoste">
-              <option>Employé</option><option>Chef d'équipe</option><option>Manager</option><option>Co-Patron</option><option>Patron</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">Contrat</label>
-            <select class="form-select" id="empContrat"><option>CDD</option><option>CDI</option></select>
-          </div>
+          <div class="form-group"><label class="form-label">Poste</label><select class="form-select" id="empPoste"><option>Employé</option><option>Chef d'équipe</option><option>Manager</option><option>Co-Patron</option><option>Patron</option></select></div>
+          <div class="form-group"><label class="form-label">Contrat</label><select class="form-select" id="empContrat"><option>CDD</option><option>CDI</option></select></div>
         </div>
         <div class="g2">
-          <div class="form-group"><label class="form-label">Quota hebdo (unités)</label><input class="form-input" id="empQuota" type="number" placeholder="100"></div>
           <div class="form-group"><label class="form-label">Date d'embauche</label><input class="form-input" id="empEmbauche" type="date"></div>
+          <div class="form-group"><label class="form-label">Statut</label><select class="form-select" id="empActif"><option value="true">Actif</option><option value="false">Inactif</option></select></div>
         </div>
         <div style="display:flex;gap:10px;">
           <button class="btn btn-outline" onclick="document.getElementById('addEmployeForm').style.display='none'">Annuler</button>
@@ -754,7 +692,7 @@ function buildPages() {
         </div>
       </div>
     </div>
-    <div class="card"><div class="card-title">Équipe Burger Shot</div><div id="employesTable"></div></div></div>`;
+    <div id="empGrid" class="emp-grid"></div></div>`;
 
     // MENU
     html += `<div class="page" id="page-menu"><div class="red-line"></div>
@@ -769,18 +707,15 @@ function buildPages() {
         </div>
         <div class="form-group"><label class="form-label">Catégorie</label>
           <select class="form-select" id="mCat">
-            <option>Burger</option><option>Menu</option><option>Boisson</option><option>Dessert</option><option>Accompagnement</option><option>Session</option><option>Autre</option>
+            <option>Burger</option><option>Menu</option><option>Boisson</option><option>Dessert</option><option>Accompagnement</option><option>Autre</option>
           </select>
         </div>
         <div class="form-group"><label class="form-label">Image URL (optionnel)</label><input class="form-input" id="mImg" placeholder="https://..."></div>
         <div id="mImgPreview" style="margin-bottom:12px;display:none;"><img id="mImgPrev" style="width:80px;height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--border);"></div>
-        <div class="form-group"><label class="form-label">Contenu du menu (optionnel)</label><textarea class="form-input" id="mContenu" placeholder="1 burger + 1 frites + 1 boisson"></textarea></div>
+        <div class="form-group"><label class="form-label">Contenu (optionnel)</label><textarea class="form-input" id="mContenu" placeholder="1 burger + 1 frites + 1 boisson"></textarea></div>
         <button class="btn btn-primary" onclick="saveProduit()">✅ Ajouter au menu</button>
       </div>
-      <div class="card" style="flex:1;min-width:300px;">
-        <div class="card-title">Carte actuelle</div>
-        <div id="menuGrid"></div>
-      </div>
+      <div class="card" style="flex:1;min-width:300px;"><div class="card-title">Carte actuelle</div><div id="menuGrid"></div></div>
     </div></div>`;
 
     // CONTRATS
@@ -801,8 +736,15 @@ function buildPages() {
     <div class="g2" style="margin-bottom:24px;align-items:start;">
       <div class="card">
         <div class="card-title">⚙️ Paramètres Quotas</div>
-        <div class="form-group"><label class="form-label">Quota CDD (unités/semaine)</label><input class="form-input" id="gQuotaCDD" type="number" placeholder="100"></div>
-        <div class="form-group"><label class="form-label">Quota CDI (unités/semaine)</label><input class="form-input" id="gQuotaCDI" type="number" placeholder="200"></div>
+        <div id="alertGestion"></div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Quota CDD (unités/sem.)</label><input class="form-input" id="gQuotaCDD" type="number" placeholder="100"></div>
+          <div class="form-group"><label class="form-label">Quota CDI (unités/sem.)</label><input class="form-input" id="gQuotaCDI" type="number" placeholder="200"></div>
+        </div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Prime 100% CDD ($)</label><input class="form-input" id="gPrimeCDD" type="number" placeholder="500"></div>
+          <div class="form-group"><label class="form-label">Prime 100% CDI ($)</label><input class="form-input" id="gPrimeCDI" type="number" placeholder="800"></div>
+        </div>
         <button class="btn btn-primary" onclick="saveQuotaConfig()">💾 Sauvegarder</button>
       </div>
       <div class="card">
@@ -827,31 +769,18 @@ function buildPages() {
       <div id="coffreHisto"></div>
     </div></div>`;
 
-    // COFFRE (gouvernement)
+    // COFFRE GOUVERNEMENT
     html += `<div class="page" id="page-coffre"><div class="red-line"></div>
     <div class="g4" id="gouv-coffreStats" style="margin-bottom:20px;"></div>
     <div class="card"><div class="card-title">Historique hebdomadaire</div><div id="gouv-coffreHisto"></div></div></div>`;
   }
 
   document.getElementById('mainContent').innerHTML = html;
-
-  // Image preview menu
-  document.addEventListener('input', e => {
-    if (e.target.id === 'mImg') {
-      const v = e.target.value.trim();
-      const prev = document.getElementById('mImgPreview');
-      const img = document.getElementById('mImgPrev');
-      if (v) { img.src = v; prev.style.display = 'block'; }
-      else prev.style.display = 'none';
-    }
-    if (e.target.id === 'caisseClientSearch') searchCaisseClient(e.target.value);
-    if (e.target.id === 'passSearch') searchPassClient(e.target.value);
-  });
 }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    UTILS
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function getSemaine() {
   const d = new Date(), utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = utc.getUTCDay() || 7;
@@ -860,7 +789,6 @@ function getSemaine() {
   const wk = Math.ceil((((utc - ys) / 86400000) + 1) / 7);
   return `${utc.getUTCFullYear()}-W${String(wk).padStart(2,'0')}`;
 }
-
 function calcImpot(m) {
   if (m < 200000) return 0; if (m < 400000) return m*.05;
   if (m < 600000) return m*.08; if (m < 800000) return m*.11;
@@ -873,92 +801,81 @@ function tauxLabel(m) {
   if (m < 1000000) return '14%'; if (m < 2500000) return '17%';
   return '19%';
 }
-
 function fmtPhone(input) {
   const d = input.value.replace(/\D/g,'').slice(0,10);
   if (!d.length) { input.value=''; return; }
-  if (d.length <= 3) input.value = `(${d}`;
-  else if (d.length <= 6) input.value = `(${d.slice(0,3)}) ${d.slice(3)}`;
-  else input.value = `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+  if (d.length<=3) input.value=`(${d}`;
+  else if (d.length<=6) input.value=`(${d.slice(0,3)}) ${d.slice(3)}`;
+  else input.value=`(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
 }
 function fmtPhoneDisplay(v) {
   if (!v) return '—';
   const d = v.replace(/\D/g,'').slice(0,10);
-  if (d.length <= 3) return d;
-  if (d.length <= 6) return `(${d.slice(0,3)}) ${d.slice(3)}`;
+  if (d.length<=3) return d;
+  if (d.length<=6) return `(${d.slice(0,3)}) ${d.slice(3)}`;
   return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
 }
-
 function openOverlay(id) { document.getElementById(id).style.display='flex'; }
 function closeOverlay(id) { document.getElementById(id).style.display='none'; }
-
 function toggleTheme() {
-  const h = document.documentElement, b = document.getElementById('themeBtn');
-  h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
-  b.textContent = h.dataset.theme === 'dark' ? '☀️' : '🌙';
+  const h=document.documentElement, b=document.getElementById('themeBtn');
+  h.dataset.theme = h.dataset.theme==='dark'?'light':'dark';
+  b.textContent = h.dataset.theme==='dark'?'☀️':'🌙';
 }
-function logout() { localStorage.removeItem('bs_user'); location.href = '/'; }
+function logout() { localStorage.removeItem('bs_user'); location.href='/'; }
+function getEmoji(cat) {
+  const m={'Burger':'🍔','Menu':'🍱','Boisson':'🥤','Dessert':'🍦','Accompagnement':'🍟','Autre':'🛒'};
+  return m[cat]||'🍽️';
+}
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    ACCUEIL
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function loadAccueil() {
   const el = document.getElementById('accueilContent');
   el.innerHTML = '<div class="loading"><div class="spin"></div> Chargement...</div>';
-
   const semaine = getSemaine();
   const today = new Date().toISOString().split('T')[0];
-
-  const [clients, employes, passActifs, cmdSemaine, cmdJour, empPerf] = await Promise.all([
+  const [clients, employes, cmdSemaine, cmdJour, empPerf] = await Promise.all([
     sb('clients?select=id'),
-    sb('employes?select=id,poste,contrat,actif&actif=eq.true'),
-    sb('clients?select=id&pass=not.is.null'),
-    sb(`commandes?select=total,total_apres_reduction,employe_discord_id&semaine=eq.${semaine}`),
-    sb(`commandes?select=total,total_apres_reduction,employe_discord_id&created_at=gte.${today}T00:00:00`),
+    sb('employes?select=id,poste,actif&actif=eq.true'),
+    sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}`),
+    sb(`commandes?select=total,total_apres_reduction&created_at=gte.${today}T00:00:00`),
     sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}&employe_discord_id=eq.${USER.id}`),
   ]);
-
-  const caSemaine = cmdSemaine.reduce((a,c) => a+(c.total_apres_reduction||c.total||0), 0);
-  const caJour = cmdJour.reduce((a,c) => a+(c.total_apres_reduction||c.total||0), 0);
-  const caPerso = empPerf.reduce((a,c) => a+(c.total_apres_reduction||c.total||0), 0);
-
+  const caSemaine = cmdSemaine.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
+  const caJour = cmdJour.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
+  const caPerso = empPerf.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const nbEmp = employes.length;
-  const dirs = ['Patron','Co-Patron','Manager',"Chef d'équipe"];
-  const nbDir = employes.filter(e => dirs.includes(e.poste)).length;
-
-  const first = (USER.displayName||USER.username||'').split(' ')[0] || '';
-  const last = (USER.displayName||USER.username||'').split(' ').slice(1).join(' ') || '';
+  const first = (USER.displayName||'').split(' ')[0]||'';
+  const last = (USER.displayName||'').split(' ').slice(1).join(' ')||'';
   const now = new Date();
   const dateStr = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
   const roleLabel = ROLE==='direction'?'⭐ Direction':ROLE==='gouvernement'?'🏛️ Gouvernement':'🧾 Employé';
-
   const avatarHtml = USER.avatar
     ? `<img src="https://cdn.discordapp.com/avatars/${USER.id}/${USER.avatar}.png">`
     : first.charAt(0).toUpperCase();
 
-  // Quota progress pour employés
   let quotaHtml = '';
   if (ROLE === 'employe') {
-    const empData = await sb(`employes?discord_id=eq.${USER.id}&select=contrat,quota_semaine,quota_validee`);
+    const empData = await sb(`employes?discord_id=eq.${USER.id}&select=contrat,quota_validee`);
     const emp = empData?.[0];
     if (emp) {
-      const quotaConfig = await sb(`parametres?cle=eq.quota_${emp.contrat?.toLowerCase()}`);
-      const quotaMax = parseInt(quotaConfig?.[0]?.valeur || emp.quota_semaine || 100);
-      const quotaDone = parseInt(emp.quota_validee || 0);
-      const pct = Math.min(100, Math.round((quotaDone / quotaMax) * 100));
+      const quotaMax = emp.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
+      const primeMax = emp.contrat==='CDI' ? quotaConfig.cdi_prime : quotaConfig.cdd_prime;
+      const quotaDone = parseInt(emp.quota_validee||0);
+      const pct = Math.min(100, Math.round((quotaDone/quotaMax)*100));
       quotaHtml = `
-      <div class="quota-card" style="margin-top:20px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--red);">🚚 QUOTA SEMAINE (${emp.contrat})</div>
-          <button class="btn btn-outline btn-sm" onclick="openOverlay('ovQuota')">+ Déclarer remplissage</button>
+      <div class="quota-hero" style="margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--red);">🚚 QUOTA ${emp.contrat} — SEMAINE</div>
+          <button class="btn btn-outline btn-sm" onclick="showPage('quota')">Voir mon quota</button>
         </div>
-        <div class="quota-pct">${pct}%</div>
-        <div class="quota-progress-wrap">
-          <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pct}%"></div></div>
-        </div>
+        <div class="quota-pct-big">${pct}%</div>
+        <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pct}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);">
           <span>${quotaDone} / ${quotaMax} unités</span>
-          <span>${pct >= 100 ? '✅ Quota atteint !' : `${quotaMax - quotaDone} restantes`}</span>
+          <span style="color:var(--success);">Prime possible : ${primeMax.toLocaleString('fr-FR')}$</span>
         </div>
       </div>`;
     }
@@ -969,100 +886,92 @@ async function loadAccueil() {
     <div class="hero-avatar">${avatarHtml}</div>
     <div>
       <div class="hero-sub">Bonjour,</div>
-      <div class="hero-name">${first.toUpperCase()}${last ? `, <span>${last.toUpperCase()}</span>` : ''}</div>
+      <div class="hero-name">${first.toUpperCase()}${last?`, <span>${last.toUpperCase()}</span>`:''}</div>
       <div class="hero-tags">
         <span class="badge badge-red">${roleLabel}</span>
         <span style="font-size:12px;color:var(--muted);">${dateStr}</span>
       </div>
     </div>
   </div>
-
   <div class="g3" style="margin-bottom:24px;">
     <div class="stat-card" style="--accent:var(--warning);--accent-bg:rgba(243,156,18,.12);--accent-border:rgba(243,156,18,.3);">
-      <div class="stat-icon">🏆</div>
-      <div class="stat-label">Employés actifs</div>
+      <div class="stat-icon">🏆</div><div class="stat-label">Employés actifs</div>
       <div class="stat-value">${nbEmp}</div>
-      <div class="stat-sub">${nbDir} encadrement</div>
     </div>
     <div class="stat-card" style="--accent:var(--blue);--accent-bg:rgba(52,152,219,.12);--accent-border:rgba(52,152,219,.3);">
-      <div class="stat-icon">📈</div>
-      <div class="stat-label">CA Semaine</div>
+      <div class="stat-icon">📈</div><div class="stat-label">CA Semaine</div>
       <div class="stat-value">${caSemaine.toLocaleString('fr-FR')}$</div>
       <div class="stat-sub">${cmdSemaine.length} commandes</div>
     </div>
     <div class="stat-card" style="--accent:var(--success);--accent-bg:rgba(39,174,96,.12);--accent-border:rgba(39,174,96,.3);">
-      <div class="stat-icon">☀️</div>
-      <div class="stat-label">CA Aujourd'hui</div>
+      <div class="stat-icon">☀️</div><div class="stat-label">CA Aujourd'hui</div>
       <div class="stat-value">${caJour.toLocaleString('fr-FR')}$</div>
       <div class="stat-sub">${cmdJour.length} commandes</div>
     </div>
   </div>
-
-  ${ROLE === 'employe' ? `
+  ${ROLE==='employe'?`
   <div class="g2" style="margin-bottom:24px;">
-    <div class="stat-card" style="--accent:var(--orange);--accent-bg:rgba(230,126,34,.12);--accent-border:rgba(230,126,34,.3);">
-      <div class="stat-icon">🧾</div>
-      <div class="stat-label">Mes commandes semaine</div>
+    <div class="stat-card" style="--accent:var(--orange);">
+      <div class="stat-icon">🧾</div><div class="stat-label">Mes commandes semaine</div>
       <div class="stat-value">${empPerf.length}</div>
       <div class="stat-sub">${caPerso.toLocaleString('fr-FR')}$ encaissés</div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">👥</div>
-      <div class="stat-label">Clients enregistrés</div>
+      <div class="stat-icon">👥</div><div class="stat-label">Clients enregistrés</div>
       <div class="stat-value">${clients.length}</div>
-      <div class="stat-sub">${passActifs.length} pass actifs</div>
     </div>
-  </div>
-  ${quotaHtml}` : `
+  </div>${quotaHtml}`:`
   <div class="g4" style="margin-bottom:24px;">
-    <div class="stat-card">
-      <div class="stat-icon">👥</div>
-      <div class="stat-label">Clients</div>
-      <div class="stat-value">${clients.length}</div>
-    </div>
-    <div class="stat-card" style="--accent:var(--success);">
-      <div class="stat-icon">🪪</div>
-      <div class="stat-label">Pass actifs</div>
-      <div class="stat-value">${passActifs.length}</div>
-    </div>
-    <div class="stat-card" style="--accent:var(--orange);">
-      <div class="stat-icon">🏛️</div>
-      <div class="stat-label">Taux impôt</div>
-      <div class="stat-value">${tauxLabel(caSemaine)}</div>
-    </div>
-    <div class="stat-card" style="--accent:var(--red-light);">
-      <div class="stat-icon">🔥</div>
-      <div class="stat-label">Impôts estimés</div>
-      <div class="stat-value">${Math.round(calcImpot(caSemaine)).toLocaleString('fr-FR')}$</div>
-    </div>
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Clients</div><div class="stat-value">${clients.length}</div></div>
+    <div class="stat-card" style="--accent:var(--success);"><div class="stat-icon">📊</div><div class="stat-label">Commandes sem.</div><div class="stat-value">${cmdSemaine.length}</div></div>
+    <div class="stat-card" style="--accent:var(--orange);"><div class="stat-icon">🏛️</div><div class="stat-label">Taux impôt</div><div class="stat-value">${tauxLabel(caSemaine)}</div></div>
+    <div class="stat-card" style="--accent:var(--red-light);"><div class="stat-icon">🔥</div><div class="stat-label">Impôts estimés</div><div class="stat-value">${Math.round(calcImpot(caSemaine)).toLocaleString('fr-FR')}$</div></div>
   </div>`}`;
 }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    CAISSE
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function loadCaisse() {
+  // Fetch produits ET contrats en parallèle
   const [prods, contrats] = await Promise.all([
-    sb('produits?select=*&actif=eq.true&order=categorie.asc'),
+    sb('produits?select=*&actif=eq.true&order=categorie.asc,nom.asc'),
     sb('contrats_reduction?select=*&actif=eq.true')
   ]);
+
   produits = Array.isArray(prods) ? prods : [];
 
+  // Remplir select contrats
   const sel = document.getElementById('caisseContrat');
-  if (sel) sel.innerHTML = '<option value="">— Aucun contrat —</option>' +
-    (Array.isArray(contrats)?contrats:[]).map(c =>
-      `<option value="${c.id}" data-pct="${c.pourcentage}">${c.nom} (-${c.pourcentage}%)</option>`
-    ).join('');
+  if (sel) {
+    sel.innerHTML = '<option value="">— Aucun contrat —</option>' +
+      (Array.isArray(contrats)?contrats:[]).map(c =>
+        `<option value="${c.id}" data-pct="${c.pourcentage}">${c.nom} (-${c.pourcentage}%)</option>`
+      ).join('');
+  }
 
   const el = document.getElementById('caisseProduits');
-  if (!produits.length) { el.innerHTML='<p style="color:var(--muted)">Aucun produit disponible.</p>'; return; }
+  if (!el) return;
 
-  const cats = [...new Set(produits.map(p => p.categorie))];
-  el.innerHTML = cats.map(cat => `
-    <div class="caisse-cat">
-      <div class="caisse-cat-title"><span>${getEmoji(cat)}</span> ${cat}</div>
+  if (!produits.length) {
+    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">Aucun produit dans le menu. Ajoutez-en depuis l\'onglet Menu.</p></div>';
+    return;
+  }
+
+  // Grouper par catégorie (ordre fixe)
+  const CAT_ORDER = ['Burger','Menu','Boisson','Dessert','Accompagnement','Autre'];
+  const cats = CAT_ORDER.filter(c => produits.some(p => p.categorie === c));
+  // Catégories non listées en plus
+  const extraCats = [...new Set(produits.map(p => p.categorie))].filter(c => !CAT_ORDER.includes(c));
+  const allCats = [...cats, ...extraCats];
+
+  el.innerHTML = allCats.map(cat => {
+    const items = produits.filter(p => p.categorie === cat);
+    if (!items.length) return '';
+    return `<div class="caisse-cat">
+      <div class="caisse-cat-title">${getEmoji(cat)} ${cat}</div>
       <div class="caisse-grid">
-        ${produits.filter(p => p.categorie===cat).map(p => `
+        ${items.map(p => `
           <div class="prod-card" onclick="addToTicket('${p.id}')">
             <div class="prod-img">
               ${p.image_url
@@ -1073,18 +982,20 @@ async function loadCaisse() {
               <div class="prod-name">${p.nom}</div>
               <div class="prod-bottom">
                 <div class="prod-price">${p.prix}$</div>
-                <div class="prod-pts">🎯${p.points}pts</div>
+                <div class="prod-pts">🎯${p.points||0}pts</div>
               </div>
             </div>
           </div>`).join('')}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   genTicket();
 }
 
 function updateContrat() {
   const sel = document.getElementById('caisseContrat');
+  if (!sel) return;
   const opt = sel.options[sel.selectedIndex];
   contratActif = sel.value ? {id:sel.value, pct:parseFloat(opt.dataset.pct), nom:opt.text} : null;
   renderTicket();
@@ -1098,52 +1009,50 @@ function addToTicket(id) {
 }
 
 function calcCmd() {
-  const brut = commande.reduce((a,b) => a+(b.prix*b.qte), 0);
+  const brut = commande.reduce((a,b)=>a+(b.prix*b.qte),0);
   let r = 0;
   if (clientActif?.pass) {
     const pt = passTypes.find(p => p.nom===clientActif.pass);
-    if (pt?.reduction > 0) r = Math.max(r, parseFloat(pt.reduction));
+    if (pt?.reduction>0) r = Math.max(r, parseFloat(pt.reduction));
   }
   if (contratActif) r = Math.max(r, contratActif.pct);
-  const montantR = Math.round(brut * r / 100);
-  return {brut, r, montantR, net: brut - montantR};
+  const montantR = Math.round(brut*r/100);
+  return {brut, r, montantR, net:brut-montantR};
 }
 
 function calcPts() {
   if (!clientActif?.pass) return 0;
   const pt = passTypes.find(p => p.nom===clientActif.pass);
   const mult = pt ? parseFloat(pt.multiplicateur) : 0;
-  return Math.round(commande.reduce((a,b) => a+(b.points*b.qte), 0) * mult);
+  return Math.round(commande.reduce((a,b)=>a+(b.points*b.qte),0)*mult);
 }
 
 function renderTicket() {
   const linesEl = document.getElementById('tktLines');
-  if (!commande.length) {
-    linesEl.innerHTML = '<div class="t-empty">Aucun article</div>';
-  } else {
-    linesEl.innerHTML = commande.map(p =>
-      `<div class="t-line"><div>${p.nom} ×${p.qte} <span style="font-size:10px;color:#888;">🎯${p.points*p.qte}pts</span></div><div>${p.prix*p.qte}$</div></div>`
-    ).join('');
-  }
+  if (!linesEl) return;
+  linesEl.innerHTML = !commande.length
+    ? '<div class="t-empty">Aucun article</div>'
+    : commande.map(p =>
+        `<div class="t-line"><div>${p.nom} ×${p.qte}</div><div>${p.prix*p.qte}$</div></div>`
+      ).join('');
   const c = calcCmd(); const pts = calcPts();
   document.getElementById('tktTotal').textContent = `${c.brut}$`;
   const rEl = document.getElementById('tktReduc');
   if (c.r>0) { rEl.style.display='block'; rEl.textContent=`Réduction -${c.r}% : -${c.montantR}$ → ${c.net}$`; }
   else rEl.style.display='none';
-  const pEl = document.getElementById('tktPts');
-  pEl.textContent = pts>0 ? `🎯 +${pts} points` : '';
-  document.getElementById('tktClient').textContent = clientActif ? `${clientActif.prenom} ${clientActif.nom}` : 'Inconnu';
+  document.getElementById('tktPts').textContent = pts>0?`🎯 +${pts} points`:'';
+  document.getElementById('tktClient').textContent = clientActif?`${clientActif.prenom} ${clientActif.nom}`:'Inconnu';
   const piEl = document.getElementById('tktPassInfo');
   if (clientActif?.pass) {
-    const pt = passTypes.find(p => p.nom===clientActif.pass);
-    piEl.textContent = `${clientActif.pass} • ×${pt?.multiplicateur||1} pts${pt?.reduction>0?` • -${pt.reduction}%`:''}`;
+    const pt = passTypes.find(p=>p.nom===clientActif.pass);
+    piEl.textContent=`${clientActif.pass} • ×${pt?.multiplicateur||1}pts${pt?.reduction>0?` • -${pt.reduction}%`:''}`;
   } else piEl.textContent='';
-  document.getElementById('tktEmploye').textContent = USER?.displayName||USER?.username||'—';
+  document.getElementById('tktEmploye').textContent = USER?.displayName||'—';
 }
 
 function genTicket() {
   const now = new Date();
-  const pad = n => String(n).padStart(2,'0');
+  const pad = n=>String(n).padStart(2,'0');
   document.getElementById('tktId').textContent = `BS-${pad(now.getDate())}${pad(now.getMonth()+1)}${now.getFullYear()}-${pad(now.getHours())}${pad(now.getMinutes())}`;
   document.getElementById('tktDate').textContent = now.toLocaleString('fr-FR');
   renderTicket();
@@ -1152,10 +1061,9 @@ function genTicket() {
 function annulerCommande() {
   if (!confirm('Annuler la commande ?')) return;
   commande=[]; clientActif=null; contratActif=null;
-  document.getElementById('caisseClientSearch').value='';
-  document.getElementById('caisseClientResults').innerHTML='';
-  const cc = document.getElementById('caisseContrat');
-  if(cc) cc.value='';
+  const s=document.getElementById('caisseClientSearch'); if(s) s.value='';
+  const r=document.getElementById('caisseClientResults'); if(r) r.innerHTML='';
+  const cc=document.getElementById('caisseContrat'); if(cc) cc.value='';
   renderTicket();
 }
 
@@ -1163,279 +1071,372 @@ function ouvrirValidation() {
   if (!commande.length) { alert('Commande vide.'); return; }
   const c = calcCmd(); const pts = calcPts();
   document.getElementById('validationRecap').innerHTML =
-    commande.map(p => `<div class="t-line" style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;"><div>${p.nom} ×${p.qte}</div><div>${p.prix*p.qte}$</div></div>`).join('') +
+    commande.map(p=>`<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;"><div>${p.nom} ×${p.qte}</div><div>${p.prix*p.qte}$</div></div>`).join('') +
     `<hr style="border:none;border-top:1px dashed #666;margin:12px 0;">
-    <div style="text-align:right;font-size:14px;">Brut : ${c.brut}$</div>
-    ${c.r>0?`<div style="text-align:right;font-size:13px;color:var(--red);">Réduction -${c.r}% : -${c.montantR}$</div>`:''}
+    <div style="text-align:right;">Brut : ${c.brut}$</div>
+    ${c.r>0?`<div style="text-align:right;color:var(--red);">Réduction -${c.r}% : -${c.montantR}$</div>`:''}
     <div style="text-align:right;font-size:18px;font-weight:900;margin-top:6px;">TOTAL : ${c.net}$</div>
-    ${pts>0?`<div style="text-align:right;font-size:13px;color:var(--success);margin-top:4px;">🎯 +${pts} pts pour ${clientActif?.prenom||'le client'}</div>`:''}`;
+    ${pts>0?`<div style="text-align:right;font-size:13px;color:var(--success);margin-top:4px;">🎯 +${pts} pts</div>`:''}`;
   openOverlay('ovValidation');
 }
 
-async function confirmerCommande() {
+async function confirmerCommande(avecPDF=false) {
   const c = calcCmd(); const pts = calcPts(); const semaine = getSemaine();
-
-  // Sauvegarde commande
-  await sb('commandes', {method:'POST', body:JSON.stringify({
-    client_id: clientActif?.id||null,
-    employe_discord_id: USER.id,
-    items: JSON.stringify(commande),
-    total: c.brut,
-    reduction_pct: c.r,
-    total_apres_reduction: c.net,
-    points_gagnes: pts,
-    contrat_id: contratActif?.id||null,
+  await sb('commandes',{method:'POST',body:JSON.stringify({
+    client_id:clientActif?.id||null,
+    employe_discord_id:USER.id,
+    items:JSON.stringify(commande),
+    total:c.brut,
+    reduction_pct:c.r,
+    total_apres_reduction:c.net,
+    points_gagnes:pts,
+    contrat_id:contratActif?.id||null,
     semaine,
-    tva: Math.round(c.net * 0.20)
+    tva:Math.round(c.net*.20)
   })});
 
-  // Points client
-  if (clientActif && pts > 0) {
-    await sb(`clients?id=eq.${clientActif.id}`, {method:'PATCH', body:JSON.stringify({points:(clientActif.points||0)+pts})});
+  if (clientActif && pts>0) {
+    await sb(`clients?id=eq.${clientActif.id}`,{method:'PATCH',body:JSON.stringify({points:(clientActif.points||0)+pts})});
   }
 
-  // Transaction
-  await sb('transactions', {method:'POST', body:JSON.stringify({
-    montant: c.net, type:'vente',
-    employe_discord: USER.id,
-    client_id: clientActif?.id||null,
-    semaine
+  await sb('transactions',{method:'POST',body:JSON.stringify({
+    montant:c.net,type:'vente',employe_discord:USER.id,client_id:clientActif?.id||null,semaine
   })});
 
-  // CA
+  // Update CA
   const caData = await sb('parametres?cle=eq.ca_semaine');
   const caActuel = parseFloat(caData?.[0]?.valeur||0)||0;
-  if (caData?.[0]) {
-    await sb('parametres?cle=eq.ca_semaine', {method:'PATCH', body:JSON.stringify({valeur:String(caActuel+c.net)})});
-  } else {
-    await sb('parametres', {method:'POST', body:JSON.stringify({cle:'ca_semaine',valeur:String(c.net)})});
-  }
+  if (caData?.[0]) await sb('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:String(caActuel+c.net)})});
+  else await sb('parametres',{method:'POST',body:JSON.stringify({cle:'ca_semaine',valeur:String(c.net)})});
 
-  // PDF commande
-  genPDFCommande(c, pts);
+  if (avecPDF) genPDFCommande(c, pts);
 
   closeOverlay('ovValidation');
   commande=[]; clientActif=null; contratActif=null;
-  document.getElementById('caisseClientSearch').value='';
-  document.getElementById('caisseClientResults').innerHTML='';
-  const cc = document.getElementById('caisseContrat');
-  if(cc) cc.value='';
+  const s=document.getElementById('caisseClientSearch'); if(s) s.value='';
+  const r=document.getElementById('caisseClientResults'); if(r) r.innerHTML='';
+  const cc=document.getElementById('caisseContrat'); if(cc) cc.value='';
   genTicket();
   alert('✅ Commande validée !');
 }
 
 function genPDFCommande(c, pts) {
   const now = new Date();
-  const tva = Math.round(c.net * 0.20);
-  const ht = c.net - tva;
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
-<title>Facture Burger Shot</title>
-<style>
-body{font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:40px;background:#fff;color:#111;}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid #c0392b;}
-.brand{font-size:28px;font-weight:900;letter-spacing:3px;color:#c0392b;}
-.sub{font-size:12px;color:#666;margin-top:3px;}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
-.meta-block{background:#f8f8f8;border-radius:8px;padding:14px;}
-.ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px;}
-.mv{font-size:14px;font-weight:700;}
-table{width:100%;border-collapse:collapse;margin-bottom:20px;}
-thead tr{background:#c0392b;color:#fff;}
-th{padding:10px 12px;text-align:left;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
-td{padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;}
-.totals{text-align:right;}
-.totals div{margin-bottom:6px;font-size:14px;}
-.total-final{font-size:20px;font-weight:900;color:#c0392b;margin-top:8px;}
-.footer{margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#999;text-align:center;}
-</style></head><body>
-<div class="header">
-  <div><div class="brand">🍔 BURGER SHOT</div><div class="sub">Los Santos · RedStart RP</div></div>
-  <div style="text-align:right;font-size:12px;color:#666;">
-    <div>N° BS-${now.getTime()}</div>
-    <div>${now.toLocaleString('fr-FR')}</div>
-  </div>
-</div>
-<div class="meta">
-  <div class="meta-block"><div class="ml">Client</div><div class="mv">${clientActif?`${clientActif.prenom} ${clientActif.nom}`:'Comptant'}</div></div>
-  <div class="meta-block"><div class="ml">Employé</div><div class="mv">${USER.displayName||USER.username}</div></div>
-  <div class="meta-block"><div class="ml">Semaine</div><div class="mv">${getSemaine()}</div></div>
-  <div class="meta-block"><div class="ml">Points gagnés</div><div class="mv">🎯 ${pts} pts</div></div>
-</div>
-<table>
-  <thead><tr><th>Article</th><th>Qté</th><th>P.U.</th><th>Total</th></tr></thead>
-  <tbody>${commande.map(p => `<tr><td>${p.nom}</td><td>${p.qte}</td><td>${p.prix}$</td><td>${p.prix*p.qte}$</td></tr>`).join('')}</tbody>
-</table>
-<div class="totals">
-  <div>Sous-total HT : ${ht.toLocaleString('fr-FR')}$</div>
-  <div>TVA 20% : ${tva.toLocaleString('fr-FR')}$</div>
-  ${c.r>0?`<div style="color:#c0392b;">Réduction -${c.r}% : -${c.montantR}$</div>`:''}
-  <div class="total-final">TOTAL TTC : ${c.net.toLocaleString('fr-FR')}$</div>
-</div>
-<div class="footer">Burger Shot · RedStart RP · Propriétaire : Direction · Confidentiel</div>
+  const tva = Math.round(c.net*.20);
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Facture BS</title>
+<style>body{font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:40px;}</style></head><body>
+<h2>🍔 BURGER SHOT — Facture</h2>
+<p>N° BS-${now.getTime()} · ${now.toLocaleString('fr-FR')}</p>
+<p>Client: ${clientActif?`${clientActif.prenom} ${clientActif.nom}`:'Comptant'} | Employé: ${USER.displayName}</p>
+<hr>
+<table width="100%">${commande.map(p=>`<tr><td>${p.nom} ×${p.qte}</td><td align="right">${p.prix*p.qte}$</td></tr>`).join('')}</table>
+<hr>
+<p align="right">Brut: ${c.brut}$${c.r>0?`<br>Réduction -${c.r}%: -${c.montantR}$`:''}<br>TVA 20%: ${tva}$<br><strong>TOTAL: ${c.net}$</strong></p>
+${pts>0?`<p>🎯 +${pts} pts attribués</p>`:''}
 </body></html>`;
-
-  const blob = new Blob([html], {type:'text/html'});
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `BurgerShot_Facture_${now.getTime()}.html`;
+  a.href = URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download = `BS_Facture_${now.getTime()}.html`;
   a.click();
 }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    RECHERCHE CLIENT CAISSE
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function searchCaisseClient(val) {
   const el = document.getElementById('caisseClientResults');
-  if (val.length < 2) { el.innerHTML=''; return; }
+  if (!el) return;
+  if (val.length<2) { el.innerHTML=''; return; }
   const data = await sb(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);
-  el.innerHTML = (Array.isArray(data)?data:[]).map(c => {
-    const pts = c.points||0;
-    return `<div onclick='selectCaisseClient(${JSON.stringify(c).replace(/'/g,"&#39;")})' 
+  el.innerHTML = (Array.isArray(data)?data:[]).map(c =>
+    `<div onclick='selectCaisseClient(${JSON.stringify(c).replace(/'/g,"&#39;")})'
       style="padding:10px;background:var(--card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:space-between;">
       <div><strong>${c.prenom} ${c.nom}</strong>${c.pass?`<span class="badge badge-gold" style="margin-left:6px;">${c.pass}</span>`:''}</div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:11px;color:var(--muted);">🎯 ${pts} pts</span>
-        ${pts > 0 ? `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();payerPoints('${c.id}',${pts})">💳 Payer pts</button>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+      <span style="font-size:11px;color:var(--muted);">🎯 ${c.points||0} pts</span>
+    </div>`
+  ).join('');
 }
-
 function selectCaisseClient(c) {
   if (typeof c==='string') try{c=JSON.parse(c);}catch{return;}
   clientActif = c;
-  document.getElementById('caisseClientSearch').value = `${c.prenom} ${c.nom}`;
-  document.getElementById('caisseClientResults').innerHTML='';
+  const s=document.getElementById('caisseClientSearch'); if(s) s.value=`${c.prenom} ${c.nom}`;
+  const r=document.getElementById('caisseClientResults'); if(r) r.innerHTML='';
   renderTicket();
 }
 
-async function payerPoints(clientId, ptsDispos) {
-  // Calcul coût total en points
-  const coutTotal = commande.reduce((a,b) => a+(b.points*b.qte), 0);
-  if (!coutTotal) { alert('Aucun article sélectionné.'); return; }
-  if (ptsDispos < coutTotal) { alert(`Points insuffisants : ${ptsDispos} pts disponibles, ${coutTotal} pts nécessaires.`); return; }
-  if (!confirm(`Payer ${coutTotal} points sur ${ptsDispos} disponibles ?`)) return;
-  // Déduit les points
-  await sb(`clients?id=eq.${clientId}`, {method:'PATCH', body:JSON.stringify({points:ptsDispos-coutTotal})});
-  alert(`✅ Paiement par points effectué ! Reste : ${ptsDispos-coutTotal} pts.`);
-  commande=[]; clientActif=null; renderTicket();
-}
-
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    CLIENTS
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 let allClients = [];
 async function loadClients() {
   const data = await sb('clients?select=*&order=created_at.desc');
-  allClients = Array.isArray(data) ? data : [];
+  allClients = Array.isArray(data)?data:[];
   renderClients(allClients);
 }
 function filtrerClients(v) {
-  const f = v.toLowerCase();
-  renderClients(allClients.filter(c => `${c.prenom} ${c.nom}`.toLowerCase().includes(f)));
+  const f=v.toLowerCase();
+  renderClients(allClients.filter(c=>`${c.prenom} ${c.nom}`.toLowerCase().includes(f)));
 }
 function renderClients(list) {
   const el = document.getElementById('clientsTable');
   if (!list.length) { el.innerHTML='<p style="color:var(--muted)">Aucun client.</p>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th></tr></thead><tbody>` +
+  // Seuls Manager+ peuvent voir les commandes
+  const canSeeOrders = ROLE==='direction' || USER_NIVEAU>=2;
+  el.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th>${canSeeOrders?'<th>Actions</th>':''}</tr></thead><tbody>` +
     list.map(c => `<tr>
       <td>${c.nom}</td><td>${c.prenom}</td>
       <td>${fmtPhoneDisplay(c.telephone)}</td>
       <td>${c.pass?`<span class="badge badge-gold">${c.pass}</span>`:'—'}</td>
       <td><span class="badge badge-blue">🎯 ${c.points||0} pts</span></td>
       <td>${c.created_at?new Date(c.created_at).toLocaleDateString('fr-FR'):'—'}</td>
+      ${canSeeOrders?`<td><button class="btn btn-outline btn-sm" onclick="voirCommandesClient('${c.id}','${c.prenom} ${c.nom}')">📦 Commandes</button></td>`:''}
     </tr>`).join('') + '</tbody></table>';
+}
+
+async function voirCommandesClient(clientId, clientName) {
+  document.getElementById('ovClientCmds').style.display='flex';
+  document.querySelector('#ovClientCmds .popup-title').textContent = `📦 ${clientName}`;
+  const el = document.getElementById('clientCmdsContent');
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const data = await sb(`commandes?client_id=eq.${clientId}&order=created_at.desc&limit=50`);
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucune commande.</p>'; return; }
+  el.innerHTML = data.map(c => {
+    const items = (() => { try { return JSON.parse(c.items||'[]'); } catch { return []; } })();
+    const dateStr = new Date(c.created_at).toLocaleString('fr-FR');
+    return `<div style="padding:12px;background:var(--card2);border-radius:8px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;color:var(--muted);">${dateStr}</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <strong style="color:var(--success);">${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong>
+          <button class="btn btn-outline btn-sm" onclick="genPDFCommandeArchive(${JSON.stringify(c).replace(/"/g,'&quot;')})">📄 PDF</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);">${items.map(i=>`${i.nom}×${i.qte}`).join(', ')}</div>
+      ${c.reduction_pct>0?`<span class="badge badge-orange" style="margin-top:4px;">-${c.reduction_pct}%</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+function genPDFCommandeArchive(c) {
+  if (typeof c==='string') try{c=JSON.parse(c);}catch{return;}
+  const items = (() => { try { return JSON.parse(c.items||'[]'); } catch { return []; } })();
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Facture BS</title></head><body>
+<h2>🍔 BURGER SHOT — Facture archive</h2>
+<p>${new Date(c.created_at).toLocaleString('fr-FR')}</p>
+<table width="100%">${items.map(p=>`<tr><td>${p.nom} ×${p.qte}</td><td>${p.prix*p.qte}$</td></tr>`).join('')}</table>
+<p><strong>TOTAL: ${(c.total_apres_reduction||c.total||0)}$</strong>${c.points_gagnes>0?`<br>🎯 +${c.points_gagnes} pts`:''}</p>
+</body></html>`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download = `BS_Facture_${c.id||Date.now()}.html`;
+  a.click();
 }
 
 async function saveNewClient() {
   const nom=document.getElementById('ncNom').value.trim();
   const prenom=document.getElementById('ncPrenom').value.trim();
-  const naissance=document.getElementById('ncNaissance').value;
-  const tel=document.getElementById('ncTel').value.trim();
-  const discord=document.getElementById('ncDiscord').value.trim();
   const alertEl=document.getElementById('alertNewClient');
   if (!nom||!prenom) { alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom et prénom obligatoires.</div>'; return; }
-  await sb('clients',{method:'POST',body:JSON.stringify({nom,prenom,date_naissance:naissance||null,telephone:tel||null,discord_id:discord||null,points:0})});
+  await sb('clients',{method:'POST',body:JSON.stringify({
+    nom,prenom,
+    date_naissance:document.getElementById('ncNaissance').value||null,
+    telephone:document.getElementById('ncTel').value.trim()||null,
+    discord_id:document.getElementById('ncDiscord').value.trim()||null,
+    points:0
+  })});
   alertEl.innerHTML='<div class="alert alert-ok">✅ Client enregistré !</div>';
   ['ncNom','ncPrenom','ncNaissance','ncTel','ncDiscord'].forEach(id=>document.getElementById(id).value='');
   loadClients();
   setTimeout(()=>closeOverlay('ovNewClient'),1500);
 }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    PASS
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function searchPassClient(val) {
   const el = document.getElementById('passResults');
-  if (val.length < 2) { el.innerHTML=''; return; }
+  if (val.length<2) { el.innerHTML=''; return; }
   const data = await sb(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);
   el.innerHTML = (Array.isArray(data)?data:[]).map(c =>
-    `<div onclick='selectPassClient(${JSON.stringify(c).replace(/'/g,"&#39;")})' 
+    `<div onclick='selectPassClient(${JSON.stringify(c).replace(/'/g,"&#39;")})'
       style="padding:10px;background:var(--card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:13px;">
       ${c.prenom} ${c.nom}
     </div>`
   ).join('');
 }
-
 function selectPassClient(c) {
   if (typeof c==='string') try{c=JSON.parse(c);}catch{return;}
   passClientActif = c;
   document.getElementById('passSearch').value=`${c.prenom} ${c.nom}`;
   document.getElementById('passResults').innerHTML='';
-  const info = document.getElementById('passClientInfo');
+  const info=document.getElementById('passClientInfo');
   info.style.display='block';
-  info.innerHTML = `✅ <strong>${c.prenom} ${c.nom}</strong>${c.pass?` — Pass actuel : <span class="badge badge-gold">${c.pass}</span>`:''}`;
-  // Remplir select pass
-  const sel = document.getElementById('passTypeSelect');
-  sel.innerHTML = passTypes.map(p => `<option value="${p.id}" data-nom="${p.nom}" data-prix="${p.prix}" data-mult="${p.multiplicateur}" data-reduc="${p.reduction}">${p.nom} — ${p.prix}$</option>`).join('');
-  sel.onchange = () => {
-    const opt = sel.options[sel.selectedIndex];
-    document.getElementById('passTypeInfo').textContent = `×${opt.dataset.mult} pts par commande${opt.dataset.reduc>0?` • -${opt.dataset.reduc}% de réduction`:''}`;
+  info.innerHTML=`✅ <strong>${c.prenom} ${c.nom}</strong>${c.pass?` — Pass actuel: <span class="badge badge-gold">${c.pass}</span>`:''}`;
+  const sel=document.getElementById('passTypeSelect');
+  sel.innerHTML=passTypes.map(p=>`<option value="${p.id}" data-nom="${p.nom}" data-prix="${p.prix}" data-mult="${p.multiplicateur}" data-reduc="${p.reduction}">${p.nom} — ${p.prix}$</option>`).join('');
+  sel.onchange=()=>{
+    const opt=sel.options[sel.selectedIndex];
+    document.getElementById('passTypeInfo').textContent=`×${opt.dataset.mult} pts${opt.dataset.reduc>0?` • -${opt.dataset.reduc}% de réduction`:''}`;
   };
   sel.dispatchEvent(new Event('change'));
 }
-
 async function confirmerPass() {
   if (!passClientActif) { alert('Sélectionnez un client.'); return; }
-  const sel = document.getElementById('passTypeSelect');
-  const opt = sel.options[sel.selectedIndex];
+  const sel=document.getElementById('passTypeSelect');
+  const opt=sel.options[sel.selectedIndex];
   await sb(`clients?id=eq.${passClientActif.id}`,{method:'PATCH',body:JSON.stringify({pass:opt.dataset.nom,pass_id:sel.value})});
   closeOverlay('ovPass');
-  alert(`✅ Pass ${opt.dataset.nom} attribué à ${passClientActif.prenom} !`);
+  alert(`✅ Pass ${opt.dataset.nom} attribué !`);
   loadClients();
 }
 
-/* ══════════════════════════════════════════
-   EMPLOYÉS
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   EMPLOYÉS (cards)
+══════════════════════════════════════════════ */
 async function loadEmployes() {
-  const data = await sb('employes?select=*&order=created_at.desc');
-  const el = document.getElementById('employesTable');
+  const el = document.getElementById('empGrid');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div> Chargement...</div>';
+
+  const semaine = getSemaine();
+  const [data, cmds, allCmds, primes] = await Promise.all([
+    sb('employes?select=*&order=created_at.desc'),
+    sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
+    sb('commandes?select=employe_discord_id,total_apres_reduction,total'),
+    sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
+  ]);
+
   if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>'; return; }
-  // Total commandes par employé
-  const cmds = await sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${getSemaine()}`);
-  const caMap = {};
+
+  // Maps CA
+  const caWeek = {}, caTotal = {}, cmdWeek = {}, primesMap = {};
   (cmds||[]).forEach(c => {
-    caMap[c.employe_discord_id] = (caMap[c.employe_discord_id]||0) + (c.total_apres_reduction||c.total||0);
+    caWeek[c.employe_discord_id] = (caWeek[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);
+    cmdWeek[c.employe_discord_id] = (cmdWeek[c.employe_discord_id]||0)+1;
   });
-  el.innerHTML = `<table><thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Embauche</th><th>CA Semaine</th><th>Quota</th><th>Statut</th><th>Action</th></tr></thead><tbody>` +
-    data.map(e => `<tr>
-      <td><strong>${e.prenom} ${e.nom}</strong><div style="font-size:11px;color:var(--muted);">${fmtPhoneDisplay(e.telephone)}</div></td>
-      <td><span class="badge badge-orange">${e.poste}</span></td>
-      <td><span class="badge badge-blue">${e.contrat||'—'}</span></td>
-      <td>${e.date_embauche?new Date(e.date_embauche).toLocaleDateString('fr-FR'):'—'}</td>
-      <td><strong style="color:var(--success);">${(caMap[e.discord_id]||0).toLocaleString('fr-FR')}$</strong></td>
-      <td>${e.quota_validee||0} / ${e.quota_semaine||'—'}</td>
-      <td><span class="badge ${e.actif?'badge-green':'badge-red'}">${e.actif?'Actif':'Inactif'}</span></td>
-      <td><button class="btn btn-outline btn-sm" onclick="toggleEmploye('${e.id}',${e.actif})">${e.actif?'Désactiver':'Activer'}</button></td>
-    </tr>`).join('') + '</tbody></table>';
+  (allCmds||[]).forEach(c => {
+    caTotal[c.employe_discord_id] = (caTotal[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);
+  });
+  (primes||[]).forEach(p => {
+    primesMap[p.employe_discord] = (primesMap[p.employe_discord]||0)+p.montant;
+  });
+
+  el.innerHTML = data.map(e => {
+    const initials = `${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
+    const primeActuelle = primesMap[e.discord_id]||0;
+    const quotaMax = e.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
+    const quotaDone = e.quota_validee||0;
+    const quotaPct = quotaMax>0 ? Math.min(100,Math.round((quotaDone/quotaMax)*100)) : 0;
+
+    return `<div class="emp-card">
+      <div class="emp-card-header">
+        <div class="emp-avatar">${initials}</div>
+        <div style="flex:1;">
+          <div class="emp-name">${e.prenom} ${e.nom}</div>
+          <div class="emp-discord">Discord: ${e.discord_id||'—'}</div>
+          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="badge ${e.actif?'badge-green':'badge-red'}">${e.actif?'Actif':'Inactif'}</span>
+            <span class="badge badge-orange">${e.poste||'—'}</span>
+            <span class="badge badge-blue">${e.contrat||'—'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="emp-card-body">
+        <div class="emp-stats-row">
+          <div class="emp-stat">
+            <div class="emp-stat-val">${cmdWeek[e.discord_id]||0}</div>
+            <div class="emp-stat-lbl">Cmds sem.</div>
+          </div>
+          <div class="emp-stat">
+            <div class="emp-stat-val" style="font-size:14px;">${(caWeek[e.discord_id]||0).toLocaleString('fr-FR')}$</div>
+            <div class="emp-stat-lbl">CA sem.</div>
+          </div>
+          <div class="emp-stat">
+            <div class="emp-stat-val" style="font-size:13px;">${(caTotal[e.discord_id]||0).toLocaleString('fr-FR')}$</div>
+            <div class="emp-stat-lbl">CA total</div>
+          </div>
+        </div>
+        
+        <div class="emp-prime">
+          <div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Prime actuelle</div>
+            <div class="emp-prime-val">${primeActuelle.toLocaleString('fr-FR')}$</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="voirPrimeEmploye('${e.discord_id}','${e.prenom} ${e.nom}')">Détails</button>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;">
+            <span>Quota ${e.contrat}: ${quotaDone}/${quotaMax}</span>
+            <span>${quotaPct}%</span>
+          </div>
+          <div class="quota-bar-bg" style="height:6px;"><div class="quota-bar-fill" style="width:${quotaPct}%"></div></div>
+        </div>
+
+        <div class="emp-selects">
+          <select onchange="updateEmpPoste('${e.id}',this.value)">
+            ${POSTES.map(p=>`<option${p===e.poste?' selected':''}>${p}</option>`).join('')}
+          </select>
+          <select onchange="updateEmpContrat('${e.id}',this.value)">
+            <option${e.contrat==='CDD'?' selected':''}>CDD</option>
+            <option${e.contrat==='CDI'?' selected':''}>CDI</option>
+          </select>
+        </div>
+        
+        <div class="emp-card-actions">
+          <button class="btn btn-outline btn-sm" onclick="toggleEmploye('${e.id}',${e.actif})">${e.actif?'🔴 Désactiver':'🟢 Activer'}</button>
+          <button class="btn btn-danger btn-sm" onclick="virer('${e.id}','${e.prenom} ${e.nom}')">🚪 Virer</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function updateEmpPoste(id, poste) {
+  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({poste})});
+}
+async function updateEmpContrat(id, contrat) {
+  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({contrat})});
+}
+async function toggleEmploye(id, actif) {
+  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});
+  loadEmployes();
+}
+async function virer(id, nom) {
+  if (!confirm(`Virer ${nom} ? Cette action désactivera son compte.`)) return;
+  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:false})});
+  loadEmployes();
+}
+
+async function voirPrimeEmploye(discordId, nom) {
+  document.getElementById('ovEmpPrimeTitle').textContent = `💰 Prime — ${nom}`;
+  document.getElementById('ovEmpPrime').style.display = 'flex';
+  const el = document.getElementById('ovEmpPrimeContent');
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const data = await sb(`primes?employe_discord=eq.${discordId}&order=created_at.desc&limit=20`);
+  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucune prime.</p>'; return; }
+  const total = data.filter(p=>!p.verse).reduce((a,p)=>a+p.montant,0);
+  el.innerHTML = `<div style="margin-bottom:14px;padding:12px;background:rgba(39,174,96,.08);border-radius:8px;display:flex;justify-content:space-between;">
+    <span style="font-weight:700;">Total en attente</span>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);">${total.toLocaleString('fr-FR')}$</span>
+  </div>` +
+  data.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+    <div>
+      <span class="badge badge-blue">${p.type||'vente'}</span>
+      <span style="font-size:12px;color:var(--muted);margin-left:8px;">${p.semaine}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong>
+      <span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span>
+      ${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}
+    </div>
+  </div>`).join('');
 }
 
 function openAddEmploye() {
-  const f = document.getElementById('addEmployeForm');
-  f.style.display = f.style.display==='none'?'block':'none';
+  const f=document.getElementById('addEmployeForm');
+  f.style.display=f.style.display==='none'?'block':'none';
 }
-
 async function saveEmploye() {
   const nom=document.getElementById('empNom').value.trim();
   const prenom=document.getElementById('empPrenom').value.trim();
@@ -1449,8 +1450,7 @@ async function saveEmploye() {
     discord_id:discord,
     poste:document.getElementById('empPoste').value,
     contrat:document.getElementById('empContrat').value,
-    actif:true,
-    quota_semaine:parseInt(document.getElementById('empQuota').value)||null,
+    actif:document.getElementById('empActif').value==='true',
     date_embauche:document.getElementById('empEmbauche').value||null,
     quota_validee:0
   })});
@@ -1459,41 +1459,238 @@ async function saveEmploye() {
   loadEmployes();
 }
 
-async function toggleEmploye(id, actif) {
-  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});
-  loadEmployes();
+/* ══════════════════════════════════════════════
+   QUOTA PAGE (employé)
+══════════════════════════════════════════════ */
+async function loadQuotaPage() {
+  const el = document.getElementById('quotaPageContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+
+  const empData = await sb(`employes?discord_id=eq.${USER.id}&select=*`);
+  const emp = empData?.[0];
+
+  if (!emp) {
+    el.innerHTML = '<div class="alert alert-warn">⚠️ Votre profil employé n\'est pas encore configuré. Contactez la direction.</div>';
+    return;
+  }
+
+  const quotaMax = emp.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
+  const primeMax = emp.contrat==='CDI' ? quotaConfig.cdi_prime : quotaConfig.cdd_prime;
+  const quotaDone = parseInt(emp.quota_validee||0);
+  const pct = quotaMax>0 ? Math.min(100, Math.round((quotaDone/quotaMax)*100)) : 0;
+  const restant = Math.max(0, quotaMax - quotaDone);
+  const primeEstimee = Math.round((pct/100)*primeMax);
+
+  // Mes tickets
+  const tickets = await sb(`quotas_tickets?employe_discord_id=eq.${USER.id}&semaine=eq.${getSemaine()}&order=created_at.desc`);
+  const hasTicketEnAttente = (tickets||[]).some(t => t.statut==='en_attente');
+
+  // Peut valider si chef d'équipe ou plus
+  const canValidate = ROLE==='direction' || USER_NIVEAU>=1;
+
+  // Tickets en attente si autorisé
+  let ticketsEnAttente = [];
+  if (canValidate) {
+    ticketsEnAttente = await sb('quotas_tickets?statut=eq.en_attente&order=created_at.desc') || [];
+  }
+
+  el.innerHTML = `
+  <div class="quota-hero">
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Quota semaine — Contrat ${emp.contrat}</div>
+        <div class="quota-pct-big">${pct}%</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Prime potentielle</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--success);">${primeEstimee.toLocaleString('fr-FR')}$</div>
+        <div style="font-size:11px;color:var(--muted);">sur ${primeMax.toLocaleString('fr-FR')}$ max</div>
+      </div>
+    </div>
+    <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px;">
+      <span style="color:var(--muted);">${quotaDone} unités validées / ${quotaMax} requises</span>
+      <span style="color:${restant===0?'var(--success)':'var(--red)'};">${restant===0?'✅ Quota atteint !':restant+' restantes'}</span>
+    </div>
+  </div>
+
+  ${!hasTicketEnAttente ? `
+  <div style="margin-bottom:24px;">
+    <button class="btn btn-primary" onclick="openOverlay('ovQuota');prepareQuotaForm('${emp.contrat}',${quotaMax},${quotaDone},${primeMax})">🚚 Déclarer un remplissage</button>
+  </div>` : `
+  <div class="alert alert-warn" style="margin-bottom:24px;">⏳ Vous avez une déclaration en attente de validation. Vous ne pouvez en soumettre qu'une à la fois.</div>
+  `}
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">📋 Mes déclarations de la semaine</div>
+    ${(tickets||[]).length ? (tickets||[]).map(t => `
+      <div class="quota-ticket ${t.statut}">
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div>
+            <div style="font-weight:700;margin-bottom:4px;">🚚 ${t.plaque} — ${t.quantite} unités</div>
+            <div style="font-size:12px;color:var(--muted);">${new Date(t.created_at).toLocaleString('fr-FR')}</div>
+            ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">${t.notes}</div>`:''}
+          </div>
+          <span class="badge ${t.statut==='valide'?'badge-green':t.statut==='refuse'?'badge-red':'badge-orange'}">
+            ${t.statut==='valide'?'✅ Validé':t.statut==='refuse'?'❌ Refusé':'⏳ En attente'}
+          </span>
+        </div>
+      </div>`).join('') : '<p style="color:var(--muted)">Aucune déclaration cette semaine.</p>'}
+  </div>
+
+  ${canValidate && ticketsEnAttente.length>0 ? `
+  <div class="card">
+    <div class="card-title">🔔 Tickets à valider (${ticketsEnAttente.length})</div>
+    <div id="quotaValidationList">
+      ${await renderQuotaTicketsList(ticketsEnAttente)}
+    </div>
+  </div>` : ''}`;
 }
 
-/* ══════════════════════════════════════════
-   QUOTA
-══════════════════════════════════════════ */
+async function renderQuotaTicketsList(tickets) {
+  // Récupère les noms des employés
+  const discordIds = [...new Set(tickets.map(t=>t.employe_discord_id).filter(Boolean))];
+  let empMap = {};
+  if (discordIds.length) {
+    const emps = await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);
+    (emps||[]).forEach(e => empMap[e.discord_id] = e);
+  }
+
+  return tickets.map(t => {
+    const emp = empMap[t.employe_discord_id]||{};
+    const quotaMax = emp.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
+    const primeMax = emp.contrat==='CDI' ? quotaConfig.cdi_prime : quotaConfig.cdd_prime;
+    const pct = quotaMax>0 ? Math.min(100,Math.round((t.quantite/quotaMax)*100)) : 0;
+    const primeEstimee = Math.round((pct/100)*primeMax);
+
+    return `<div class="quota-ticket pending" id="ticket-${t.id}">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div>
+          <div style="font-weight:800;font-size:15px;">${emp.prenom||'?'} ${emp.nom||''}</div>
+          <div style="font-size:12px;color:var(--muted);">${emp.contrat||'—'} · ${new Date(t.created_at).toLocaleString('fr-FR')}</div>
+        </div>
+        <span class="badge badge-orange">⏳ En attente</span>
+      </div>
+      <div class="g2" style="margin-bottom:10px;gap:8px;">
+        <div style="background:var(--card);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Plaque</div>
+          <div style="font-weight:800;font-size:16px;margin-top:2px;">🚚 ${t.plaque}</div>
+        </div>
+        <div style="background:var(--card);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Quantité</div>
+          <div style="font-weight:800;font-size:16px;margin-top:2px;">${t.quantite} unités</div>
+        </div>
+        <div style="background:var(--card);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">% du quota</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red);margin-top:2px;">${pct}%</div>
+        </div>
+        <div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Prime estimée</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);margin-top:2px;">${primeEstimee.toLocaleString('fr-FR')}$</div>
+        </div>
+      </div>
+      ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;padding:8px;background:var(--card);border-radius:6px;">${t.notes}</div>`:''}
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-success btn-sm" onclick="validerQuotaTicket('${t.id}','${t.employe_discord_id||''}',${t.quantite},${primeEstimee})">✅ Valider</button>
+        <button class="btn btn-danger btn-sm" onclick="refuserQuotaTicket('${t.id}')">❌ Refuser</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function prepareQuotaForm(contrat, quotaMax, quotaDone, primeMax) {
+  document.getElementById('quotaFormInfo').innerHTML = `
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div><span style="color:var(--muted);">Contrat</span> <strong>${contrat}</strong></div>
+      <div><span style="color:var(--muted);">Validé</span> <strong>${quotaDone}/${quotaMax}</strong></div>
+      <div><span style="color:var(--muted);">Prime max</span> <strong style="color:var(--success);">${primeMax.toLocaleString('fr-FR')}$</strong></div>
+    </div>`;
+  // Store pour preview
+  window._quotaFormData = { quotaMax, quotaDone, primeMax };
+}
+
+function updateQuotaPreview() {
+  const qte = parseInt(document.getElementById('quotaQte').value)||0;
+  const el = document.getElementById('quotaPreview');
+  if (!qte||!window._quotaFormData) { el.style.display='none'; return; }
+  const {quotaMax, quotaDone, primeMax} = window._quotaFormData;
+  const newTotal = quotaDone + qte;
+  const pct = Math.min(100, Math.round((newTotal/quotaMax)*100));
+  const primeEstimee = Math.round((pct/100)*primeMax);
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>Nouveau total : <strong>${newTotal}/${quotaMax}</strong></div>
+      <div>Avancement : <strong style="color:var(--red);">${pct}%</strong></div>
+      <div>Prime estimée : <strong style="color:var(--success);">${primeEstimee.toLocaleString('fr-FR')}$</strong></div>
+    </div>`;
+}
+
 async function soumettreQuota() {
-  const plaque=document.getElementById('quotaPlaque').value.trim();
-  const qte=parseInt(document.getElementById('quotaQte').value);
-  const notes=document.getElementById('quotaNotes').value.trim();
+  const plaque = document.getElementById('quotaPlaque').value.trim();
+  const qte = parseInt(document.getElementById('quotaQte').value);
+  const notes = document.getElementById('quotaNotes').value.trim();
   if (!plaque||!qte) { alert('Plaque et quantité obligatoires.'); return; }
+
   await sb('quotas_tickets',{method:'POST',body:JSON.stringify({
-    employe_discord_id:USER.id,
-    plaque,quantite:qte,notes:notes||null,
-    semaine:getSemaine(),statut:'en_attente'
+    employe_discord_id:USER.id, plaque, quantite:qte,
+    notes:notes||null, semaine:getSemaine(), statut:'en_attente'
   })});
+
+  document.getElementById('quotaPlaque').value='';
+  document.getElementById('quotaQte').value='';
+  document.getElementById('quotaNotes').value='';
   closeOverlay('ovQuota');
-  alert('✅ Déclaration envoyée à la direction !');
+  alert('✅ Déclaration envoyée !');
+  loadQuotaPage();
 }
 
-/* ══════════════════════════════════════════
-   MENU (direction)
-══════════════════════════════════════════ */
+async function validerQuotaTicket(ticketId, discordId, quantite, primeEstimee) {
+  await sb(`quotas_tickets?id=eq.${ticketId}`,{method:'PATCH',body:JSON.stringify({statut:'valide'})});
+
+  if (discordId) {
+    const empData = await sb(`employes?discord_id=eq.${discordId}&select=id,quota_validee`);
+    if (empData?.[0]) {
+      await sb(`employes?id=eq.${empData[0].id}`,{method:'PATCH',body:JSON.stringify({
+        quota_validee:(empData[0].quota_validee||0)+quantite
+      })});
+    }
+    if (primeEstimee>0) {
+      await sb('primes',{method:'POST',body:JSON.stringify({
+        employe_discord:discordId, montant:primeEstimee,
+        semaine:getSemaine(), verse:false, type:'quota'
+      })});
+    }
+  }
+
+  const el = document.getElementById(`ticket-${ticketId}`);
+  if (el) el.remove();
+  alert(`✅ Quota validé ! Prime de ${primeEstimee.toLocaleString('fr-FR')}$ attribuée.`);
+  loadQuotaPage();
+}
+
+async function refuserQuotaTicket(id) {
+  await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});
+  const el = document.getElementById(`ticket-${id}`);
+  if (el) el.remove();
+  loadQuotaPage();
+}
+
+/* ══════════════════════════════════════════════
+   MENU
+══════════════════════════════════════════════ */
 async function loadMenu() {
   const data = await sb('produits?select=*&order=categorie.asc,nom.asc');
   const el = document.getElementById('menuGrid');
+  if (!el) return;
   if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucun produit.</p>'; return; }
   const cats = [...new Set(data.map(p=>p.categorie))];
   el.innerHTML = cats.map(cat => `
     <div style="margin-bottom:20px;">
       <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">${cat}</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;">
-        ${data.filter(p=>p.categorie===cat).map(p => `
+        ${data.filter(p=>p.categorie===cat).map(p=>`
           <div class="menu-prod-card" style="opacity:${p.actif?1:.5}">
             <div class="menu-prod-actions">
               <button onclick="toggleProd('${p.id}',${p.actif})">${p.actif?'✅':'❌'}</button>
@@ -1502,10 +1699,16 @@ async function loadMenu() {
             ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:32px;margin-bottom:6px;">${getEmoji(p.categorie)}</div>`}
             <div style="font-size:12px;font-weight:700;margin-bottom:3px;">${p.nom}</div>
             <div style="font-size:12px;color:var(--red);">${p.prix}$</div>
-            <div style="font-size:10px;color:var(--muted);">🎯 ${p.points} pts</div>
           </div>`).join('')}
       </div>
     </div>`).join('');
+}
+
+function updateMenuImgPreview(v) {
+  const prev=document.getElementById('mImgPreview'), img=document.getElementById('mImgPrev');
+  if (!prev||!img) return;
+  if (v.trim()) { img.src=v.trim(); prev.style.display='block'; }
+  else prev.style.display='none';
 }
 
 async function saveProduit() {
@@ -1513,395 +1716,405 @@ async function saveProduit() {
   const prix=document.getElementById('mPrix').value;
   const alertEl=document.getElementById('alertMenu');
   if (!nom||!prix) { alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom et prix obligatoires.</div>'; return; }
-  await sb('produits',{method:'POST',body:JSON.stringify({
-    nom,prix:parseFloat(prix),
+  const res = await sb('produits',{method:'POST',body:JSON.stringify({
+    nom, prix:parseFloat(prix),
     points:parseInt(document.getElementById('mPoints').value)||0,
     categorie:document.getElementById('mCat').value,
     image_url:document.getElementById('mImg').value.trim()||null,
     contenu:document.getElementById('mContenu').value.trim()||null,
     actif:true
   })});
-  alertEl.innerHTML='<div class="alert alert-ok">✅ Produit ajouté !</div>';
-  ['mNom','mPrix','mPoints','mImg','mContenu'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('mImgPreview').style.display='none';
-  loadMenu();
+  if (Array.isArray(res)&&res.length) {
+    alertEl.innerHTML='<div class="alert alert-ok">✅ Produit ajouté !</div>';
+    ['mNom','mPrix','mPoints','mImg','mContenu'].forEach(id=>document.getElementById(id).value='');
+    const prev=document.getElementById('mImgPreview'); if(prev) prev.style.display='none';
+    loadMenu();
+  } else {
+    alertEl.innerHTML='<div class="alert alert-err">❌ Erreur lors de l\'ajout. Vérifiez Supabase.</div>';
+  }
 }
 
 async function toggleProd(id,actif) { await sb(`produits?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})}); loadMenu(); }
 async function deleteProd(id) { if(!confirm('Supprimer ?'))return; await sb(`produits?id=eq.${id}`,{method:'DELETE'}); loadMenu(); }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    CONTRATS
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function loadContrats() {
   const data = await sb('contrats_reduction?select=*&order=created_at.desc');
   const el = document.getElementById('contratsTable');
+  if (!el) return;
   if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucun contrat.</p>'; return; }
   el.innerHTML = `<table><thead><tr><th>Entreprise</th><th>Réduction</th><th>Statut</th><th>Action</th></tr></thead><tbody>` +
-    data.map(c => `<tr>
+    data.map(c=>`<tr>
       <td><strong>${c.nom}</strong></td>
       <td><span class="badge badge-orange">-${c.pourcentage}%</span></td>
       <td><span class="badge ${c.actif?'badge-green':'badge-red'}">${c.actif?'Actif':'Inactif'}</span></td>
       <td><button class="btn btn-outline btn-sm" onclick="toggleContrat('${c.id}',${c.actif})">${c.actif?'Désactiver':'Activer'}</button></td>
-    </tr>`).join('') + '</tbody></table>';
+    </tr>`).join('')+'</tbody></table>';
 }
-
 async function saveContrat() {
-  const nom=document.getElementById('cNom').value.trim();
-  const pct=document.getElementById('cPct').value;
+  const nom=document.getElementById('cNom').value.trim(), pct=document.getElementById('cPct').value;
   const alertEl=document.getElementById('alertContrat');
   if (!nom||!pct) { alertEl.innerHTML='<div class="alert alert-err">⚠️ Champs obligatoires.</div>'; return; }
   await sb('contrats_reduction',{method:'POST',body:JSON.stringify({nom,pourcentage:parseFloat(pct),actif:true})});
   alertEl.innerHTML='<div class="alert alert-ok">✅ Contrat créé !</div>';
-  document.getElementById('cNom').value='';document.getElementById('cPct').value='';
+  document.getElementById('cNom').value=''; document.getElementById('cPct').value='';
   loadContrats();
 }
-
 async function toggleContrat(id,actif) { await sb(`contrats_reduction?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})}); loadContrats(); }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    CALENDRIER
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function loadCalendrier() {
   const now = new Date();
-  calYear = now.getFullYear(); calMonth = now.getMonth();
+  calYear=now.getFullYear(); calMonth=now.getMonth();
   await renderCal();
 }
-
 async function renderCal() {
-  const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  document.getElementById('calTitle').textContent = `${months[calMonth]} ${calYear}`;
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const start = firstDay === 0 ? 6 : firstDay - 1;
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  document.getElementById('calTitle').textContent=`${MONTHS[calMonth]} ${calYear}`;
 
-  // Fetch events
-  const from = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
-  const to = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
-  const events = await sb(`reservations?select=*&date_debut=gte.${from}T00:00:00&date_debut=lte.${to}T23:59:59&order=date_debut.asc`) || [];
+  const firstDay = new Date(calYear,calMonth,1).getDay();
+  const start = firstDay===0?6:firstDay-1;
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev = new Date(calYear,calMonth,0).getDate();
 
-  const today = new Date();
-  const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const from=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const to=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
+  const events = await sb(`reservations?select=*&date_debut=gte.${from}T00:00:00&date_debut=lte.${to}T23:59:59&order=date_debut.asc`)||[];
 
-  let html = dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  const today=new Date();
+  const canAdd = ROLE==='direction' || USER_NIVEAU>=2;
 
-  // Prev month days
-  for (let i=start-1; i>=0; i--) {
-    html += `<div class="cal-day other-month"><div class="cal-day-num">${daysInPrev-i}</div></div>`;
+  // Header
+  let html=`<table class="cal-table"><thead><tr>${DAYS.map(d=>`<th class="cal-th">${d}</th>`).join('')}</tr></thead><tbody>`;
+
+  let cellIdx=0;
+  let totalCells = start + daysInMonth;
+  let rows = Math.ceil(totalCells/7);
+
+  for (let row=0; row<rows; row++) {
+    html += '<tr>';
+    for (let col=0; col<7; col++) {
+      const idx = row*7+col;
+      let day, isCurrentMonth=true;
+
+      if (idx<start) {
+        day = daysInPrev-(start-1-idx);
+        isCurrentMonth=false;
+      } else if (idx >= start+daysInMonth) {
+        day = idx-(start+daysInMonth)+1;
+        isCurrentMonth=false;
+      } else {
+        day = idx-start+1;
+      }
+
+      const isToday = isCurrentMonth && today.getDate()===day && today.getMonth()===calMonth && today.getFullYear()===calYear;
+      const dayEvents = isCurrentMonth ? events.filter(e=>new Date(e.date_debut).getDate()===day) : [];
+
+      const clickAttr = canAdd && isCurrentMonth
+        ? `onclick="prefillResa(${calYear},${calMonth+1},${day})"`
+        : isCurrentMonth ? `onclick="voirEventsDuJour(${calYear},${calMonth+1},${day})"` : '';
+
+      html+=`<td class="cal-td">
+        <div class="cal-cell${isToday?' today':''}${!isCurrentMonth?' other-month':''}" ${clickAttr}>
+          <div class="cal-cell-num">${day}</div>
+          ${dayEvents.slice(0,3).map(e=>`<span class="cal-event-pill ${e.type||''}" title="${e.titre||''}">${e.titre||e.type}</span>`).join('')}
+          ${dayEvents.length>3?`<span style="font-size:9px;color:var(--muted);">+${dayEvents.length-3}</span>`:''}
+          ${canAdd&&isCurrentMonth?`<div class="cal-cell-add">+</div>`:''}
+        </div>
+      </td>`;
+    }
+    html+='</tr>';
   }
-  // Current month
-  for (let d=1; d<=daysInMonth; d++) {
-    const isToday = today.getDate()===d && today.getMonth()===calMonth && today.getFullYear()===calYear;
-    const dayEvents = events.filter(e => new Date(e.date_debut).getDate()===d);
-    html += `<div class="cal-day${isToday?' today':''}" ${ROLE==='direction'?`onclick="prefillResa(${calYear},${calMonth+1},${d})"`:''}> 
-      <div class="cal-day-num">${d}</div>
-      ${dayEvents.map(e=>`<div class="cal-event">${e.titre||e.type}</div>`).join('')}
-    </div>`;
-  }
-  // Next month
-  const total = start + daysInMonth;
-  const remaining = total%7===0?0:7-(total%7);
-  for (let i=1; i<=remaining; i++) {
-    html += `<div class="cal-day other-month"><div class="cal-day-num">${i}</div></div>`;
-  }
+  html+='</tbody></table>';
+  document.getElementById('calContainer').innerHTML=html;
 
-  document.getElementById('calContainer').innerHTML = `<div class="cal-grid">${html}</div>`;
-
-  // Liste events
-  const listeEl = document.getElementById('calListe');
+  // Liste événements
+  const listeEl=document.getElementById('calListe');
   if (!events.length) { listeEl.innerHTML='<p style="color:var(--muted)">Aucun événement ce mois.</p>'; return; }
-  const typeColors = {reservation:'badge-blue',evenement:'badge-orange',reunion:'badge-purple'};
-  listeEl.innerHTML = events.map(e => `
+  const typeColors={reservation:'badge-blue',evenement:'badge-orange',reunion:'badge-purple'};
+  listeEl.innerHTML=events.map(e=>`
     <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card2);border-radius:8px;margin-bottom:8px;">
       <div style="flex:1;">
-        <div style="font-weight:700;font-size:14px;">${e.titre||'Sans titre'}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">${new Date(e.date_debut).toLocaleString('fr-FR')}${e.date_fin?` → ${new Date(e.date_fin).toLocaleString('fr-FR')}`:''}</div>
-        ${e.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px;">${e.notes}</div>`:''}
+        <div style="font-weight:700;">${e.titre||'Sans titre'}</div>
+        <div style="font-size:12px;color:var(--muted);">${new Date(e.date_debut).toLocaleString('fr-FR')}${e.date_fin?` → ${new Date(e.date_fin).toLocaleString('fr-FR')}`:''}</div>
+        ${e.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px;">${e.notes}</div>`:''}
       </div>
       <span class="badge ${typeColors[e.type]||'badge-blue'}">${e.type||'événement'}</span>
-      ${ROLE==='direction'?`<button class="btn btn-outline btn-sm" onclick="deleteResa('${e.id}')">🗑️</button>`:''}
+      ${canAdd?`<button class="btn btn-outline btn-sm" onclick="deleteResa('${e.id}')">🗑️</button>`:''}
     </div>`).join('');
 }
-
 function calNav(dir) { calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
-
 function prefillResa(y,m,d) {
   const pad=n=>String(n).padStart(2,'0');
   document.getElementById('resaDebut').value=`${y}-${pad(m)}-${pad(d)}T12:00`;
   document.getElementById('resaFin').value=`${y}-${pad(m)}-${pad(d)}T14:00`;
   openOverlay('ovResa');
 }
-
 async function saveResa() {
-  const titre=document.getElementById('resaTitre').value.trim();
-  const debut=document.getElementById('resaDebut').value;
-  const fin=document.getElementById('resaFin').value;
-  const type=document.getElementById('resaType').value;
-  const notes=document.getElementById('resaNotes').value.trim();
+  const titre=document.getElementById('resaTitre').value.trim(), debut=document.getElementById('resaDebut').value;
   if (!titre||!debut) { alert('Titre et date obligatoires.'); return; }
-  await sb('reservations',{method:'POST',body:JSON.stringify({titre,date_debut:debut,date_fin:fin||null,type,notes:notes||null})});
+  await sb('reservations',{method:'POST',body:JSON.stringify({
+    titre,date_debut:debut,date_fin:document.getElementById('resaFin').value||null,
+    type:document.getElementById('resaType').value,notes:document.getElementById('resaNotes').value.trim()||null
+  })});
   closeOverlay('ovResa');
   renderCal();
 }
+async function deleteResa(id) { if(!confirm('Supprimer ?'))return; await sb(`reservations?id=eq.${id}`,{method:'DELETE'}); renderCal(); }
 
-async function deleteResa(id) { if(!confirm('Supprimer cet événement ?'))return; await sb(`reservations?id=eq.${id}`,{method:'DELETE'}); renderCal(); }
-
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    STATS
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function loadStats() {
-  const semaine = getSemaine();
-  const [cmds, clients, employes, caData] = await Promise.all([
+  const semaine=getSemaine();
+  const [cmds,clients,employes,caData]=await Promise.all([
     sb(`commandes?select=*&semaine=eq.${semaine}`),
     sb('clients?select=id'),
     sb('employes?select=id&actif=eq.true'),
     sb('parametres?cle=eq.ca_semaine'),
   ]);
-  const ca = parseFloat(caData?.[0]?.valeur||0)||0;
-  const nbCmd = Array.isArray(cmds)?cmds.length:0;
-  const impots = Math.round(calcImpot(ca));
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
+  const impots=Math.round(calcImpot(ca));
 
-  document.getElementById('statsCards').innerHTML = [
-    {label:'Commandes',value:nbCmd,icon:'📦',accent:'var(--blue)'},
+  document.getElementById('statsCards').innerHTML=[
+    {label:'Commandes',value:Array.isArray(cmds)?cmds.length:0,icon:'📦',accent:'var(--blue)'},
     {label:'CA Semaine',value:`${ca.toLocaleString('fr-FR')}$`,icon:'💰',accent:'var(--success)'},
     {label:'Clients',value:Array.isArray(clients)?clients.length:0,icon:'👥',accent:'var(--orange)'},
     {label:'Employés actifs',value:Array.isArray(employes)?employes.length:0,icon:'👤',accent:'var(--red)'},
-  ].map(s => `
-    <div class="stat-card" style="--accent:${s.accent};--accent-bg:rgba(52,152,219,.1);--accent-border:rgba(52,152,219,.2);">
-      <div class="stat-icon">${s.icon}</div>
-      <div class="stat-label">${s.label}</div>
-      <div class="stat-value">${s.value}</div>
-    </div>`).join('');
+  ].map(s=>`<div class="stat-card" style="--accent:${s.accent};">
+    <div class="stat-icon">${s.icon}</div><div class="stat-label">${s.label}</div>
+    <div class="stat-value">${s.value}</div>
+  </div>`).join('');
 
-  // Commandes récentes
-  const recentEl = document.getElementById('statsCommandes');
-  if (!Array.isArray(cmds)||!cmds.length) {
-    recentEl.innerHTML='<p style="color:var(--muted)">Aucune commande cette semaine.</p>';
-  } else {
-    recentEl.innerHTML = `<table><thead><tr><th>Heure</th><th>Total</th><th>Réduction</th><th>Points</th></tr></thead><tbody>` +
-      cmds.slice(0,10).map(c => `<tr>
-        <td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td>
-        <td><strong>${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong></td>
-        <td>${c.reduction_pct?`<span class="badge badge-orange">-${c.reduction_pct}%</span>`:'—'}</td>
-        <td>${c.points_gagnes||0} pts</td>
-      </tr>`).join('') + '</tbody></table>';
-  }
+  const recentEl=document.getElementById('statsCommandes');
+  if (!Array.isArray(cmds)||!cmds.length) recentEl.innerHTML='<p style="color:var(--muted)">Aucune commande cette semaine.</p>';
+  else recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th><th>Réduction</th><th>Points</th></tr></thead><tbody>`+
+    cmds.slice(0,10).map(c=>`<tr>
+      <td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td>
+      <td><strong>${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong></td>
+      <td>${c.reduction_pct?`<span class="badge badge-orange">-${c.reduction_pct}%</span>`:'—'}</td>
+      <td>${c.points_gagnes||0} pts</td>
+    </tr>`).join('')+'</tbody></table>';
 
-  // Finances
-  document.getElementById('statsFinances').innerHTML = `
+  document.getElementById('statsFinances').innerHTML=`
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;">
-        <span>CA brut semaine</span><strong>${ca.toLocaleString('fr-FR')}$</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;">
-        <span>Taux d'imposition</span><strong style="color:var(--red);">${tauxLabel(ca)}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:12px;background:rgba(192,57,43,.08);border-radius:8px;border:1px solid rgba(192,57,43,.2);">
-        <span>Impôts estimés</span><strong style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</strong>
-      </div>
+      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>CA brut</span><strong>${ca.toLocaleString('fr-FR')}$</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>Taux impôt</span><strong style="color:var(--red);">${tauxLabel(ca)}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:12px;background:rgba(192,57,43,.08);border-radius:8px;border:1px solid rgba(192,57,43,.2);"><span>Impôts estimés</span><strong style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</strong></div>
     </div>`;
 
-  // Heatmap
   renderHeatmap(cmds);
 
-  // Paliers
-  const paliers = [
+  const paliers=[
     {min:0,max:199999,taux:'0%'},{min:200000,max:399999,taux:'5%'},
     {min:400000,max:599999,taux:'8%'},{min:600000,max:799999,taux:'11%'},
     {min:800000,max:999999,taux:'14%'},{min:1000000,max:2499999,taux:'17%'},
     {min:2500000,max:Infinity,taux:'19%'},
   ];
-  document.getElementById('statsImpots').innerHTML = `<table><thead><tr><th>Tranche</th><th>Taux</th><th>Statut</th></tr></thead><tbody>` +
-    paliers.map(p => `<tr>
+  document.getElementById('statsImpots').innerHTML=`<table><thead><tr><th>Tranche</th><th>Taux</th><th>Statut</th></tr></thead><tbody>`+
+    paliers.map(p=>`<tr>
       <td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td>
       <td><span class="badge badge-blue">${p.taux}</span></td>
       <td>${ca>=p.min&&ca<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td>
-    </tr>`).join('') + '</tbody></table>';
+    </tr>`).join('')+'</tbody></table>';
 }
 
 function renderHeatmap(cmds) {
-  const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  const hours = ['8h','10h','12h','14h','16h','18h','20h'];
-
-  // Compte commandes par jour/heure
-  const grid = Array.from({length:7},()=>Array(7).fill(0));
-  (cmds||[]).forEach(c => {
-    const d = new Date(c.created_at||Date.now());
-    const dayIdx = (d.getDay()+6)%7;
-    const hourIdx = Math.min(6, Math.max(0, Math.floor((d.getHours()-8)/2)));
-    grid[dayIdx][hourIdx]++;
+  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const hours=['8h','10h','12h','14h','16h','18h','20h'];
+  const grid=Array.from({length:7},()=>Array(7).fill(0));
+  (cmds||[]).forEach(c=>{
+    const d=new Date(c.created_at||Date.now());
+    const di=(d.getDay()+6)%7;
+    const hi=Math.min(6,Math.max(0,Math.floor((d.getHours()-8)/2)));
+    grid[di][hi]++;
   });
-
-  const maxVal = Math.max(1, ...grid.flat());
-  let html = `<div style="display:grid;grid-template-columns:50px repeat(7,1fr);gap:3px;margin-top:10px;">
-    <div></div>
-    ${hours.map(h=>`<div style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:4px;">${h}</div>`).join('')}
-    ${days.map((day,di) => `
+  const maxVal=Math.max(1,...grid.flat());
+  document.getElementById('statsHeatmap').innerHTML=`<div style="display:grid;grid-template-columns:50px repeat(7,1fr);gap:3px;margin-top:10px;">
+    <div></div>${hours.map(h=>`<div style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:4px;">${h}</div>`).join('')}
+    ${days.map((day,di)=>`
       <div style="font-size:10px;color:var(--muted);display:flex;align-items:center;">${day}</div>
-      ${grid[di].map(v => {
-        const pct = v/maxVal;
-        const alpha = 0.05 + pct*0.85;
-        return `<div style="height:32px;border-radius:4px;background:rgba(192,57,43,${alpha.toFixed(2)});display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${pct>0.4?'#fff':'var(--muted)'};">${v||''}</div>`;
-      }).join('')}
+      ${grid[di].map(v=>{const p=v/maxVal;const a=0.05+p*.85;return `<div style="height:32px;border-radius:4px;background:rgba(192,57,43,${a.toFixed(2)});display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${p>.4?'#fff':'var(--muted)'};">${v||''}</div>`;}).join('')}
     `).join('')}
   </div>`;
-  document.getElementById('statsHeatmap').innerHTML = html;
 }
 
-/* ══════════════════════════════════════════
-   GESTION / COFFRE
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   GESTION
+══════════════════════════════════════════════ */
 async function loadGestion() {
   // Config quotas
-  const configs = await sb('parametres?cle=in.(quota_cdd,quota_cdi)');
-  (configs||[]).forEach(c => {
-    if (c.cle==='quota_cdd') document.getElementById('gQuotaCDD').value=c.valeur;
-    if (c.cle==='quota_cdi') document.getElementById('gQuotaCDI').value=c.valeur;
+  const configs=await sb('parametres?cle=in.(quota_cdd,quota_cdi,prime_quota_cdd,prime_quota_cdi)')||[];
+  configs.forEach(c=>{
+    if(c.cle==='quota_cdd'){const el=document.getElementById('gQuotaCDD');if(el)el.value=c.valeur;}
+    if(c.cle==='quota_cdi'){const el=document.getElementById('gQuotaCDI');if(el)el.value=c.valeur;}
+    if(c.cle==='prime_quota_cdd'){const el=document.getElementById('gPrimeCDD');if(el)el.value=c.valeur;}
+    if(c.cle==='prime_quota_cdi'){const el=document.getElementById('gPrimeCDI');if(el)el.value=c.valeur;}
   });
-
-  // Tickets quota
   await loadQuotaTickets();
   await loadCoffre();
+  await loadPrimesTable();
 }
 
 async function loadQuotaTickets() {
-  const el = document.getElementById('quotaTickets');
-  const data = await sb(`quotas_tickets?select=*,employes(nom,prenom)&statut=eq.en_attente&order=created_at.desc`);
-  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucun ticket en attente.</p>'; return; }
-  el.innerHTML = data.map(t => {
-    const emp = t.employes||{};
-    return `<div style="padding:14px;background:var(--card2);border-radius:10px;margin-bottom:10px;border-left:3px solid var(--orange);">
-      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+  const el=document.getElementById('quotaTickets');
+  if(!el)return;
+  const data=await sb('quotas_tickets?select=*&statut=eq.en_attente&order=created_at.desc');
+  pendingQuotaCount=Array.isArray(data)?data.length:0;
+  const badge=document.getElementById('quota-badge');
+  if(badge)badge.textContent=pendingQuotaCount||'';
+
+  if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun ticket en attente.</p>';return;}
+
+  // Récupère les infos employés
+  const discordIds=[...new Set(data.map(t=>t.employe_discord_id).filter(Boolean))];
+  let empMap={};
+  if(discordIds.length){
+    const emps=await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);
+    (emps||[]).forEach(e=>empMap[e.discord_id]=e);
+  }
+
+  el.innerHTML=data.map(t=>{
+    const emp=empMap[t.employe_discord_id]||{};
+    const quotaMax=emp.contrat==='CDI'?quotaConfig.cdi_quota:quotaConfig.cdd_quota;
+    const primeMax=emp.contrat==='CDI'?quotaConfig.cdi_prime:quotaConfig.cdd_prime;
+    const pct=quotaMax>0?Math.min(100,Math.round((t.quantite/quotaMax)*100)):0;
+    const primeEstimee=Math.round((pct/100)*primeMax);
+    return `<div class="quota-ticket pending">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
         <div>
           <strong>${emp.prenom||'?'} ${emp.nom||''}</strong>
-          <div style="font-size:12px;color:var(--muted);">🚚 ${t.plaque} · ${t.quantite} unités</div>
-          ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px;">${t.notes}</div>`:''}
+          <span class="badge badge-blue" style="margin-left:6px;">${emp.contrat||'—'}</span>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(t.created_at).toLocaleString('fr-FR')}</div>
         </div>
-        <div style="font-size:11px;color:var(--muted);">${new Date(t.created_at).toLocaleString('fr-FR')}</div>
+        <div style="text-align:right;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);">${primeEstimee.toLocaleString('fr-FR')}$</div>
+          <div style="font-size:10px;color:var(--muted);">prime estimée</div>
+        </div>
       </div>
+      <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
+        <span>🚚 <strong>${t.plaque}</strong></span>
+        <span>📦 <strong>${t.quantite} unités</strong></span>
+        <span>📊 <strong style="color:var(--red);">${pct}%</strong> du quota</span>
+      </div>
+      <div class="quota-bar-bg" style="margin-bottom:10px;"><div class="quota-bar-fill" style="width:${pct}%"></div></div>
+      ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">${t.notes}</div>`:''}
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-success btn-sm" onclick="validerQuota('${t.id}','${t.employe_discord_id||''}',${t.quantite})">✅ Valider</button>
-        <button class="btn btn-danger btn-sm" onclick="refuserQuota('${t.id}')">❌ Refuser</button>
+        <button class="btn btn-success btn-sm" onclick="validerQuotaGestion('${t.id}','${t.employe_discord_id||''}',${t.quantite},${primeEstimee})">✅ Valider</button>
+        <button class="btn btn-danger btn-sm" onclick="refuserQuotaGestion('${t.id}')">❌ Refuser</button>
       </div>
     </div>`;
   }).join('');
 }
 
-async function validerQuota(ticketId, discordId, quantite) {
+async function validerQuotaGestion(ticketId, discordId, quantite, primeEstimee) {
   await sb(`quotas_tickets?id=eq.${ticketId}`,{method:'PATCH',body:JSON.stringify({statut:'valide'})});
-  if (discordId) {
-    const empData = await sb(`employes?discord_id=eq.${discordId}&select=id,quota_validee`);
-    if (empData?.[0]) {
-      const newVal = (empData[0].quota_validee||0) + quantite;
-      await sb(`employes?id=eq.${empData[0].id}`,{method:'PATCH',body:JSON.stringify({quota_validee:newVal})});
-    }
+  if(discordId){
+    const empData=await sb(`employes?discord_id=eq.${discordId}&select=id,quota_validee`);
+    if(empData?.[0]) await sb(`employes?id=eq.${empData[0].id}`,{method:'PATCH',body:JSON.stringify({quota_validee:(empData[0].quota_validee||0)+quantite})});
+    if(primeEstimee>0) await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primeEstimee,semaine:getSemaine(),verse:false,type:'quota'})});
   }
-  // Prime automatique
-  const primeAuto = quantite * 10; // 10$ par unité — configurable
-  if (discordId && primeAuto > 0) {
-    await sb('primes',{method:'POST',body:JSON.stringify({
-      employe_discord:discordId,montant:primeAuto,semaine:getSemaine(),verse:false,type:'quota'
-    })});
-  }
-  alert(`✅ Quota validé ! Prime de ${primeAuto}$ attribuée.`);
+  alert(`✅ Quota validé ! Prime de ${primeEstimee.toLocaleString('fr-FR')}$ attribuée.`);
   loadQuotaTickets();
 }
 
-async function refuserQuota(id) {
+async function refuserQuotaGestion(id){
   await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});
   loadQuotaTickets();
 }
 
 async function saveQuotaConfig() {
-  const cdd=document.getElementById('gQuotaCDD').value;
-  const cdi=document.getElementById('gQuotaCDI').value;
-  for (const [cle,val] of [['quota_cdd',cdd],['quota_cdi',cdi]]) {
-    const existing = await sb(`parametres?cle=eq.${cle}`);
-    if (existing?.[0]) await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});
+  const vals=[
+    ['quota_cdd',document.getElementById('gQuotaCDD')?.value],
+    ['quota_cdi',document.getElementById('gQuotaCDI')?.value],
+    ['prime_quota_cdd',document.getElementById('gPrimeCDD')?.value],
+    ['prime_quota_cdi',document.getElementById('gPrimeCDI')?.value],
+  ];
+  for(const [cle,val] of vals){
+    if(!val)continue;
+    const ex=await sb(`parametres?cle=eq.${cle}`);
+    if(ex?.[0]) await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});
     else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});
   }
-  alert('✅ Configuration sauvegardée !');
+  const alertEl=document.getElementById('alertGestion');
+  if(alertEl)alertEl.innerHTML='<div class="alert alert-ok">✅ Configuration sauvegardée !</div>';
+  await loadQuotaConfig();
 }
 
 async function loadCoffre() {
-  const [caData, primesData] = await Promise.all([
+  const [caData,primesData]=await Promise.all([
     sb('parametres?cle=eq.ca_semaine'),
     sb(`primes?select=montant,verse&semaine=eq.${getSemaine()}`),
   ]);
-  const ca = parseFloat(caData?.[0]?.valeur||0)||0;
-  const totalPrimes = (primesData||[]).reduce((a,p)=>a+p.montant,0);
-  const impots = Math.round(calcImpot(ca));
-  const net = ca - totalPrimes - impots;
-
-  const statsId = ROLE==='gouvernement'?'gouv-coffreStats':'coffreStats';
-  const histoId = ROLE==='gouvernement'?'gouv-coffreHisto':'coffreHisto';
-
-  const statsEl = document.getElementById(statsId);
-  if (statsEl) statsEl.innerHTML = [
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
+  const totalPrimes=(primesData||[]).reduce((a,p)=>a+p.montant,0);
+  const impots=Math.round(calcImpot(ca));
+  const net=ca-totalPrimes-impots;
+  const statsId=ROLE==='gouvernement'?'gouv-coffreStats':'coffreStats';
+  const histoId=ROLE==='gouvernement'?'gouv-coffreHisto':'coffreHisto';
+  const statsEl=document.getElementById(statsId);
+  if(statsEl)statsEl.innerHTML=[
     {label:'CA brut semaine',value:`${ca.toLocaleString('fr-FR')}$`,accent:'var(--blue)'},
     {label:'Primes totales',value:`${totalPrimes.toLocaleString('fr-FR')}$`,accent:'var(--warning)'},
     {label:`Impôts (${tauxLabel(ca)})`,value:`${impots.toLocaleString('fr-FR')}$`,accent:'var(--red)'},
     {label:'Net coffre estimé',value:`${net.toLocaleString('fr-FR')}$`,accent:'var(--success)'},
-  ].map(s => `
-    <div class="stat-card" style="--accent:${s.accent};">
-      <div class="stat-label">${s.label}</div>
-      <div class="stat-value" style="font-size:26px;">${s.value}</div>
-    </div>`).join('');
-
-  const hist = await sb('caisse?select=*&order=created_at.desc&limit=10');
-  const histoEl = document.getElementById(histoId);
-  if (histoEl) {
-    if (!Array.isArray(hist)||!hist.length) { histoEl.innerHTML='<p style="color:var(--muted)">Aucun historique.</p>'; return; }
-    histoEl.innerHTML = `<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Salaires</th><th>Impôts</th><th>Coffre net</th></tr></thead><tbody>` +
-      hist.map(h => `<tr>
+  ].map(s=>`<div class="stat-card" style="--accent:${s.accent};">
+    <div class="stat-label">${s.label}</div><div class="stat-value" style="font-size:26px;">${s.value}</div>
+  </div>`).join('');
+  const hist=await sb('caisse?select=*&order=created_at.desc&limit=10');
+  const histoEl=document.getElementById(histoId);
+  if(histoEl){
+    if(!Array.isArray(hist)||!hist.length){histoEl.innerHTML='<p style="color:var(--muted)">Aucun historique.</p>';return;}
+    histoEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Primes</th><th>Impôts</th><th>Net coffre</th></tr></thead><tbody>`+
+      hist.map(h=>`<tr>
         <td>${h.semaine}</td>
         <td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td>
         <td style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</td>
         <td style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</td>
         <td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td>
-      </tr>`).join('') + '</tbody></table>';
+      </tr>`).join('')+'</tbody></table>';
   }
 }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    PRIMES & CLÔTURE
-══════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function calculerPrimes() {
-  const semaine = getSemaine();
-  const [employes, caData] = await Promise.all([
+  const semaine=getSemaine();
+  const [employes,caData]=await Promise.all([
     sb('employes?select=*&actif=eq.true'),
     sb('parametres?cle=eq.ca_semaine'),
   ]);
-  const ca = parseFloat(caData?.[0]?.valeur||0)||0;
-  if (!ca) { alert('CA semaine = 0$. Pas de primes.'); return; }
-
-  const tauxPoste = {Patron:.4,'Co-Patron':.4,Manager:.3,"Chef d'équipe":.3};
-  const tauxContrat = {CDI:.2,CDD:.1};
-
-  for (const emp of (employes||[])) {
-    const t = tauxPoste[emp.poste] ?? tauxContrat[emp.contrat] ?? .1;
-    const montant = Math.round(ca * t);
-    if (!montant) continue;
-    const exist = await sb(`primes?employe_id=eq.${emp.id}&semaine=eq.${semaine}&type=eq.vente`);
-    if (!exist?.length) {
-      await sb('primes',{method:'POST',body:JSON.stringify({
-        employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false,type:'vente'
-      })});
-    }
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
+  if(!ca){alert('CA semaine = 0$. Pas de primes.');return;}
+  const tauxPoste={'Patron':.4,'Co-Patron':.35,'Manager':.25,"Chef d'équipe":.15};
+  const tauxContrat={CDI:.2,CDD:.1};
+  for(const emp of (employes||[])){
+    const t=tauxPoste[emp.poste]??tauxContrat[emp.contrat]??.1;
+    const montant=Math.round(ca*t);
+    if(!montant)continue;
+    const exist=await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.vente`);
+    if(!exist?.length) await sb('primes',{method:'POST',body:JSON.stringify({
+      employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false,type:'vente'
+    })});
   }
   alert('✅ Primes calculées !');
   await loadPrimesTable();
 }
 
 async function loadPrimesTable() {
-  const data = await sb(`primes?select=*,employes(nom,prenom,poste,contrat,date_embauche)&semaine=eq.${getSemaine()}&order=created_at.desc`);
-  lastPrimes = Array.isArray(data)?data:[];
-  const el = document.getElementById('primesTable');
-  if (!el) return;
-  if (!lastPrimes.length) { el.innerHTML='<p style="color:var(--muted)">Aucune prime. Cliquez sur Calculer.</p>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Action</th></tr></thead><tbody>` +
-    lastPrimes.map(p => {
+  const el=document.getElementById('primesTable');
+  if(!el)return;
+  const data=await sb(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${getSemaine()}&order=created_at.desc`);
+  lastPrimes=Array.isArray(data)?data:[];
+  if(!lastPrimes.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime. Cliquez sur Calculer.</p>';return;}
+  el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Action</th></tr></thead><tbody>`+
+    lastPrimes.map(p=>{
       const emp=p.employes||{};
       return `<tr>
         <td><strong>${emp.prenom||'—'} ${emp.nom||''}</strong></td>
@@ -1911,97 +2124,46 @@ async function loadPrimesTable() {
         <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td>
         <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
       </tr>`;
-    }).join('') + '</tbody></table>';
+    }).join('')+'</tbody></table>';
 }
 
-async function verserPrime(id) { await sb(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})}); loadPrimesTable(); }
+async function verserPrime(id){await sb(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})});loadPrimesTable();}
 
-async function cloturerSemaine() {
-  if (!confirm('⚠️ Clôturer la semaine ? Cette action est irréversible.')) return;
-  const semaine = getSemaine();
-  const [caData, primesData, employes] = await Promise.all([
+async function cloturerSemaine(){
+  if(!confirm('⚠️ Clôturer la semaine ? Cette action est irréversible.'))return;
+  const semaine=getSemaine();
+  const [caData,primesData,employes]=await Promise.all([
     sb('parametres?cle=eq.ca_semaine'),
-    sb(`primes?select=*,employes(nom,prenom,poste,contrat,date_embauche)&semaine=eq.${semaine}`),
+    sb(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${semaine}`),
     sb('employes?select=*&actif=eq.true'),
   ]);
-  const ca = parseFloat(caData?.[0]?.valeur||0)||0;
-  const totalPrimes = (primesData||[]).reduce((a,p)=>a+p.montant,0);
-  const impots = Math.round(calcImpot(ca));
-  const net = ca - totalPrimes - impots;
-
-  // Enregistre dans caisse
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
+  const totalPrimes=(primesData||[]).reduce((a,p)=>a+p.montant,0);
+  const impots=Math.round(calcImpot(ca));
+  const net=ca-totalPrimes-impots;
   await sb('caisse',{method:'POST',body:JSON.stringify({semaine,ca_brut:ca,salaires:totalPrimes,impots,coffre_net:net})});
-
-  // Reset CA
   await sb('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:'0'})});
-
-  // Reset quota employés
-  for (const emp of (employes||[])) {
-    await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({quota_validee:0})});
-  }
-
-  // Génère PDF
-  genPDFCloture(semaine, ca, totalPrimes, impots, net, primesData||[]);
-
+  for(const emp of (employes||[])) await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({quota_validee:0})});
+  genPDFCloture(semaine,ca,totalPrimes,impots,net,primesData||[]);
   alert('✅ Semaine clôturée !');
   loadGestion();
 }
 
-function genPDFCloture(semaine, ca, primes, impots, net, primesData) {
-  const now = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const lignes = primesData.map(p => {
-    const emp=p.employes||{};
-    return `<tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${emp.prenom||'—'} ${emp.nom||''}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${emp.poste||'—'}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${emp.contrat||'—'}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:700;color:#c0392b;">${p.montant.toLocaleString('fr-FR')}$</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${p.verse?'✅ Versée':'⏳ En attente'}</td>
-    </tr>`;
-  }).join('');
-
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Clôture ${semaine}</title>
-<style>
-body{font-family:'Segoe UI',sans-serif;max-width:800px;margin:0 auto;padding:40px;background:#fff;color:#111;}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid #c0392b;}
-.brand{font-size:28px;font-weight:900;letter-spacing:2px;color:#c0392b;}
-.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
-.s-card{background:#f8f8f8;border-radius:8px;padding:14px;text-align:center;}
-.s-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px;}
-.s-value{font-size:22px;font-weight:900;color:#c0392b;}
-table{width:100%;border-collapse:collapse;}
-thead tr{background:#c0392b;color:#fff;}
-th{padding:10px 12px;text-align:left;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
-.footer{margin-top:28px;font-size:11px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:16px;}
-</style></head><body>
-<div class="header">
-  <div><div class="brand">🍔 BURGER SHOT</div><div style="font-size:13px;color:#666;margin-top:3px;">Rapport de clôture — ${semaine}</div></div>
-</div>
-<div class="summary">
-  <div class="s-card"><div class="s-label">CA Brut</div><div class="s-value">${ca.toLocaleString('fr-FR')}$</div></div>
-  <div class="s-card"><div class="s-label">Primes</div><div class="s-value">${primes.toLocaleString('fr-FR')}$</div></div>
-  <div class="s-card"><div class="s-label">Impôts</div><div class="s-value">${impots.toLocaleString('fr-FR')}$</div></div>
-  <div class="s-card"><div class="s-label" style="color:#27ae60;">Net Coffre</div><div class="s-value" style="color:#27ae60;">${net.toLocaleString('fr-FR')}$</div></div>
-</div>
-<table>
-  <thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Prime</th><th>Statut</th></tr></thead>
-  <tbody>${lignes}</tbody>
-</table>
-<div class="footer">Généré le ${now} · Burger Shot Dashboard · Confidentiel Direction</div>
-</body></html>`;
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html],{type:'text/html'}));
-  a.download = `BurgerShot_Cloture_${semaine}.html`;
+function genPDFCloture(semaine,ca,primes,impots,net,primesData){
+  const now=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Clôture ${semaine}</title>
+<style>body{font-family:'Segoe UI',sans-serif;max-width:800px;margin:0 auto;padding:40px;}table{width:100%;border-collapse:collapse;}th{background:#c0392b;color:#fff;padding:10px 12px;}td{padding:10px 12px;border-bottom:1px solid #eee;}</style></head><body>
+<h2>🍔 BURGER SHOT — Clôture ${semaine}</h2>
+<p>CA Brut: ${ca.toLocaleString('fr-FR')}$ | Primes: ${primes.toLocaleString('fr-FR')}$ | Impôts: ${impots.toLocaleString('fr-FR')}$ | Net: ${net.toLocaleString('fr-FR')}$</p>
+<table><thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Prime</th><th>Statut</th></tr></thead><tbody>
+${primesData.map(p=>{const e=p.employes||{};return`<tr><td>${e.prenom||'?'} ${e.nom||''}</td><td>${e.poste||'?'}</td><td>${e.contrat||'?'}</td><td>${p.montant.toLocaleString('fr-FR')}$</td><td>${p.verse?'✅':'⏳'}</td></tr>`;}).join('')}
+</tbody></table>
+<p style="margin-top:20px;font-size:11px;color:#999;">Généré le ${now} · Burger Shot · Confidentiel</p></body></html>`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=`BurgerShot_Cloture_${semaine}.html`;
   a.click();
 }
-
-// Charge primes quand on est sur la page gestion
-const _origLoadGestion = loadGestion;
-loadGestion = async function() {
-  await _origLoadGestion();
-  await loadPrimesTable();
-};
 </script>
 </body>
 </html>
