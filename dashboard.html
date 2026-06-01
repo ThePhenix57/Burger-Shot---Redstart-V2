@@ -2322,9 +2322,9 @@ async function loadGouvDemandes() {
   const el = document.getElementById('gouvDemandes');
   if (!el) return;
   const demandes = await sb('gouvernement_demandes?statut=eq.en_attente&order=created_at.desc') || [];
-  if (!demandes.length) { 
-    el.innerHTML='<p style="color:var(--muted)">Aucune demande en attente.</p>'; 
-    return; 
+  if (!demandes.length) {
+    el.innerHTML = '<p style="color:var(--muted)">Aucune demande en attente.</p>';
+    return;
   }
   el.innerHTML = demandes.map(d => `
     <div style="padding:16px;background:var(--card2);border-radius:10px;margin-bottom:10px;border-left:3px solid var(--orange);">
@@ -2340,17 +2340,19 @@ async function loadGouvDemandes() {
           <button class="btn btn-danger btn-sm" onclick="refuserGouv('${d.id}')">❌ Refuser</button>
         </div>
       </div>
-      ${d.preuve_url ? `<img src="${d.preuve_url}" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain;border:1px solid var(--border);" onerror="this.style.display='none'">` : ''}
+      ${d.preuve_url && d.preuve_url.startsWith('http') ? `<img src="${d.preuve_url}" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain;border:1px solid var(--border);">` : d.preuve_url ? '<span style="font-size:12px;color:var(--muted);">📎 Preuve en base64 (image uploadée)</span>' : ''}
     </div>`).join('');
 }
 
 async function validerGouv(id, discordId, nom, prenom, fonction) {
   await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'valide'})});
-  // Ajoute dans la table gouvernement si elle existe
-  await sb('gouvernement_membres', {method:'POST', body:JSON.stringify({
-    discord_id: discordId, nom, prenom, fonction, actif: true
-  })}).catch(()=>{});
-  alert(`✅ ${prenom} ${nom} validé !`);
+  alert(`✅ ${prenom} ${nom} validé comme ${fonction} !`);
+  loadGouvDemandes();
+}
+
+async function refuserGouv(id) {
+  if (!confirm('Refuser cette demande ?')) return;
+  await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'refuse'})});
   loadGouvDemandes();
 }
 
