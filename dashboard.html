@@ -775,12 +775,16 @@ function buildPages() {
       </div>
       <div id="primesTable" style="margin-top:16px;"></div>
     </div>
-    <div class="card" style="margin-top:20px;">
+        <div class="card" style="margin-top:20px;">
       <div class="card-title">🏦 Coffre</div>
       <div class="g4" id="coffreStats" style="margin-bottom:20px;"></div>
       <div class="card-title">Historique</div>
       <div id="coffreHisto"></div>
-    </div></div>`;
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">🏛️ Demandes Gouvernement</div>
+      <div id="gouvDemandes"><div class="loading"><div class="spin"></div></div></div>
+    </div></div>\``;
 
     // COFFRE GOUVERNEMENT
     html += `<div class="page" id="page-coffre"><div class="red-line"></div>
@@ -1118,7 +1122,7 @@ await sb('transactions',{method:'POST',body:JSON.stringify({
   })});
 
   // Calcul prime immédiate selon le grade
-  const empInfo = await sb(`employes?discord_id=eq.${USER.id}&select=poste,contrat`);
+  const empInfo = await sb(`employes?discord_id=eq.${USER.id}&select=id,poste,contrat`);
   const emp = empInfo?.[0];
   if (emp) {
     const tauxPoste = {'Patron':.4,'Co-Patron':.35,'Manager':.25,"Chef d'équipe":.15,'Employé':.10};
