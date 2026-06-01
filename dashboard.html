@@ -2315,8 +2315,51 @@ async function loadGestion() {
   await loadQuotaTickets();
   await loadCoffre();
   await loadPrimesTable();
+  await loadGouvDemandes();
 }
 
+async function loadGouvDemandes() {
+  const el = document.getElementById('gouvDemandes');
+  if (!el) return;
+  const demandes = await sb('gouvernement_demandes?statut=eq.en_attente&order=created_at.desc') || [];
+  if (!demandes.length) { 
+    el.innerHTML='<p style="color:var(--muted)">Aucune demande en attente.</p>'; 
+    return; 
+  }
+  el.innerHTML = demandes.map(d => `
+    <div style="padding:16px;background:var(--card2);border-radius:10px;margin-bottom:10px;border-left:3px solid var(--orange);">
+      <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+        <div>
+          <strong style="font-size:15px;">${d.prenom} ${d.nom}</strong>
+          <span class="badge badge-orange" style="margin-left:8px;">${d.fonction}</span>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">@${d.username} · ${d.discord_id}</div>
+          <div style="font-size:11px;color:var(--muted);">${new Date(d.created_at).toLocaleString('fr-FR')}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-success btn-sm" onclick="validerGouv('${d.id}','${d.discord_id}','${d.nom}','${d.prenom}','${d.fonction}')">✅ Valider</button>
+          <button class="btn btn-danger btn-sm" onclick="refuserGouv('${d.id}')">❌ Refuser</button>
+        </div>
+      </div>
+      ${d.preuve_url ? `<img src="${d.preuve_url}" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain;border:1px solid var(--border);" onerror="this.style.display='none'">` : ''}
+    </div>`).join('');
+}
+
+async function validerGouv(id, discordId, nom, prenom, fonction) {
+  await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'valide'})});
+  // Ajoute dans la table gouvernement si elle existe
+  await sb('gouvernement_membres', {method:'POST', body:JSON.stringify({
+    discord_id: discordId, nom, prenom, fonction, actif: true
+  })}).catch(()=>{});
+  alert(`✅ ${prenom} ${nom} validé !`);
+  loadGouvDemandes();
+}
+
+async function refuserGouv(id) {
+  if (!confirm('Refuser cette demande ?')) return;
+  await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'refuse'})});
+  loadGouvDemandes();
+}
+  
 async function loadQuotaTickets() {
   const el=document.getElementById('quotaTickets');
   if(!el)return;
