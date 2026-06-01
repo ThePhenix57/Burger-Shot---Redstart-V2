@@ -1,3 +1,92 @@
+
+Claude a terminé la réponse.
+
+<!DOCTYPE html> <html lang="fr" data-theme="dark"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Burger Shot — Dashboard</title> <link rel="icon" href="https://upload.redstartrp.fr/uploads/photo-1779965966-13fd724e49fb.png"> <link
+
+pasted
+
+
+<!DOCTYPE html> <html lang="fr" data-theme="dark"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Gouvernement — Inscription</title> <link rel="icon" href="https://upload.redstartrp.fr/uploads/photo-1779965966-13fd724e49fb.png"> <li
+
+pasted
+
+ok on prends de 0
+je te donne ma dashboards
+Ce qu'on va faire :
+
+au lieu que le gouvernement attende l'accord parce qu'on trouve pas de solution niveau code. Il reste sur leur page de création de compte sa enregistre leur compte dans Supabase. La direction seulement à accès au registre du personnel du gouvernement enregistré dans la data du site. on peut révoquer l'accès suspendre ou laisser on voit leur statut etc.
+Le role gouvernement verra seulement le stock et stat du burger shot
+il faut une section stock ou le grade à partir de responsable aura accès pour enregistré l'entré et sortie de produit la direction met en place le cout brut par produit donc on créer le produit le responsable le selection met tant en stock et valide.
+Quand un employé valide une commande sa retire du stock les produits commandés. Dans la Caisse on peut choisir la quantité manuellement plus besoin d'appuyer plusieurs fois.
+Dans la création de produit/menu quand on selectionne MENU on peut choisir tant de burger (lesquels) tant de boisson (lesquels) tant d'accompagnement (lesquels).
+Les clients il faut que quand on enregistre leurs compte client on demande leur ID Discord (N° de sécurité social Intranet pas de la ville RP Parlant) si il le connaissent pas il faut qu'ils se rendent sur la page Vérification point
+PAge vérification point quand une personne vien sur cette page il faut qu'il se connecte avec Discord. Une fois la connexion établie l'identifiant discord est vérifié dans la base de donné si il ne correspond à aucun client alors sa lui met demandez à un employé pour vous enregistrer un pass. Si sa correspond alors il met vous avez tant de point sur votre compte Burger Shot et type de pass : ... quand le pass sera périmé
+Dans client les role a partir de Responsables peuvent blacklist des clients la direction peuvent retirer le blacklist et ou supprimer le client voir désactiver le compte il faut aussi pouvoir supprimer l'abonnement Pass
+Quand un client prends un pass son compte est valide 1 mois au bout du mois il faut qu'il repaye donc aux clients ou le pass arrive a la fin -1 semaine alors une option renouveller arrive sur leur page. une réduction peut s'appliquer disons 10%
+Afficher plus
+01:34
+Je vais analyser votre dashboard existant et planifier toutes ces nouvelles fonctionnalités avant de coder.
+
+
+Reading frontend design skill
+Reading frontend design skill
+Voici mon plan complet avant de coder. C'est un projet massif, je vais tout restructurer proprement.
+
+Ce que je vais implémenter :
+
+1. Gouvernement — Inscription simplifiée
+
+La page gouv.html enregistre directement le compte dans Supabase (table gouvernement_comptes)
+La Direction a un onglet "Registre Gouvernement" : voir, suspendre, révoquer, activer
+Le rôle gouvernement détecté via cette table (plus besoin d'approbation)
+2. Stock
+
+Nouvelle table produits_stock (produit, quantité, coût brut, seuil alerte)
+Direction : créer produit avec coût brut
+Responsable+ : entrées/sorties manuelles
+Chaque commande validée décrémente automatiquement le stock
+3. Caisse améliorée
+
+Sélecteur de quantité sur chaque produit (input + boutons +/-)
+Menu "MENU" = composition de burger + boisson + accompagnement
+4. Création Menu — Composition
+
+Quand catégorie = "Menu", interface pour sélectionner les sous-produits qui le composent
+5. Clients améliorés
+
+Champ Discord ID obligatoire (avec lien vers page vérification)
+Blacklist par Responsable+, retrait blacklist par Direction
+Suppression Pass, désactivation compte
+Expiration Pass : 1 mois, alerte J-7, option renouvellement -10%
+6. Page Vérification Points
+
+Connexion Discord → lookup dans clients par discord_id
+Affiche points, pass, date expiration, bouton renouvellement si J-7
+Je commence le code maintenant — ce sera 3 fichiers : dashboard.html (refonte), gouv.html (refonte), points.html (nouveau).
+
+
+A exécuté une commande, fichier créé
+A exécuté une commande, fichier créé
+
+Create output directory
+
+Script
+
+Main dashboard with all new features
+dashboard.html
+Terminé
+
+Vous n’avez plus de messages gratuits jusqu’à 06:30.
+Mettre à niveau
+
+
+
+
+Claude est une IA et peut faire des erreurs. Veuillez vérifier les réponses.
+
+
+raw
+Dashboard · HTML
 <!DOCTYPE html>
 <html lang="fr" data-theme="dark">
 <head>
@@ -22,7 +111,7 @@
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s;}
 a{text-decoration:none;color:inherit;}
 button,input,select,textarea{font-family:'Barlow',sans-serif;}
-
+ 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:200;}
 .checker-bar{height:12px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:12px 12px;}
@@ -40,23 +129,21 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .btn-logout{padding:4px 12px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:20px;color:var(--red);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:.2s;white-space:nowrap;}
 .btn-logout:hover{background:var(--red);color:#fff;}
 .topbar-actions{display:flex;align-items:center;gap:8px;}
-
+ 
 /* NAV */
 .topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;position:relative;}
 .topbar-nav::-webkit-scrollbar{display:none;}
 .nav-group{display:flex;align-items:center;}
-.nav-logo-center{display:flex;align-items:center;justify-content:center;padding:4px 80px;pointer-events:none;}
-.nav-logo-center img{height:22px;filter:brightness(0) invert(1);opacity:.85;}
 .nav-item{padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.75);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:.15s;flex-shrink:0;display:flex;align-items:center;gap:6px;}
 .nav-item:hover{color:#fff;background:rgba(0,0,0,.15);}
 .nav-item.active{color:#fff;background:rgba(0,0,0,.2);border-bottom-color:#fff;}
 .nav-badge{background:rgba(255,255,255,.25);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-weight:800;}
-
+ 
 /* LAYOUT */
 .content{padding:28px;width:100%;max-width:1400px;margin:0 auto;}
 .page{display:none;}
 .page.active{display:block;}
-
+ 
 /* COMPOSANTS */
 .red-line{height:3px;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:2px;margin-bottom:24px;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
@@ -64,7 +151,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
-
+ 
 /* STAT CARD */
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;background:var(--accent,var(--red));}
@@ -72,7 +159,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:5px;}
 .stat-value{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;color:var(--accent,var(--red));line-height:1;}
 .stat-sub{font-size:12px;color:var(--muted);margin-top:5px;}
-
+ 
 /* FORMULAIRES */
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
@@ -80,7 +167,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .form-input:focus,.form-select:focus{outline:none;border-color:var(--red);}
 .form-select option{background:var(--card2);}
 textarea.form-input{resize:vertical;min-height:80px;}
-
+ 
 /* BOUTONS */
 .btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:7px;}
 .btn-primary{background:var(--red);color:#fff;}
@@ -94,7 +181,8 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .btn-orange{background:var(--orange);color:#fff;}
 .btn-orange:hover{opacity:.9;}
 .btn-blue{background:var(--blue);color:#fff;}
-
+.btn-warn{background:var(--warning);color:#fff;}
+ 
 /* BADGES */
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;}
 .badge-red{background:rgba(192,57,43,.2);color:var(--red);}
@@ -103,30 +191,31 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .badge-blue{background:rgba(52,152,219,.2);color:var(--blue);}
 .badge-gold{background:rgba(241,196,15,.2);color:#f1c40f;}
 .badge-purple{background:rgba(155,89,182,.2);color:#9b59b6;}
-
+.badge-black{background:rgba(0,0,0,.6);color:#ff4444;border:1px solid #ff4444;}
+ 
 /* TABLEAUX */
 table{width:100%;border-collapse:collapse;}
 th{text-align:left;padding:10px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
 td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--card2);}
-
+ 
 /* ALERTES */
 .alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:14px;}
 .alert-ok{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);color:var(--success);}
 .alert-err{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);color:var(--red);}
 .alert-warn{background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);color:var(--orange);}
-
+ 
 /* POPUPS */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px);}
-.popup{width:520px;max-width:96vw;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;max-height:90vh;overflow-y:auto;}
+.popup{width:560px;max-width:96vw;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;max-height:90vh;overflow-y:auto;}
 .popup-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--red);margin-bottom:18px;}
-
+ 
 /* LOADING */
 .loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--muted);gap:10px;font-size:14px;}
 .spin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
+ 
 /* HERO */
 .hero{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;display:flex;align-items:center;gap:24px;margin-bottom:24px;position:relative;overflow:hidden;}
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--orange),var(--red));}
@@ -137,15 +226,14 @@ tr:hover td{background:var(--card2);}
 .hero-name span{color:var(--red);}
 .hero-sub{font-size:12px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
 .hero-tags{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
-
+ 
 /* CAISSE */
 .caisse-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;}
 .caisse-cat{margin-bottom:24px;}
 .caisse-cat-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:var(--red);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--red);display:flex;align-items:center;gap:7px;}
-.caisse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.caisse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
 .prod-card{background:var(--card2);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:.2s;overflow:hidden;display:flex;flex-direction:column;position:relative;}
 .prod-card:hover{transform:translateY(-3px);border-color:var(--red);box-shadow:0 8px 24px rgba(192,57,43,.2);}
-.prod-card:active{transform:scale(.97);}
 .prod-img{width:100%;aspect-ratio:1;background:var(--card);display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--border);}
 .prod-img img{width:100%;height:100%;object-fit:contain;padding:8px;transition:.2s;}
 .prod-card:hover .prod-img img{transform:scale(1.08);}
@@ -155,9 +243,14 @@ tr:hover td{background:var(--card2);}
 .prod-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:3px;}
 .prod-price{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--red);letter-spacing:1px;}
 .prod-pts{font-size:10px;color:var(--muted);}
-.prod-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transition:.2s;}
-.prod-card:hover::after{transform:scaleX(1);}
-
+ 
+/* QTY SELECTOR on product card */
+.prod-qty-row{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 8px;background:var(--card);border-top:1px solid var(--border);}
+.qty-btn{width:24px;height:24px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:.15s;}
+.qty-btn:hover{background:var(--red-dark);}
+.qty-input{width:36px;text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;font-weight:700;padding:2px 4px;}
+.qty-input:focus{outline:none;border-color:var(--red);}
+ 
 /* TICKET */
 .ticket-wrap{position:sticky;top:114px;}
 .ticket{background:#f7f2e8;color:#111;border-radius:12px;padding:22px;font-family:'Courier New',monospace;box-shadow:0 10px 40px rgba(0,0,0,.5);}
@@ -167,13 +260,19 @@ tr:hover td{background:var(--card2);}
 .t-sep{border:none;border-top:1px dashed #aaa;margin:10px 0;}
 .ticket-lines{min-height:50px;}
 .t-line{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px;}
+.t-line-del{cursor:pointer;color:#c0392b;font-size:11px;margin-left:6px;}
 .t-empty{text-align:center;color:#999;font-size:13px;padding:18px 0;}
 .t-total{font-size:17px;font-weight:900;text-align:right;}
 .t-reduc{font-size:12px;color:#c0392b;text-align:right;margin-top:3px;}
 .t-pts{font-size:11px;color:#555;text-align:right;margin-top:3px;}
 .ticket-btns{display:flex;gap:8px;margin-top:16px;}
 .ticket-btns .btn{flex:1;justify-content:center;}
-
+ 
+/* STOCK */
+.stock-alert{background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--warning);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.stock-bar-bg{height:8px;background:var(--card3);border-radius:4px;overflow:hidden;margin-top:6px;}
+.stock-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+ 
 /* EMPLOYEE CARDS */
 .emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
 .emp-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.2s;}
@@ -193,19 +292,17 @@ tr:hover td{background:var(--card2);}
 .emp-selects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .emp-selects select{padding:6px 10px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;}
 .emp-selects select:focus{outline:none;border-color:var(--red);}
-
+ 
 /* QUOTA PAGE */
 .quota-hero{background:linear-gradient(135deg,rgba(192,57,43,.12),rgba(230,126,34,.08));border:1px solid rgba(192,57,43,.25);border-radius:16px;padding:28px;margin-bottom:24px;}
 .quota-pct-big{font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--red);line-height:1;letter-spacing:2px;}
 .quota-bar-bg{height:14px;background:var(--card3);border-radius:7px;overflow:hidden;margin:10px 0;}
 .quota-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:7px;transition:width .6s ease;}
-
-/* QUOTA TICKET CARD */
 .quota-ticket{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;border-left:3px solid var(--orange);transition:.2s;}
 .quota-ticket.pending{border-left-color:var(--warning);}
 .quota-ticket.validated{border-left-color:var(--success);opacity:.6;}
 .quota-ticket.refused{border-left-color:var(--red);opacity:.5;}
-
+ 
 /* CALENDRIER */
 .cal-table{width:100%;border-collapse:separate;border-spacing:4px;}
 .cal-th{text-align:center;padding:8px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
@@ -215,28 +312,45 @@ tr:hover td{background:var(--card2);}
 .cal-cell.today{border-color:var(--red);background:rgba(192,57,43,.1);}
 .cal-cell.today .cal-cell-num{color:var(--red);font-weight:900;}
 .cal-cell.other-month{opacity:.35;}
-.cal-cell.other-month:hover{opacity:.6;}
 .cal-cell-num{font-size:14px;font-weight:700;margin-bottom:5px;}
 .cal-event-pill{font-size:9px;background:var(--red);color:#fff;border-radius:4px;padding:2px 6px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;}
 .cal-event-pill.resa{background:var(--blue);}
 .cal-event-pill.reunion{background:#9b59b6;}
 .cal-cell-add{position:absolute;bottom:4px;right:4px;width:18px;height:18px;background:rgba(192,57,43,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:.2s;}
 .cal-cell:hover .cal-cell-add{opacity:1;}
-
+ 
 /* MENU PROD */
 .menu-prod-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;position:relative;}
 .menu-prod-card img{width:56px;height:56px;object-fit:contain;margin-bottom:6px;}
 .menu-prod-actions{position:absolute;top:6px;right:6px;display:flex;gap:3px;}
 .menu-prod-actions button{background:none;border:none;cursor:pointer;font-size:14px;padding:2px;}
-
+ 
+/* GOUVERNEMENT CARDS */
+.gouv-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;transition:.2s;}
+.gouv-card:hover{border-color:rgba(192,57,43,.3);}
+.gouv-avatar{width:44px;height:44px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;}
+.gouv-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+ 
+/* MENU COMPOSITION */
+.menu-comp-section{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.menu-comp-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;font-weight:700;}
+.menu-comp-items{display:flex;flex-wrap:wrap;gap:6px;}
+.menu-comp-item{display:flex;align-items:center;gap:6px;background:var(--card3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;}
+.menu-comp-item input[type=checkbox]{accent-color:var(--red);}
+.menu-comp-qty{width:36px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:2px 4px;text-align:center;}
+ 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px;}
+ 
+/* CLIENT BLACKLIST */
+tr.blacklisted td{opacity:.6;}
+tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 </style>
 </head>
 <body>
-
+ 
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="checker-bar"></div>
@@ -258,11 +372,11 @@ tr:hover td{background:var(--card2);}
   </div>
   <nav class="topbar-nav" id="topNav"></nav>
 </div>
-
+ 
 <div class="content" id="mainContent"></div>
-
+ 
 <!-- ═══ OVERLAYS ═══ -->
-
+ 
 <!-- Validation commande -->
 <div id="ovValidation" class="overlay" style="display:none;">
   <div class="popup">
@@ -275,7 +389,7 @@ tr:hover td{background:var(--card2);}
     </div>
   </div>
 </div>
-
+ 
 <!-- Pass client -->
 <div id="ovPass" class="overlay" style="display:none;">
   <div class="popup">
@@ -291,7 +405,7 @@ tr:hover td{background:var(--card2);}
     </div>
   </div>
 </div>
-
+ 
 <!-- Quota employé -->
 <div id="ovQuota" class="overlay" style="display:none;">
   <div class="popup">
@@ -307,7 +421,7 @@ tr:hover td{background:var(--card2);}
     </div>
   </div>
 </div>
-
+ 
 <!-- Nouveau client -->
 <div id="ovNewClient" class="overlay" style="display:none;">
   <div class="popup">
@@ -319,14 +433,21 @@ tr:hover td{background:var(--card2);}
     </div>
     <div class="form-group"><label class="form-label">Date de naissance</label><input class="form-input" id="ncNaissance" type="date"></div>
     <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="ncTel" placeholder="(555) 555-5555" oninput="fmtPhone(this)" maxlength="14"></div>
-    <div class="form-group"><label class="form-label">ID Discord (optionnel)</label><input class="form-input" id="ncDiscord" placeholder="123456789"></div>
+    <div class="form-group">
+      <label class="form-label">ID Discord (N° de sécurité social intranet)</label>
+      <div style="display:flex;gap:8px;">
+        <input class="form-input" id="ncDiscord" placeholder="Ex: 123456789012345678" style="flex:1;">
+        <a href="/points.html" target="_blank" class="btn btn-outline btn-sm" style="white-space:nowrap;align-self:flex-end;">🔍 Page vérif</a>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Si le client ne connaît pas son ID, il doit se rendre sur la <strong>Page Vérification Points</strong></div>
+    </div>
     <div style="display:flex;gap:10px;">
       <button class="btn btn-outline" onclick="closeOverlay('ovNewClient')">Annuler</button>
       <button class="btn btn-primary" onclick="saveNewClient()">✅ Enregistrer</button>
     </div>
   </div>
 </div>
-
+ 
 <!-- Réservation calendrier -->
 <div id="ovResa" class="overlay" style="display:none;">
   <div class="popup">
@@ -350,7 +471,7 @@ tr:hover td{background:var(--card2);}
     </div>
   </div>
 </div>
-
+ 
 <!-- Commandes client -->
 <div id="ovClientCmds" class="overlay" style="display:none;">
   <div class="popup" style="width:680px;">
@@ -359,7 +480,7 @@ tr:hover td{background:var(--card2);}
     <div style="margin-top:16px;"><button class="btn btn-outline" onclick="closeOverlay('ovClientCmds')">Fermer</button></div>
   </div>
 </div>
-
+ 
 <!-- Gestion prime employé -->
 <div id="ovEmpPrime" class="overlay" style="display:none;">
   <div class="popup">
@@ -370,7 +491,56 @@ tr:hover td{background:var(--card2);}
     </div>
   </div>
 </div>
-
+ 
+<!-- Stock : Mouvement -->
+<div id="ovStockMvt" class="overlay" style="display:none;">
+  <div class="popup">
+    <div class="popup-title" id="ovStockMvtTitle">📦 Mouvement de stock</div>
+    <div id="ovStockMvtContent"></div>
+  </div>
+</div>
+ 
+<!-- Nouveau produit stock -->
+<div id="ovNewStockProd" class="overlay" style="display:none;">
+  <div class="popup">
+    <div class="popup-title">➕ Nouveau Produit Stock</div>
+    <div id="alertNewStockProd"></div>
+    <div class="form-group"><label class="form-label">Nom du produit</label><input class="form-input" id="nspNom" placeholder="Ex: Steack haché"></div>
+    <div class="g2">
+      <div class="form-group"><label class="form-label">Coût brut unitaire ($)</label><input class="form-input" id="nspCout" type="number" placeholder="50"></div>
+      <div class="form-group"><label class="form-label">Seuil d'alerte (unités)</label><input class="form-input" id="nspSeuil" type="number" placeholder="20"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Catégorie</label>
+      <select class="form-select" id="nspCat">
+        <option>Viande</option><option>Pain</option><option>Légume</option><option>Boisson</option><option>Sauce</option><option>Emballage</option><option>Autre</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline" onclick="closeOverlay('ovNewStockProd')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveStockProd()">✅ Créer</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Modifier client -->
+<div id="ovEditClient" class="overlay" style="display:none;">
+  <div class="popup">
+    <div class="popup-title">✏️ Modifier Client</div>
+    <div id="alertEditClient"></div>
+    <input type="hidden" id="ecId">
+    <div class="g2">
+      <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="ecNom"></div>
+      <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" id="ecPrenom"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="ecTel" oninput="fmtPhone(this)" maxlength="14"></div>
+    <div class="form-group"><label class="form-label">ID Discord</label><input class="form-input" id="ecDiscord" placeholder="123456789012345678"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline" onclick="closeOverlay('ovEditClient')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveEditClient()">✅ Sauvegarder</button>
+    </div>
+  </div>
+</div>
+ 
 <script>
 /* ══════════════════════════════════════════════
    CONFIG
@@ -378,22 +548,20 @@ tr:hover td{background:var(--card2);}
 const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
 const DIR_IDS  = ['280415204477501451','1157333780898529333','370510144766738432'];
-const GOUV_IDS = [];
+ 
 const LOGO = 'https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png';
-
-// Postes par niveau (ordre croissant)
-const POSTES = ['Employé', "Chef d'équipe", 'Manager', 'Co-Patron', 'Patron'];
-const NIVEAU_POSTE = { 'Employé':0, "Chef d'équipe":1, 'Manager':2, 'Co-Patron':3, 'Patron':4 };
-
+const POSTES = ['Employé', "Chef d'équipe", 'Responsable', 'Manager', 'Co-Patron', 'Patron'];
+const NIVEAU_POSTE = { 'Employé':0, "Chef d'équipe":1, 'Responsable':2, 'Manager':3, 'Co-Patron':4, 'Patron':5 };
+ 
 let USER = null, ROLE = 'employe', USER_NIVEAU = 0;
 let produits = [], passTypes = [], commande = [], clientActif = null, contratActif = null;
 let passClientActif = null;
 let calYear, calMonth;
-let lastPrimes = [];
 let autoRefreshInterval = null;
 let quotaConfig = { cdd_quota:100, cdi_quota:200, cdd_prime:500, cdi_prime:800 };
 let pendingQuotaCount = 0;
-
+let allClients = [];
+ 
 /* ══════════════════════════════════════════════
    SUPABASE
 ══════════════════════════════════════════════ */
@@ -409,7 +577,7 @@ async function sb(endpoint, opts = {}) {
   });
   try { return await r.json(); } catch { return []; }
 }
-
+ 
 /* ══════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════ */
@@ -421,25 +589,25 @@ window.addEventListener('DOMContentLoaded', async () => {
   catch(e) { localStorage.removeItem('bs_user'); location.href = '/'; return; }
   const { id, username, avatar, nom, prenom } = userData;
   if (!id) { location.href = '/'; return; }
-
-  ROLE = GOUV_IDS.includes(id) ? 'gouvernement' : DIR_IDS.includes(id) ? 'direction' : 'employe';
-
-  // Récupère niveau du poste pour les employés
-  if (ROLE === 'employe') {
-    try {
-      const empData = await sb(`employes?discord_id=eq.${id}&select=poste`);
-      if (empData?.[0]?.poste) USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
-    } catch {}
+ 
+  // Vérif gouvernement via table
+  if (!DIR_IDS.includes(id)) {
+    const gouvData = await sb(`gouvernement_comptes?discord_id=eq.${id}&statut=eq.actif`);
+    if (gouvData?.length) ROLE = 'gouvernement';
   }
-
-  // Récupère le nom RP depuis la table employes
-const empRP = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
-const nomRP = empRP?.[0]?.nom;
-const prenomRP = empRP?.[0]?.prenom;
-const displayName = (prenomRP && nomRP) ? `${prenomRP} ${nomRP}` : (prenom && nom) ? `${prenom} ${nom}` : username;
+  if (DIR_IDS.includes(id)) ROLE = 'direction';
+ 
+  if (ROLE === 'employe') {
+    const empData = await sb(`employes?discord_id=eq.${id}&select=poste`);
+    if (empData?.[0]?.poste) USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
+  }
+ 
+  const empRP = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
+  const nomRP = empRP?.[0]?.nom;
+  const prenomRP = empRP?.[0]?.prenom;
+  const displayName = (prenomRP && nomRP) ? `${prenomRP} ${nomRP}` : (prenom && nom) ? `${prenom} ${nom}` : username;
   USER = { id, username, displayName, avatar, role: ROLE };
-
-  // Avatar
+ 
   const av = document.getElementById('topAvatar');
   if (avatar) {
     const img = document.createElement('img');
@@ -447,32 +615,32 @@ const displayName = (prenomRP && nomRP) ? `${prenomRP} ${nomRP}` : (prenom && no
     img.onerror = () => av.textContent = displayName.charAt(0).toUpperCase();
     av.appendChild(img);
   } else av.textContent = displayName.charAt(0).toUpperCase();
-
+ 
   document.getElementById('topName').textContent = displayName;
   document.getElementById('topRole').textContent =
     ROLE === 'direction' ? '⭐ Direction' :
     ROLE === 'gouvernement' ? '🏛️ Gouvernement' : '🧾 Employé';
-
-  // Config quota
+ 
   await loadQuotaConfig();
-
   passTypes = await sb('pass_types?select=*') || [];
-
+ 
   buildNav();
   buildPages();
   showPage(ROLE === 'gouvernement' ? 'stats' : 'accueil');
-
-  // Auto-refresh toutes les 30s
+ 
   autoRefreshInterval = setInterval(autoRefresh, 30000);
-
-  // Listeners
+ 
   document.addEventListener('input', e => {
     if (e.target.id === 'mImg') updateMenuImgPreview(e.target.value);
     if (e.target.id === 'caisseClientSearch') searchCaisseClient(e.target.value);
     if (e.target.id === 'passSearch') searchPassClient(e.target.value);
+    if (e.target.id === 'mCat') updateMenuCatUI(e.target.value);
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 'mCat') updateMenuCatUI(e.target.value);
   });
 });
-
+ 
 async function loadQuotaConfig() {
   const configs = await sb('parametres?cle=in.(quota_cdd,quota_cdi,prime_quota_cdd,prime_quota_cdi)') || [];
   configs.forEach(c => {
@@ -482,25 +650,20 @@ async function loadQuotaConfig() {
     if (c.cle === 'prime_quota_cdi') quotaConfig.cdi_prime = parseFloat(c.valeur) || 800;
   });
 }
-
+ 
 async function autoRefresh() {
-  // Refresh badge quota en attente
   if (ROLE === 'direction' || USER_NIVEAU >= 1) {
     const tickets = await sb('quotas_tickets?select=id&statut=eq.en_attente');
     pendingQuotaCount = Array.isArray(tickets) ? tickets.length : 0;
     const badge = document.getElementById('quota-badge');
     if (badge) badge.textContent = pendingQuotaCount || '';
   }
-  // Refresh stats si page active
   const activePage = document.querySelector('.page.active');
   if (activePage?.id === 'page-stats') loadStats();
   if (activePage?.id === 'page-accueil') loadAccueil();
-  if (activePage?.id === 'page-gestion') {
-    loadQuotaTickets();
-    loadCoffre();
-  }
+  if (activePage?.id === 'page-gestion') { loadQuotaTickets(); loadCoffre(); }
 }
-
+ 
 /* ══════════════════════════════════════════════
    NAVIGATION
 ══════════════════════════════════════════════ */
@@ -510,6 +673,7 @@ const NAV = {
     {id:'caisse',icon:'🧾',label:'Caisse'},
     {id:'clients',icon:'👥',label:'Clients'},
     {id:'quota',icon:'🚚',label:'Mon Quota'},
+    {id:'stock',icon:'📦',label:'Stock'},
     {id:'calendrier',icon:'📅',label:'Calendrier'},
     {id:'stats',icon:'📊',label:'Stats'},
   ],
@@ -520,46 +684,48 @@ const NAV = {
     {id:'employes',icon:'👤',label:'Employés'},
     'LOGO',
     {id:'menu',icon:'🍔',label:'Menu'},
+    {id:'stock',icon:'📦',label:'Stock'},
     {id:'contrats',icon:'📄',label:'Contrats'},
     {id:'calendrier',icon:'📅',label:'Calendrier'},
-    {id:'gestion',icon:'⚙️',label:'Gestion'},
+    {id:'gestion',icon:'⚙️',label:'Gestion',badge:'quota-badge'},
+    {id:'gouvernement',icon:'🏛️',label:'Gouvernement'},
     {id:'stats',icon:'📊',label:'Stats'},
   ],
   gouvernement: [
     {id:'stats',icon:'📊',label:'Statistiques'},
-    {id:'coffre',icon:'🏦',label:'Finances'},
+    {id:'stock',icon:'📦',label:'Stock'},
   ]
 };
-
+ 
 function buildNav() {
   const nav = document.getElementById('topNav');
   const items = NAV[ROLE] || NAV.employe;
-
+ 
   const renderItem = i => {
-    const badgeHtml = i.id === 'gestion' ? `<span class="nav-badge" id="quota-badge"></span>` : '';
+    const badgeHtml = i.badge ? `<span class="nav-badge" id="${i.badge}"></span>` : '';
     return `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
   };
-
-  if (ROLE === 'employe') {
+ 
+  if (ROLE !== 'direction') {
     nav.style.justifyContent = 'center';
     nav.innerHTML = items.map(renderItem).join('');
     return;
   }
-
+ 
   const left = [], right = [];
   let center = false;
   for (const i of items) {
     if (i === 'LOGO') { center = true; continue; }
     center ? right.push(i) : left.push(i);
   }
-
+ 
   nav.style.justifyContent = 'space-between';
   nav.innerHTML =
     `<div class="nav-group">${left.map(renderItem).join('')}</div>` +
     `<div style="position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;height:100%;"><img src="https://upload.redstartrp.fr/uploads/photo-1780269854-a31c4ccbae7b.png" style="height:26px;object-fit:contain;filter:brightness(0) invert(1);"></div>` +
     `<div class="nav-group">${right.map(renderItem).join('')}</div>`;
 }
-
+ 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -567,16 +733,17 @@ function showPage(name) {
   if (page) page.classList.add('active');
   const navItem = document.getElementById(`nav-${name}`);
   if (navItem) navItem.classList.add('active');
-
+ 
   const loads = {
     accueil:loadAccueil, caisse:loadCaisse, clients:loadClients,
     employes:loadEmployes, menu:loadMenu, stats:loadStats,
-    coffre:loadCoffre, contrats:loadContrats, gestion:loadGestion,
+    contrats:loadContrats, gestion:loadGestion,
     calendrier:loadCalendrier, quota:loadQuotaPage,
+    stock:loadStock, gouvernement:loadGouvernement,
   };
   loads[name]?.();
 }
-
+ 
 /* ══════════════════════════════════════════════
    BUILD PAGES
 ══════════════════════════════════════════════ */
@@ -584,10 +751,10 @@ function buildPages() {
   const dir = ROLE === 'direction';
   const gouv = ROLE === 'gouvernement';
   let html = '';
-
+ 
   // ACCUEIL
   html += `<div class="page" id="page-accueil"><div class="red-line"></div><div id="accueilContent"><div class="loading"><div class="spin"></div></div></div></div>`;
-
+ 
   // CAISSE
   html += `<div class="page" id="page-caisse"><div class="red-line"></div>
   <div class="caisse-layout">
@@ -603,7 +770,7 @@ function buildPages() {
     </div>
     <div class="ticket-wrap">
       <div class="ticket">
-        <div class="ticket-head"><div class="ticket-logo-txt">🍔 BURGER SHOT</div><div class="ticket-addr">Los Santos · Hawick Avenue and Power Street</div></div>
+        <div class="ticket-head"><div class="ticket-logo-txt">🍔 BURGER SHOT</div><div class="ticket-addr">Los Santos · Hawick Avenue</div></div>
         <div style="font-size:11px;color:#666;margin-bottom:8px;"><div id="tktId">BS-000000</div><div id="tktDate"></div></div>
         <hr class="t-sep">
         <div class="ticket-lines" id="tktLines"><div class="t-empty">Aucun article</div></div>
@@ -625,22 +792,37 @@ function buildPages() {
       </div>
     </div>
   </div></div>`;
-
+ 
   // CLIENTS
   html += `<div class="page" id="page-clients"><div class="red-line"></div>
   <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
     <button class="btn btn-primary" onclick="openOverlay('ovPass')">🪪 Attribuer un Pass</button>
     <button class="btn btn-outline" onclick="openOverlay('ovNewClient')">➕ Nouveau Client</button>
+    <a href="/points.html" target="_blank" class="btn btn-blue">🔍 Page Vérification Points</a>
   </div>
   <div class="card">
     <div class="card-title">Liste des clients</div>
-    <div style="margin-bottom:14px;"><input class="form-input" id="clientsSearch" placeholder="🔍 Rechercher..." oninput="filtrerClients(this.value)" style="max-width:300px;"></div>
+    <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
+      <input class="form-input" id="clientsSearch" placeholder="🔍 Rechercher..." oninput="filtrerClients(this.value)" style="max-width:300px;">
+      <select class="form-select" id="clientsFilter" onchange="filtrerClients(document.getElementById('clientsSearch').value)" style="max-width:180px;">
+        <option value="">Tous les clients</option>
+        <option value="pass">Avec Pass</option>
+        <option value="blacklist">Blacklistés</option>
+        <option value="expiring">Pass expirant bientôt</option>
+      </select>
+    </div>
     <div id="clientsTable"><div class="loading"><div class="spin"></div></div></div>
   </div></div>`;
-
+ 
   // QUOTA EMPLOYÉ
   html += `<div class="page" id="page-quota"><div class="red-line"></div><div id="quotaPageContent"><div class="loading"><div class="spin"></div></div></div></div>`;
-
+ 
+  // STOCK
+  html += `<div class="page" id="page-stock"><div class="red-line"></div>
+  <div id="stockAlerts" style="margin-bottom:16px;"></div>
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;" id="stockActions"></div>
+  <div id="stockContent"><div class="loading"><div class="spin"></div></div></div></div>`;
+ 
   // CALENDRIER
   html += `<div class="page" id="page-calendrier"><div class="red-line"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
@@ -650,18 +832,8 @@ function buildPages() {
       <button class="btn btn-outline btn-sm" onclick="calNav(1)">▶</button>
     </div>
   </div>
-  <div class="card"><div id="calContainer"></div></div>
-      <div class="card" style="margin-top:20px;">
-      <div class="card-title">🏦 Coffre</div>
-      <div class="g4" id="coffreStats" style="margin-bottom:20px;"></div>
-      <div class="card-title">Historique</div>
-      <div id="coffreHisto"></div>
-    </div>
-    <div class="card" style="margin-top:20px;">
-      <div class="card-title">🏛️ Demandes Gouvernement</div>
-      <div id="gouvDemandes"><div class="loading"><div class="spin"></div></div></div>
-    </div></div>`;
-
+  <div class="card"><div id="calContainer"></div></div></div>`;
+ 
   // STATS
   html += `<div class="page" id="page-stats"><div class="red-line"></div>
   <div class="g4" id="statsCards" style="margin-bottom:24px;"></div>
@@ -671,8 +843,8 @@ function buildPages() {
   </div>
   <div class="card" style="margin-bottom:24px;"><div class="card-title">🌡️ Activité par jour / heure</div><div id="statsHeatmap"></div></div>
   <div class="card"><div class="card-title">🏛️ Paliers d'imposition</div><div id="statsImpots"></div></div></div>`;
-
-  if (dir || gouv) {
+ 
+  if (dir) {
     // EMPLOYÉS
     html += `<div class="page" id="page-employes"><div class="red-line"></div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
@@ -692,7 +864,7 @@ function buildPages() {
         </div>
         <div class="form-group"><label class="form-label">ID Discord</label><input class="form-input" id="empDiscord" placeholder="123456789012345678"></div>
         <div class="g2">
-          <div class="form-group"><label class="form-label">Poste</label><select class="form-select" id="empPoste"><option>Employé</option><option>Chef d'équipe</option><option>Manager</option><option>Co-Patron</option><option>Patron</option></select></div>
+          <div class="form-group"><label class="form-label">Poste</label><select class="form-select" id="empPoste">${POSTES.map(p=>`<option>${p}</option>`).join('')}</select></div>
           <div class="form-group"><label class="form-label">Contrat</label><select class="form-select" id="empContrat"><option>CDD</option><option>CDI</option></select></div>
         </div>
         <div class="g2">
@@ -706,11 +878,11 @@ function buildPages() {
       </div>
     </div>
     <div id="empGrid" class="emp-grid"></div></div>`;
-
+ 
     // MENU
     html += `<div class="page" id="page-menu"><div class="red-line"></div>
     <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
-      <div class="card" style="min-width:320px;flex-shrink:0;">
+      <div class="card" style="min-width:340px;flex-shrink:0;">
         <div class="card-title">Ajouter un produit</div>
         <div id="alertMenu"></div>
         <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="mNom" placeholder="Burger Classic"></div>
@@ -719,18 +891,24 @@ function buildPages() {
           <div class="form-group"><label class="form-label">Points</label><input class="form-input" id="mPoints" type="number" placeholder="1"></div>
         </div>
         <div class="form-group"><label class="form-label">Catégorie</label>
-          <select class="form-select" id="mCat">
+          <select class="form-select" id="mCat" onchange="updateMenuCatUI(this.value)">
             <option>Burger</option><option>Menu</option><option>Boisson</option><option>Dessert</option><option>Accompagnement</option><option>Autre</option>
           </select>
         </div>
         <div class="form-group"><label class="form-label">Image URL (optionnel)</label><input class="form-input" id="mImg" placeholder="https://..."></div>
         <div id="mImgPreview" style="margin-bottom:12px;display:none;"><img id="mImgPrev" style="width:80px;height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--border);"></div>
-        <div class="form-group"><label class="form-label">Contenu (optionnel)</label><textarea class="form-input" id="mContenu" placeholder="1 burger + 1 frites + 1 boisson"></textarea></div>
+        <!-- COMPOSITION MENU -->
+        <div id="menuComposition" style="display:none;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">📋 Composition du Menu</div>
+          <div id="menuCompBurger" class="menu-comp-section"><div class="menu-comp-title">🍔 Burgers</div><div class="menu-comp-items" id="compBurgers"></div></div>
+          <div id="menuCompBoisson" class="menu-comp-section"><div class="menu-comp-title">🥤 Boissons</div><div class="menu-comp-items" id="compBoissons"></div></div>
+          <div id="menuCompAccomp" class="menu-comp-section"><div class="menu-comp-title">🍟 Accompagnements</div><div class="menu-comp-items" id="compAccomps"></div></div>
+        </div>
         <button class="btn btn-primary" onclick="saveProduit()">✅ Ajouter au menu</button>
       </div>
       <div class="card" style="flex:1;min-width:300px;"><div class="card-title">Carte actuelle</div><div id="menuGrid"></div></div>
     </div></div>`;
-
+ 
     // CONTRATS
     html += `<div class="page" id="page-contrats"><div class="red-line"></div>
     <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
@@ -743,7 +921,7 @@ function buildPages() {
       </div>
       <div class="card" style="flex:1;"><div class="card-title">Contrats actifs</div><div id="contratsTable"></div></div>
     </div></div>`;
-
+ 
     // GESTION
     html += `<div class="page" id="page-gestion"><div class="red-line"></div>
     <div class="g2" style="margin-bottom:24px;align-items:start;">
@@ -765,36 +943,30 @@ function buildPages() {
         <div id="quotaTickets"><div class="loading"><div class="spin"></div></div></div>
       </div>
     </div>
-    <div class="card">
+    <div class="card" style="margin-bottom:24px;">
       <div class="card-title">💰 Clôture de semaine</div>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Clôture les caisses, calcule les primes, génère le PDF récapitulatif et reset les compteurs hebdomadaires.</p>
-      <div id="cloturePrimesPreview" style="margin-bottom:16px;"></div>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Clôture les caisses, calcule les primes, génère le PDF récapitulatif.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn btn-orange" onclick="calculerPrimes()">🔄 Calculer les primes</button>
         <button class="btn btn-primary" onclick="cloturerSemaine()">🔒 Clôturer la semaine</button>
       </div>
       <div id="primesTable" style="margin-top:16px;"></div>
     </div>
-        <div class="card" style="margin-top:20px;">
+    <div class="card">
       <div class="card-title">🏦 Coffre</div>
       <div class="g4" id="coffreStats" style="margin-bottom:20px;"></div>
       <div class="card-title">Historique</div>
       <div id="coffreHisto"></div>
-    </div>
-    <div class="card" style="margin-top:20px;">
-      <div class="card-title">🏛️ Demandes Gouvernement</div>
-      <div id="gouvDemandes"><div class="loading"><div class="spin"></div></div></div>
     </div></div>`;
-
-    // COFFRE GOUVERNEMENT
-    html += `<div class="page" id="page-coffre"><div class="red-line"></div>
-    <div class="g4" id="gouv-coffreStats" style="margin-bottom:20px;"></div>
-    <div class="card"><div class="card-title">Historique hebdomadaire</div><div id="gouv-coffreHisto"></div></div></div>`;
+ 
+    // GOUVERNEMENT
+    html += `<div class="page" id="page-gouvernement"><div class="red-line"></div>
+    <div id="gouvernementContent"><div class="loading"><div class="spin"></div></div></div></div>`;
   }
-
+ 
   document.getElementById('mainContent').innerHTML = html;
 }
-
+ 
 /* ══════════════════════════════════════════════
    UTILS
 ══════════════════════════════════════════════ */
@@ -844,7 +1016,13 @@ function getEmoji(cat) {
   const m={'Burger':'🍔','Menu':'🍱','Boisson':'🥤','Dessert':'🍦','Accompagnement':'🍟','Autre':'🛒'};
   return m[cat]||'🍽️';
 }
-
+function daysUntilExpiry(passExpiry) {
+  if (!passExpiry) return null;
+  const exp = new Date(passExpiry);
+  const now = new Date();
+  return Math.round((exp - now) / (1000*60*60*24));
+}
+ 
 /* ══════════════════════════════════════════════
    ACCUEIL
 ══════════════════════════════════════════════ */
@@ -863,7 +1041,6 @@ async function loadAccueil() {
   const caSemaine = cmdSemaine.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const caJour = cmdJour.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const caPerso = empPerf.reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
-  const nbEmp = employes.length;
   const first = (USER.displayName||'').split(' ')[0]||'';
   const last = (USER.displayName||'').split(' ').slice(1).join(' ')||'';
   const now = new Date();
@@ -872,7 +1049,17 @@ async function loadAccueil() {
   const avatarHtml = USER.avatar
     ? `<img src="https://cdn.discordapp.com/avatars/${USER.id}/${USER.avatar}.png">`
     : first.charAt(0).toUpperCase();
-
+ 
+  // Pass expirant bientôt
+  let passAlerts = '';
+  if (ROLE === 'direction' || USER_NIVEAU >= 2) {
+    const inWeek = new Date(); inWeek.setDate(inWeek.getDate()+7);
+    const expiring = await sb(`clients?select=nom,prenom,pass,pass_expiry&pass=not.is.null&pass_expiry=lte.${inWeek.toISOString()}&pass_expiry=gte.${new Date().toISOString()}`);
+    if (expiring?.length) {
+      passAlerts = `<div class="alert alert-warn" style="margin-bottom:20px;">⏰ <strong>${expiring.length} pass</strong> expirent dans moins de 7 jours : ${expiring.map(c=>`${c.prenom} ${c.nom}`).join(', ')}</div>`;
+    }
+  }
+ 
   let quotaHtml = '';
   if (ROLE === 'employe') {
     const empData = await sb(`employes?discord_id=eq.${USER.id}&select=contrat,quota_validee`);
@@ -897,8 +1084,9 @@ async function loadAccueil() {
       </div>`;
     }
   }
-
+ 
   el.innerHTML = `
+  ${passAlerts}
   <div class="hero">
     <div class="hero-avatar">${avatarHtml}</div>
     <div>
@@ -913,7 +1101,7 @@ async function loadAccueil() {
   <div class="g3" style="margin-bottom:24px;">
     <div class="stat-card" style="--accent:var(--warning);--accent-bg:rgba(243,156,18,.12);--accent-border:rgba(243,156,18,.3);">
       <div class="stat-icon">🏆</div><div class="stat-label">Employés actifs</div>
-      <div class="stat-value">${nbEmp}</div>
+      <div class="stat-value">${employes.length}</div>
     </div>
     <div class="stat-card" style="--accent:var(--blue);--accent-bg:rgba(52,152,219,.12);--accent-border:rgba(52,152,219,.3);">
       <div class="stat-icon">📈</div><div class="stat-label">CA Semaine</div>
@@ -945,20 +1133,17 @@ async function loadAccueil() {
     <div class="stat-card" style="--accent:var(--red-light);"><div class="stat-icon">🔥</div><div class="stat-label">Impôts estimés</div><div class="stat-value">${Math.round(calcImpot(caSemaine)).toLocaleString('fr-FR')}$</div></div>
   </div>`}`;
 }
-
+ 
 /* ══════════════════════════════════════════════
-   CAISSE
+   CAISSE — avec sélecteur quantité
 ══════════════════════════════════════════════ */
 async function loadCaisse() {
-  // Fetch produits ET contrats en parallèle
   const [prods, contrats] = await Promise.all([
     sb('produits?select=*&actif=eq.true&order=categorie.asc,nom.asc'),
     sb('contrats_reduction?select=*&actif=eq.true')
   ]);
-
   produits = Array.isArray(prods) ? prods : [];
-
-  // Remplir select contrats
+ 
   const sel = document.getElementById('caisseContrat');
   if (sel) {
     sel.innerHTML = '<option value="">— Aucun contrat —</option>' +
@@ -966,22 +1151,19 @@ async function loadCaisse() {
         `<option value="${c.id}" data-pct="${c.pourcentage}">${c.nom} (-${c.pourcentage}%)</option>`
       ).join('');
   }
-
+ 
   const el = document.getElementById('caisseProduits');
   if (!el) return;
-
+ 
   if (!produits.length) {
-    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">Aucun produit dans le menu. Ajoutez-en depuis l\'onglet Menu.</p></div>';
+    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">Aucun produit.</p></div>';
     return;
   }
-
-  // Grouper par catégorie (ordre fixe)
+ 
   const CAT_ORDER = ['Burger','Menu','Boisson','Dessert','Accompagnement','Autre'];
-  const cats = CAT_ORDER.filter(c => produits.some(p => p.categorie === c));
-  // Catégories non listées en plus
-  const extraCats = [...new Set(produits.map(p => p.categorie))].filter(c => !CAT_ORDER.includes(c));
-  const allCats = [...cats, ...extraCats];
-
+  const allCats = [...CAT_ORDER.filter(c=>produits.some(p=>p.categorie===c)),
+    ...[...new Set(produits.map(p=>p.categorie))].filter(c=>!CAT_ORDER.includes(c))];
+ 
   el.innerHTML = allCats.map(cat => {
     const items = produits.filter(p => p.categorie === cat);
     if (!items.length) return '';
@@ -989,8 +1171,8 @@ async function loadCaisse() {
       <div class="caisse-cat-title">${getEmoji(cat)} ${cat}</div>
       <div class="caisse-grid">
         ${items.map(p => `
-          <div class="prod-card" onclick="addToTicket('${p.id}')">
-            <div class="prod-img">
+          <div class="prod-card">
+            <div class="prod-img" onclick="addToTicketQty('${p.id}')">
               ${p.image_url
                 ? `<img src="${p.image_url}" alt="${p.nom}" onerror="this.parentElement.innerHTML='<span class=&quot;prod-emoji&quot;>${getEmoji(p.categorie)}</span>'">`
                 : `<span class="prod-emoji">${getEmoji(p.categorie)}</span>`}
@@ -1002,14 +1184,37 @@ async function loadCaisse() {
                 <div class="prod-pts">🎯${p.points||0}pts</div>
               </div>
             </div>
+            <div class="prod-qty-row">
+              <button class="qty-btn" onclick="changeQty('qty-${p.id}',-1)">−</button>
+              <input class="qty-input" id="qty-${p.id}" value="1" min="1" max="99" type="number">
+              <button class="qty-btn" onclick="changeQty('qty-${p.id}',1)">+</button>
+              <button class="qty-btn" onclick="addToTicketQty('${p.id}')" style="border-radius:6px;width:auto;padding:0 8px;font-size:11px;">Ajouter</button>
+            </div>
           </div>`).join('')}
       </div>
     </div>`;
   }).join('');
-
+ 
   genTicket();
 }
-
+ 
+function changeQty(inputId, delta) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  const v = parseInt(inp.value||1)+delta;
+  inp.value = Math.max(1, Math.min(99, v));
+}
+ 
+function addToTicketQty(id) {
+  const p = produits.find(x => x.id===id); if (!p) return;
+  const inp = document.getElementById(`qty-${id}`);
+  const qty = Math.max(1, parseInt(inp?.value||1));
+  const e = commande.find(x => x.id===id);
+  if (e) e.qte += qty; else commande.push({...p, qte:qty});
+  if (inp) inp.value = 1;
+  renderTicket();
+}
+ 
 function updateContrat() {
   const sel = document.getElementById('caisseContrat');
   if (!sel) return;
@@ -1017,14 +1222,12 @@ function updateContrat() {
   contratActif = sel.value ? {id:sel.value, pct:parseFloat(opt.dataset.pct), nom:opt.text} : null;
   renderTicket();
 }
-
-function addToTicket(id) {
-  const p = produits.find(x => x.id===id); if (!p) return;
-  const e = commande.find(x => x.id===id);
-  e ? e.qte++ : commande.push({...p, qte:1});
+ 
+function removeFromTicket(id) {
+  commande = commande.filter(x => x.id !== id);
   renderTicket();
 }
-
+ 
 function calcCmd() {
   const brut = commande.reduce((a,b)=>a+(b.prix*b.qte),0);
   let r = 0;
@@ -1036,21 +1239,26 @@ function calcCmd() {
   const montantR = Math.round(brut*r/100);
   return {brut, r, montantR, net:brut-montantR};
 }
-
 function calcPts() {
   if (!clientActif?.pass) return 0;
   const pt = passTypes.find(p => p.nom===clientActif.pass);
   const mult = pt ? parseFloat(pt.multiplicateur) : 0;
   return Math.round(commande.reduce((a,b)=>a+(b.points*b.qte),0)*mult);
 }
-
+ 
 function renderTicket() {
   const linesEl = document.getElementById('tktLines');
   if (!linesEl) return;
   linesEl.innerHTML = !commande.length
     ? '<div class="t-empty">Aucun article</div>'
     : commande.map(p =>
-        `<div class="t-line"><div>${p.nom} ×${p.qte}</div><div>${p.prix*p.qte}$</div></div>`
+        `<div class="t-line">
+          <div>${p.nom} ×${p.qte}</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span>${p.prix*p.qte}$</span>
+            <span class="t-line-del" onclick="removeFromTicket('${p.id}')">✕</span>
+          </div>
+        </div>`
       ).join('');
   const c = calcCmd(); const pts = calcPts();
   document.getElementById('tktTotal').textContent = `${c.brut}$`;
@@ -1064,9 +1272,9 @@ function renderTicket() {
     const pt = passTypes.find(p=>p.nom===clientActif.pass);
     piEl.textContent=`${clientActif.pass} • ×${pt?.multiplicateur||1}pts${pt?.reduction>0?` • -${pt.reduction}%`:''}`;
   } else piEl.textContent='';
-  document.getElementById('tktEmploye').textContent = USER?.displayName||USER?.username||'—';
+  document.getElementById('tktEmploye').textContent = USER?.displayName||'—';
 }
-
+ 
 function genTicket() {
   const now = new Date();
   const pad = n=>String(n).padStart(2,'0');
@@ -1074,7 +1282,7 @@ function genTicket() {
   document.getElementById('tktDate').textContent = now.toLocaleString('fr-FR');
   renderTicket();
 }
-
+ 
 function annulerCommande() {
   if (!confirm('Annuler la commande ?')) return;
   commande=[]; clientActif=null; contratActif=null;
@@ -1083,7 +1291,7 @@ function annulerCommande() {
   const cc=document.getElementById('caisseContrat'); if(cc) cc.value='';
   renderTicket();
 }
-
+ 
 function ouvrirValidation() {
   if (!commande.length) { alert('Commande vide.'); return; }
   const c = calcCmd(); const pts = calcPts();
@@ -1096,9 +1304,16 @@ function ouvrirValidation() {
     ${pts>0?`<div style="text-align:right;font-size:13px;color:var(--success);margin-top:4px;">🎯 +${pts} pts</div>`:''}`;
   openOverlay('ovValidation');
 }
-
+ 
 async function confirmerCommande(avecPDF=false) {
   const c = calcCmd(); const pts = calcPts(); const semaine = getSemaine();
+ 
+  // Vérif stock
+  const stockProblems = await checkStockForCommande();
+  if (stockProblems.length > 0) {
+    if (!confirm(`⚠️ Stock insuffisant pour : ${stockProblems.join(', ')}. Confirmer quand même ?`)) return;
+  }
+ 
   const cmdResult = await sb('commandes',{method:'POST',body:JSON.stringify({
     client_id:clientActif?.id||null,
     employe_discord_id:USER.id,
@@ -1111,228 +1326,81 @@ async function confirmerCommande(avecPDF=false) {
     semaine,
     tva:Math.round(c.net*.20)
   })});
-console.log('COMMANDE RESULT:', cmdResult);
-
+ 
   if (clientActif && pts>0) {
     await sb(`clients?id=eq.${clientActif.id}`,{method:'PATCH',body:JSON.stringify({points:(clientActif.points||0)+pts})});
   }
-
-await sb('transactions',{method:'POST',body:JSON.stringify({
+ 
+  await sb('transactions',{method:'POST',body:JSON.stringify({
     montant:c.net,type:'vente',employe_discord:USER.id,client_id:clientActif?.id||null,semaine
   })});
-
-  // Calcul prime immédiate selon le grade
+ 
+  // Décrémente stock
+  await decrementStockForCommande();
+ 
+  // Prime
   const empInfo = await sb(`employes?discord_id=eq.${USER.id}&select=id,poste,contrat`);
   const emp = empInfo?.[0];
   if (emp) {
-    const tauxPoste = {'Patron':.4,'Co-Patron':.35,'Manager':.25,"Chef d'équipe":.15,'Employé':.10};
+    const tauxPoste = {'Patron':.4,'Co-Patron':.35,'Manager':.25,'Responsable':.20,"Chef d'équipe":.15,'Employé':.10};
     const taux = tauxPoste[emp.poste] ?? .10;
     const primeCmd = Math.round(c.net * taux);
     if (primeCmd > 0) {
       await sb('primes',{method:'POST',body:JSON.stringify({
-        employe_id: emp.id || null,
-        employe_discord: USER.id,
-        montant: primeCmd,
-        semaine,
-        verse: false,
-        type: 'vente'
+        employe_id:emp.id||null, employe_discord:USER.id,
+        montant:primeCmd, semaine, verse:false, type:'vente'
       })});
     }
   }
-
-  // Update CA
+ 
   const caData = await sb('parametres?cle=eq.ca_semaine');
   const caActuel = parseFloat(caData?.[0]?.valeur||0)||0;
   if (caData?.[0]) await sb('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:String(caActuel+c.net)})});
   else await sb('parametres',{method:'POST',body:JSON.stringify({cle:'ca_semaine',valeur:String(c.net)})});
-
+ 
   if (avecPDF) genPDFCommande(c, pts);
-
+ 
   closeOverlay('ovValidation');
   commande=[]; clientActif=null; contratActif=null;
   const s=document.getElementById('caisseClientSearch'); if(s) s.value='';
-  const r=document.getElementById('caisseClientResults'); if(r) r.innerHTML='';
+  const r2=document.getElementById('caisseClientResults'); if(r2) r2.innerHTML='';
   const cc=document.getElementById('caisseContrat'); if(cc) cc.value='';
   genTicket();
   alert('✅ Commande validée !');
 }
-
-function genPDFCommande(c, pts) {
-  const now = new Date();
-  const tva = Math.round(c.net * .20);
-  const numFacture = `BS-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  const dateStr = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-  const heureStr = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
-
-  const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Facture ${numFacture}</title>
-<style>
-  @page { size: A4; margin: 0; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; width: 210mm; min-height: 297mm; background: #fff; color: #1a1a1a; font-size: 13px; }
-  .page { width: 210mm; min-height: 297mm; padding: 14mm 14mm 14mm 14mm; display: flex; flex-direction: column; }
-  
-  /* HEADER */
-  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10mm; border-bottom: 3px solid #c0392b; margin-bottom: 8mm; }
-  .header-left { display: flex; align-items: center; gap: 12px; }
-  .logo-circle { width: 56px; height: 56px; background: #c0392b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 22px; letter-spacing: -1px; flex-shrink: 0; }
-  .company-name { font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #c0392b; text-transform: uppercase; line-height: 1; }
-  .company-sub { font-size: 11px; color: #888; letter-spacing: 1px; margin-top: 3px; }
-  .company-addr { font-size: 11px; color: #555; margin-top: 6px; line-height: 1.6; }
-  .header-right { text-align: right; }
-  .invoice-label { font-size: 11px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-  .invoice-num { font-size: 20px; font-weight: 700; color: #1a1a1a; }
-  .invoice-date { font-size: 12px; color: #555; margin-top: 4px; }
-
-  /* PARTIES */
-  .parties { display: flex; justify-content: space-between; margin-bottom: 8mm; gap: 20px; }
-  .party-block { flex: 1; background: #f9f5f0; border-radius: 8px; padding: 10px 14px; border-left: 3px solid #c0392b; }
-  .party-title { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 5px; }
-  .party-name { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
-  .party-info { font-size: 12px; color: #555; line-height: 1.6; }
-
-  /* TABLEAU */
-  .table-wrap { margin-bottom: 6mm; flex: 1; }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: #1a1a1a; color: #fff; }
-  thead th { padding: 10px 12px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-align: left; }
-  thead th:last-child { text-align: right; }
-  tbody tr { border-bottom: 1px solid #eee; }
-  tbody tr:nth-child(even) { background: #fdf9f5; }
-  tbody td { padding: 10px 12px; font-size: 13px; color: #1a1a1a; }
-  tbody td:last-child { text-align: right; font-weight: 600; }
-  .col-w { width: 50px; text-align: center !important; }
-  .col-pu { width: 80px; text-align: right !important; }
-
-  /* TOTAUX */
-  .totaux { display: flex; justify-content: flex-end; margin-bottom: 8mm; }
-  .totaux-block { min-width: 260px; }
-  .totaux-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #eee; }
-  .totaux-line:last-child { border-bottom: none; }
-  .totaux-line.total-final { background: #c0392b; color: #fff; margin-top: 4px; padding: 10px 12px; border-radius: 6px; font-size: 15px; font-weight: 700; border-bottom: none; }
-  .totaux-label { color: #555; }
-  .totaux-val { font-weight: 600; color: #1a1a1a; }
-  .totaux-line.total-final .totaux-label,
-  .totaux-line.total-final .totaux-val { color: #fff; }
-  .reduc-line { color: #c0392b !important; }
-
-  /* POINTS */
-  .pts-block { background: #eaf5ee; border: 1px solid #a8d5ba; border-radius: 6px; padding: 8px 14px; margin-bottom: 6mm; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1d6a3a; font-weight: 600; }
-
-  /* FOOTER */
-  .footer { margin-top: auto; padding-top: 6mm; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: flex-end; }
-  .footer-left { font-size: 10px; color: #aaa; line-height: 1.7; }
-  .footer-badge { background: #c0392b; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; }
-
-  /* CHECKER */
-  .checker { height: 5px; background: repeating-linear-gradient(90deg, #c0392b 0, #c0392b 10px, #fff 10px, #fff 20px); margin-bottom: 0; }
-
-  @media print {
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .page { page-break-after: avoid; }
+ 
+/* Stock checks for commande */
+async function checkStockForCommande() {
+  const problems = [];
+  // On map les produits du menu aux produits stock via composition
+  for (const item of commande) {
+    if (item.composition) {
+      for (const comp of item.composition) {
+        const stockData = await sb(`produits_stock?id=eq.${comp.stock_id}&select=nom,quantite`);
+        const s = stockData?.[0];
+        if (s && s.quantite < comp.qty * item.qte) problems.push(`${s.nom} (besoin: ${comp.qty*item.qte}, dispo: ${s.quantite})`);
+      }
+    }
   }
-</style>
-</head>
-<body>
-<div class="checker"></div>
-<div class="page">
-
-  <div class="header">
-    <div class="header-left">
-      <div class="logo-circle">BS</div>
-      <div>
-        <div class="company-name">Burger Shot</div>
-        <div class="company-sub">Restaurant · Los Santos</div>
-        <div class="company-addr">
-          Hawick Avenue & Power Street<br>
-          Los Santos, San Andreas<br>
-          Direction : Burger Shot Corp.
-        </div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="invoice-label">Facture</div>
-      <div class="invoice-num">${numFacture}</div>
-      <div class="invoice-date">${dateStr}</div>
-      <div class="invoice-date" style="color:#888;">${heureStr}</div>
-    </div>
-  </div>
-
-  <div class="parties">
-    <div class="party-block">
-      <div class="party-title">Client</div>
-      <div class="party-name">${clientActif ? `${clientActif.prenom} ${clientActif.nom}` : 'Client comptant'}</div>
-      <div class="party-info">
-        ${clientActif?.telephone ? clientActif.telephone + '<br>' : ''}
-        ${clientActif?.pass ? `Pass : ${clientActif.pass}` : ''}
-        ${!clientActif ? 'Vente au comptant' : ''}
-      </div>
-    </div>
-    <div class="party-block">
-      <div class="party-title">Encaissé par</div>
-      <div class="party-name">${USER?.displayName || '—'}</div>
-      <div class="party-info">
-        Employé Burger Shot<br>
-        ${contratActif ? `Contrat : ${contratActif.nom}` : ''}
-      </div>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Désignation</th>
-          <th class="col-w">Qté</th>
-          <th class="col-pu">P.U.</th>
-          <th>Total HT</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${commande.map(p => `
-        <tr>
-          <td>${p.nom}${p.contenu ? `<div style="font-size:10px;color:#999;margin-top:2px;">${p.contenu}</div>` : ''}</td>
-          <td class="col-w" style="text-align:center;">${p.qte}</td>
-          <td class="col-pu" style="text-align:right;">${p.prix.toLocaleString('fr-FR')}$</td>
-          <td style="text-align:right;">${(p.prix * p.qte).toLocaleString('fr-FR')}$</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-  </div>
-
-  <div class="totaux">
-    <div class="totaux-block">
-      <div class="totaux-line"><span class="totaux-label">Sous-total HT</span><span class="totaux-val">${c.brut.toLocaleString('fr-FR')}$</span></div>
-      ${c.r > 0 ? `<div class="totaux-line"><span class="totaux-label reduc-line">Réduction (${c.r}%)</span><span class="totaux-val reduc-line">−${c.montantR.toLocaleString('fr-FR')}$</span></div>` : ''}
-      <div class="totaux-line"><span class="totaux-label">TVA (20%)</span><span class="totaux-val">${tva.toLocaleString('fr-FR')}$</span></div>
-      <div class="totaux-line total-final"><span class="totaux-label">TOTAL TTC</span><span class="totaux-val">${c.net.toLocaleString('fr-FR')}$</span></div>
-    </div>
-  </div>
-
-  ${pts > 0 ? `<div class="pts-block">★ +${pts} points de fidélité attribués sur ce reçu — Merci pour votre visite !</div>` : ''}
-
-  <div class="footer">
-    <div class="footer-left">
-      Burger Shot © ${now.getFullYear()} — Document confidentiel<br>
-      Conservez ce reçu pour tout échange ou remboursement.<br>
-      Merci de votre fidélité !
-    </div>
-    <div class="footer-badge">Burger Shot</div>
-  </div>
-
-</div>
-</body>
-</html>`;
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
-  a.download = `BS_Facture_${numFacture}.html`;
-  a.click();
+  return problems;
 }
-
+ 
+async function decrementStockForCommande() {
+  for (const item of commande) {
+    if (item.composition) {
+      for (const comp of item.composition) {
+        const stockData = await sb(`produits_stock?id=eq.${comp.stock_id}&select=id,quantite`);
+        const s = stockData?.[0];
+        if (s) {
+          await sb(`produits_stock?id=eq.${s.id}`,{method:'PATCH',body:JSON.stringify({
+            quantite: Math.max(0, s.quantite - comp.qty * item.qte)
+          })});
+        }
+      }
+    }
+  }
+}
+ 
 /* ══════════════════════════════════════════════
    RECHERCHE CLIENT CAISSE
 ══════════════════════════════════════════════ */
@@ -1340,7 +1408,7 @@ async function searchCaisseClient(val) {
   const el = document.getElementById('caisseClientResults');
   if (!el) return;
   if (val.length<2) { el.innerHTML=''; return; }
-  const data = await sb(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);
+  const data = await sb(`clients?select=*&blacklist=not.eq.true&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);
   el.innerHTML = (Array.isArray(data)?data:[]).map(c =>
     `<div onclick='selectCaisseClient(${JSON.stringify(c).replace(/'/g,"&#39;")})'
       style="padding:10px;background:var(--card2);border:1px solid var(--border);margin-bottom:6px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:space-between;">
@@ -1356,36 +1424,118 @@ function selectCaisseClient(c) {
   const r=document.getElementById('caisseClientResults'); if(r) r.innerHTML='';
   renderTicket();
 }
-
+ 
 /* ══════════════════════════════════════════════
    CLIENTS
 ══════════════════════════════════════════════ */
-let allClients = [];
 async function loadClients() {
   const data = await sb('clients?select=*&order=created_at.desc');
   allClients = Array.isArray(data)?data:[];
   renderClients(allClients);
 }
 function filtrerClients(v) {
-  const f=v.toLowerCase();
-  renderClients(allClients.filter(c=>`${c.prenom} ${c.nom}`.toLowerCase().includes(f)));
+  const f = v.toLowerCase();
+  const filter = document.getElementById('clientsFilter')?.value || '';
+  let list = allClients.filter(c=>`${c.prenom} ${c.nom}`.toLowerCase().includes(f));
+  if (filter === 'pass') list = list.filter(c => c.pass);
+  else if (filter === 'blacklist') list = list.filter(c => c.blacklist);
+  else if (filter === 'expiring') {
+    const inWeek = new Date(); inWeek.setDate(inWeek.getDate()+7);
+    list = list.filter(c => c.pass_expiry && new Date(c.pass_expiry) <= inWeek && new Date(c.pass_expiry) >= new Date());
+  }
+  renderClients(list);
 }
+ 
 function renderClients(list) {
   const el = document.getElementById('clientsTable');
   if (!list.length) { el.innerHTML='<p style="color:var(--muted)">Aucun client.</p>'; return; }
-  // Seuls Manager+ peuvent voir les commandes
+  const canManage = ROLE==='direction' || USER_NIVEAU>=2;
+  const canBlacklist = ROLE==='direction' || USER_NIVEAU>=2;
   const canSeeOrders = ROLE==='direction' || USER_NIVEAU>=2;
-  el.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Pass</th><th>Points</th><th>Inscription</th>${canSeeOrders?'<th>Actions</th>':''}</tr></thead><tbody>` +
-    list.map(c => `<tr>
-      <td>${c.nom}</td><td>${c.prenom}</td>
-      <td>${fmtPhoneDisplay(c.telephone)}</td>
-      <td>${c.pass?`<span class="badge badge-gold">${c.pass}</span>`:'—'}</td>
-      <td><span class="badge badge-blue">🎯 ${c.points||0} pts</span></td>
-      <td>${c.created_at?new Date(c.created_at).toLocaleDateString('fr-FR'):'—'}</td>
-      ${canSeeOrders?`<td><button class="btn btn-outline btn-sm" onclick="voirCommandesClient('${c.id}','${c.prenom} ${c.nom}')">📦 Commandes</button></td>`:''}
-    </tr>`).join('') + '</tbody></table>';
+  const now = new Date();
+ 
+  el.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Discord ID</th><th>Pass</th><th>Expiry</th><th>Points</th><th>Actions</th></tr></thead><tbody>` +
+    list.map(c => {
+      const days = daysUntilExpiry(c.pass_expiry);
+      const expiryHtml = c.pass_expiry
+        ? `<span class="${days <= 7 ? 'badge badge-orange' : 'badge badge-blue'}">${days !== null ? (days <= 0 ? '❌ Expiré' : `J-${days}`) : '—'}</span>`
+        : '—';
+      const passHtml = c.pass ? `<span class="badge badge-gold">${c.pass}</span>` : '—';
+      return `<tr class="${c.blacklist?'blacklisted':''}">
+        <td>${c.nom}${c.blacklist?` <span class="badge badge-black">BLACKLIST</span>`:''}</td>
+        <td>${c.prenom}</td>
+        <td>${fmtPhoneDisplay(c.telephone)}</td>
+        <td><span style="font-size:11px;color:var(--muted);">${c.discord_id||'—'}</span></td>
+        <td>${passHtml}</td>
+        <td>${expiryHtml}${days !== null && days <= 7 && days > 0 && c.pass ? `<button class="btn btn-warn btn-sm" style="margin-left:6px;" onclick="renouvelerPass('${c.id}','${c.pass}')">🔄 -10%</button>` : ''}</td>
+        <td><span class="badge badge-blue">🎯 ${c.points||0} pts</span></td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            ${canSeeOrders ? `<button class="btn btn-outline btn-sm" onclick="voirCommandesClient('${c.id}','${c.prenom} ${c.nom}')">📦</button>` : ''}
+            <button class="btn btn-outline btn-sm" onclick="openEditClient(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️</button>
+            ${c.pass ? `<button class="btn btn-outline btn-sm" onclick="supprimerPass('${c.id}')" title="Supprimer le pass">🗑️ Pass</button>` : ''}
+            ${canBlacklist && !c.blacklist ? `<button class="btn btn-danger btn-sm" onclick="blacklisterClient('${c.id}','${c.prenom} ${c.nom}')">⛔ BL</button>` : ''}
+            ${ROLE==='direction' && c.blacklist ? `<button class="btn btn-success btn-sm" onclick="retirerBlacklist('${c.id}')">✅ Débloquer</button>` : ''}
+            ${ROLE==='direction' ? `<button class="btn btn-danger btn-sm" onclick="supprimerClient('${c.id}','${c.prenom} ${c.nom}')">🗑️</button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('') + '</tbody></table>';
 }
-
+ 
+async function blacklisterClient(id, nom) {
+  if (!confirm(`Blacklister ${nom} ? Il ne pourra plus passer de commande.`)) return;
+  await sb(`clients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({blacklist:true})});
+  loadClients();
+}
+async function retirerBlacklist(id) {
+  await sb(`clients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({blacklist:false})});
+  loadClients();
+}
+async function supprimerClient(id, nom) {
+  if (!confirm(`Supprimer définitivement ${nom} ?`)) return;
+  await sb(`clients?id=eq.${id}`,{method:'DELETE'});
+  loadClients();
+}
+async function supprimerPass(id) {
+  if (!confirm('Supprimer le pass de ce client ?')) return;
+  await sb(`clients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({pass:null,pass_id:null,pass_expiry:null})});
+  loadClients();
+}
+async function renouvelerPass(id, passNom) {
+  if (!confirm(`Renouveler le pass ${passNom} avec 10% de réduction ?`)) return;
+  const pt = passTypes.find(p => p.nom === passNom);
+  if (!pt) { alert('Type de pass introuvable.'); return; }
+  const prixReduc = Math.round(pt.prix * 0.9);
+  const newExpiry = new Date(); newExpiry.setMonth(newExpiry.getMonth()+1);
+  await sb(`clients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({
+    pass:passNom, pass_id:pt.id, pass_expiry:newExpiry.toISOString()
+  })});
+  alert(`✅ Pass renouvelé ! Prix appliqué : ${prixReduc}$ (-10%)`);
+  loadClients();
+}
+ 
+function openEditClient(c) {
+  if (typeof c==='string') try{c=JSON.parse(c);}catch{return;}
+  document.getElementById('ecId').value = c.id;
+  document.getElementById('ecNom').value = c.nom||'';
+  document.getElementById('ecPrenom').value = c.prenom||'';
+  document.getElementById('ecTel').value = c.telephone||'';
+  document.getElementById('ecDiscord').value = c.discord_id||'';
+  openOverlay('ovEditClient');
+}
+async function saveEditClient() {
+  const id = document.getElementById('ecId').value;
+  await sb(`clients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({
+    nom:document.getElementById('ecNom').value.trim(),
+    prenom:document.getElementById('ecPrenom').value.trim(),
+    telephone:document.getElementById('ecTel').value.trim()||null,
+    discord_id:document.getElementById('ecDiscord').value.trim()||null,
+  })});
+  closeOverlay('ovEditClient');
+  loadClients();
+}
+ 
 async function voirCommandesClient(clientId, clientName) {
   document.getElementById('ovClientCmds').style.display='flex';
   document.querySelector('#ovClientCmds .popup-title').textContent = `📦 ${clientName}`;
@@ -1395,197 +1545,17 @@ async function voirCommandesClient(clientId, clientName) {
   if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucune commande.</p>'; return; }
   el.innerHTML = data.map(c => {
     const items = (() => { try { return JSON.parse(c.items||'[]'); } catch { return []; } })();
-    const dateStr = new Date(c.created_at).toLocaleString('fr-FR');
     return `<div style="padding:12px;background:var(--card2);border-radius:8px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:12px;color:var(--muted);">${dateStr}</span>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <strong style="color:var(--success);">${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong>
-          <button class="btn btn-outline btn-sm" onclick="genPDFCommandeArchive(${JSON.stringify(c).replace(/"/g,'&quot;')})">📄 PDF</button>
-        </div>
+        <span style="font-size:12px;color:var(--muted);">${new Date(c.created_at).toLocaleString('fr-FR')}</span>
+        <strong style="color:var(--success);">${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong>
       </div>
       <div style="font-size:12px;color:var(--muted);">${items.map(i=>`${i.nom}×${i.qte}`).join(', ')}</div>
       ${c.reduction_pct>0?`<span class="badge badge-orange" style="margin-top:4px;">-${c.reduction_pct}%</span>`:''}
     </div>`;
   }).join('');
 }
-
-function genPDFCommandeArchive(c, pts) {
-  const now = new Date();
-  const tva = Math.round(c.net * .20);
-  const numFacture = `BS-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  const dateStr = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-  const heureStr = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
-
-  const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Facture ${numFacture}</title>
-<style>
-  @page { size: A4; margin: 0; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; width: 210mm; min-height: 297mm; background: #fff; color: #1a1a1a; font-size: 13px; }
-  .page { width: 210mm; min-height: 297mm; padding: 14mm 14mm 14mm 14mm; display: flex; flex-direction: column; }
-  
-  /* HEADER */
-  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10mm; border-bottom: 3px solid #c0392b; margin-bottom: 8mm; }
-  .header-left { display: flex; align-items: center; gap: 12px; }
-  .logo-circle { width: 56px; height: 56px; background: #c0392b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 22px; letter-spacing: -1px; flex-shrink: 0; }
-  .company-name { font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #c0392b; text-transform: uppercase; line-height: 1; }
-  .company-sub { font-size: 11px; color: #888; letter-spacing: 1px; margin-top: 3px; }
-  .company-addr { font-size: 11px; color: #555; margin-top: 6px; line-height: 1.6; }
-  .header-right { text-align: right; }
-  .invoice-label { font-size: 11px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-  .invoice-num { font-size: 20px; font-weight: 700; color: #1a1a1a; }
-  .invoice-date { font-size: 12px; color: #555; margin-top: 4px; }
-
-  /* PARTIES */
-  .parties { display: flex; justify-content: space-between; margin-bottom: 8mm; gap: 20px; }
-  .party-block { flex: 1; background: #f9f5f0; border-radius: 8px; padding: 10px 14px; border-left: 3px solid #c0392b; }
-  .party-title { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 5px; }
-  .party-name { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
-  .party-info { font-size: 12px; color: #555; line-height: 1.6; }
-
-  /* TABLEAU */
-  .table-wrap { margin-bottom: 6mm; flex: 1; }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: #1a1a1a; color: #fff; }
-  thead th { padding: 10px 12px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-align: left; }
-  thead th:last-child { text-align: right; }
-  tbody tr { border-bottom: 1px solid #eee; }
-  tbody tr:nth-child(even) { background: #fdf9f5; }
-  tbody td { padding: 10px 12px; font-size: 13px; color: #1a1a1a; }
-  tbody td:last-child { text-align: right; font-weight: 600; }
-  .col-w { width: 50px; text-align: center !important; }
-  .col-pu { width: 80px; text-align: right !important; }
-
-  /* TOTAUX */
-  .totaux { display: flex; justify-content: flex-end; margin-bottom: 8mm; }
-  .totaux-block { min-width: 260px; }
-  .totaux-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #eee; }
-  .totaux-line:last-child { border-bottom: none; }
-  .totaux-line.total-final { background: #c0392b; color: #fff; margin-top: 4px; padding: 10px 12px; border-radius: 6px; font-size: 15px; font-weight: 700; border-bottom: none; }
-  .totaux-label { color: #555; }
-  .totaux-val { font-weight: 600; color: #1a1a1a; }
-  .totaux-line.total-final .totaux-label,
-  .totaux-line.total-final .totaux-val { color: #fff; }
-  .reduc-line { color: #c0392b !important; }
-
-  /* POINTS */
-  .pts-block { background: #eaf5ee; border: 1px solid #a8d5ba; border-radius: 6px; padding: 8px 14px; margin-bottom: 6mm; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1d6a3a; font-weight: 600; }
-
-  /* FOOTER */
-  .footer { margin-top: auto; padding-top: 6mm; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: flex-end; }
-  .footer-left { font-size: 10px; color: #aaa; line-height: 1.7; }
-  .footer-badge { background: #c0392b; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; }
-
-  /* CHECKER */
-  .checker { height: 5px; background: repeating-linear-gradient(90deg, #c0392b 0, #c0392b 10px, #fff 10px, #fff 20px); margin-bottom: 0; }
-
-  @media print {
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .page { page-break-after: avoid; }
-  }
-</style>
-</head>
-<body>
-<div class="checker"></div>
-<div class="page">
-
-  <div class="header">
-    <div class="header-left">
-      <div class="logo-circle">BS</div>
-      <div>
-        <div class="company-name">Burger Shot</div>
-        <div class="company-sub">Restaurant · Los Santos</div>
-        <div class="company-addr">
-          Hawick Avenue & Power Street<br>
-          Los Santos, San Andreas<br>
-          Direction : Burger Shot Corp.
-        </div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="invoice-label">Facture</div>
-      <div class="invoice-num">${numFacture}</div>
-      <div class="invoice-date">${dateStr}</div>
-      <div class="invoice-date" style="color:#888;">${heureStr}</div>
-    </div>
-  </div>
-
-  <div class="parties">
-    <div class="party-block">
-      <div class="party-title">Client</div>
-      <div class="party-name">${clientActif ? `${clientActif.prenom} ${clientActif.nom}` : 'Client comptant'}</div>
-      <div class="party-info">
-        ${clientActif?.telephone ? clientActif.telephone + '<br>' : ''}
-        ${clientActif?.pass ? `Pass : ${clientActif.pass}` : ''}
-        ${!clientActif ? 'Vente au comptant' : ''}
-      </div>
-    </div>
-    <div class="party-block">
-      <div class="party-title">Encaissé par</div>
-      <div class="party-name">${USER?.displayName || '—'}</div>
-      <div class="party-info">
-        Employé Burger Shot<br>
-        ${contratActif ? `Contrat : ${contratActif.nom}` : ''}
-      </div>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Désignation</th>
-          <th class="col-w">Qté</th>
-          <th class="col-pu">P.U.</th>
-          <th>Total HT</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${commande.map(p => `
-        <tr>
-          <td>${p.nom}${p.contenu ? `<div style="font-size:10px;color:#999;margin-top:2px;">${p.contenu}</div>` : ''}</td>
-          <td class="col-w" style="text-align:center;">${p.qte}</td>
-          <td class="col-pu" style="text-align:right;">${p.prix.toLocaleString('fr-FR')}$</td>
-          <td style="text-align:right;">${(p.prix * p.qte).toLocaleString('fr-FR')}$</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-  </div>
-
-  <div class="totaux">
-    <div class="totaux-block">
-      <div class="totaux-line"><span class="totaux-label">Sous-total HT</span><span class="totaux-val">${c.brut.toLocaleString('fr-FR')}$</span></div>
-      ${c.r > 0 ? `<div class="totaux-line"><span class="totaux-label reduc-line">Réduction (${c.r}%)</span><span class="totaux-val reduc-line">−${c.montantR.toLocaleString('fr-FR')}$</span></div>` : ''}
-      <div class="totaux-line"><span class="totaux-label">TVA (20%)</span><span class="totaux-val">${tva.toLocaleString('fr-FR')}$</span></div>
-      <div class="totaux-line total-final"><span class="totaux-label">TOTAL TTC</span><span class="totaux-val">${c.net.toLocaleString('fr-FR')}$</span></div>
-    </div>
-  </div>
-
-  ${pts > 0 ? `<div class="pts-block">★ +${pts} points de fidélité attribués sur ce reçu — Merci pour votre visite !</div>` : ''}
-
-  <div class="footer">
-    <div class="footer-left">
-      Burger Shot © ${now.getFullYear()} — Document confidentiel<br>
-      Conservez ce reçu pour tout échange ou remboursement.<br>
-      Merci de votre fidélité !
-    </div>
-    <div class="footer-badge">Burger Shot</div>
-  </div>
-
-</div>
-</body>
-</html>`;
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
-  a.download = `BS_Facture_${numFacture}.html`;
-  a.click();
-}
-
+ 
 async function saveNewClient() {
   const nom=document.getElementById('ncNom').value.trim();
   const prenom=document.getElementById('ncPrenom').value.trim();
@@ -1596,14 +1566,14 @@ async function saveNewClient() {
     date_naissance:document.getElementById('ncNaissance').value||null,
     telephone:document.getElementById('ncTel').value.trim()||null,
     discord_id:document.getElementById('ncDiscord').value.trim()||null,
-    points:0
+    points:0, blacklist:false
   })});
   alertEl.innerHTML='<div class="alert alert-ok">✅ Client enregistré !</div>';
   ['ncNom','ncPrenom','ncNaissance','ncTel','ncDiscord'].forEach(id=>document.getElementById(id).value='');
   loadClients();
   setTimeout(()=>closeOverlay('ovNewClient'),1500);
 }
-
+ 
 /* ══════════════════════════════════════════════
    PASS
 ══════════════════════════════════════════════ */
@@ -1638,20 +1608,208 @@ async function confirmerPass() {
   if (!passClientActif) { alert('Sélectionnez un client.'); return; }
   const sel=document.getElementById('passTypeSelect');
   const opt=sel.options[sel.selectedIndex];
-  await sb(`clients?id=eq.${passClientActif.id}`,{method:'PATCH',body:JSON.stringify({pass:opt.dataset.nom,pass_id:sel.value})});
+  const expiry = new Date(); expiry.setMonth(expiry.getMonth()+1);
+  await sb(`clients?id=eq.${passClientActif.id}`,{method:'PATCH',body:JSON.stringify({
+    pass:opt.dataset.nom, pass_id:sel.value, pass_expiry:expiry.toISOString()
+  })});
   closeOverlay('ovPass');
-  alert(`✅ Pass ${opt.dataset.nom} attribué !`);
+  alert(`✅ Pass ${opt.dataset.nom} attribué ! Valable jusqu'au ${expiry.toLocaleDateString('fr-FR')}`);
   loadClients();
 }
-
+ 
 /* ══════════════════════════════════════════════
-   EMPLOYÉS (cards)
+   STOCK
+══════════════════════════════════════════════ */
+async function loadStock() {
+  const actionsEl = document.getElementById('stockActions');
+  if (actionsEl && (ROLE==='direction')) {
+    actionsEl.innerHTML = `<button class="btn btn-primary" onclick="openOverlay('ovNewStockProd')">➕ Nouveau Produit</button>`;
+  } else if (actionsEl && USER_NIVEAU >= 2) {
+    actionsEl.innerHTML = '';
+  }
+ 
+  const [stockData, alertData] = await Promise.all([
+    sb('produits_stock?select=*&order=categorie.asc,nom.asc'),
+    sb('produits_stock?select=*')
+  ]);
+ 
+  // Alertes stock
+  const alertsEl = document.getElementById('stockAlerts');
+  if (alertsEl) {
+    const alerts = (alertData||[]).filter(p => p.quantite <= (p.seuil_alerte||0));
+    alertsEl.innerHTML = alerts.map(p =>
+      `<div class="stock-alert">⚠️ <strong>${p.nom}</strong> — Stock critique : ${p.quantite} unités (seuil: ${p.seuil_alerte})<span class="badge badge-orange">${p.categorie||'—'}</span></div>`
+    ).join('');
+  }
+ 
+  const el = document.getElementById('stockContent');
+  if (!Array.isArray(stockData)||!stockData.length) {
+    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun produit en stock. La direction peut en ajouter.</p></div>';
+    return;
+  }
+ 
+  const cats = [...new Set(stockData.map(p=>p.categorie))];
+  const canMove = ROLE==='direction' || USER_NIVEAU>=2;
+ 
+  el.innerHTML = cats.map(cat => {
+    const items = stockData.filter(p => p.categorie===cat);
+    return `<div class="card" style="margin-bottom:16px;">
+      <div class="card-title">${cat}</div>
+      <table>
+        <thead><tr><th>Produit</th><th>Quantité</th><th>Seuil alerte</th><th>Coût unitaire</th><th>Valeur stock</th>${canMove?'<th>Actions</th>':''}</tr></thead>
+        <tbody>
+          ${items.map(p => {
+            const pct = p.seuil_alerte > 0 ? Math.min(100, Math.round((p.quantite/Math.max(p.seuil_alerte*3,1))*100)) : 100;
+            const color = p.quantite <= (p.seuil_alerte||0) ? 'var(--red)' : p.quantite <= (p.seuil_alerte||0)*2 ? 'var(--warning)' : 'var(--success)';
+            return `<tr>
+              <td><strong>${p.nom}</strong></td>
+              <td>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${color};">${p.quantite}</div>
+                <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+              </td>
+              <td><span class="badge badge-orange">${p.seuil_alerte||0}</span></td>
+              <td>${p.cout_unitaire?`${p.cout_unitaire.toLocaleString('fr-FR')}$`:'—'}</td>
+              <td>${p.cout_unitaire?`${(p.quantite*(p.cout_unitaire||0)).toLocaleString('fr-FR')}$`:'—'}</td>
+              ${canMove?`<td>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-success btn-sm" onclick="ouvrirMvtStock('${p.id}','${p.nom}','entree')">📥 Entrée</button>
+                  <button class="btn btn-outline btn-sm" onclick="ouvrirMvtStock('${p.id}','${p.nom}','sortie')">📤 Sortie</button>
+                  ${ROLE==='direction'?`<button class="btn btn-danger btn-sm" onclick="supprimerStockProd('${p.id}')">🗑️</button>`:''}
+                </div>
+              </td>`:''}
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+ 
+function ouvrirMvtStock(id, nom, type) {
+  document.getElementById('ovStockMvtTitle').textContent = `${type==='entree'?'📥 Entrée':'📤 Sortie'} — ${nom}`;
+  document.getElementById('ovStockMvtContent').innerHTML = `
+    <div id="alertStockMvt" style="margin-bottom:12px;"></div>
+    <div class="form-group"><label class="form-label">Quantité</label><input class="form-input" id="mvtQte" type="number" placeholder="Ex: 50" min="1"></div>
+    <div class="form-group"><label class="form-label">Notes (optionnel)</label><input class="form-input" id="mvtNotes" placeholder="Livraison / Commande..."></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-outline" onclick="closeOverlay('ovStockMvt')">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmerMvtStock('${id}','${type}')">✅ Confirmer</button>
+    </div>`;
+  openOverlay('ovStockMvt');
+}
+ 
+async function confirmerMvtStock(id, type) {
+  const qte = parseInt(document.getElementById('mvtQte')?.value);
+  if (!qte || qte <= 0) { document.getElementById('alertStockMvt').innerHTML='<div class="alert alert-err">⚠️ Quantité invalide.</div>'; return; }
+  const stockData = await sb(`produits_stock?id=eq.${id}&select=quantite`);
+  const current = stockData?.[0]?.quantite || 0;
+  const newQte = type==='entree' ? current+qte : Math.max(0, current-qte);
+  await sb(`produits_stock?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({quantite:newQte})});
+  // Log mouvement
+  await sb('stock_mouvements',{method:'POST',body:JSON.stringify({
+    produit_stock_id:id, type, quantite:qte,
+    employe_discord:USER.id, notes:document.getElementById('mvtNotes')?.value||null
+  })});
+  closeOverlay('ovStockMvt');
+  loadStock();
+}
+ 
+async function saveStockProd() {
+  const nom = document.getElementById('nspNom')?.value.trim();
+  const cout = document.getElementById('nspCout')?.value;
+  const seuil = document.getElementById('nspSeuil')?.value;
+  const cat = document.getElementById('nspCat')?.value;
+  const alertEl = document.getElementById('alertNewStockProd');
+  if (!nom) { alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom obligatoire.</div>'; return; }
+  await sb('produits_stock',{method:'POST',body:JSON.stringify({
+    nom, cout_unitaire:parseFloat(cout)||null, seuil_alerte:parseInt(seuil)||0, categorie:cat||'Autre', quantite:0
+  })});
+  alertEl.innerHTML='<div class="alert alert-ok">✅ Produit créé !</div>';
+  setTimeout(()=>{closeOverlay('ovNewStockProd');loadStock();},1200);
+}
+ 
+async function supprimerStockProd(id) {
+  if (!confirm('Supprimer ce produit du stock ?')) return;
+  await sb(`produits_stock?id=eq.${id}`,{method:'DELETE'});
+  loadStock();
+}
+ 
+/* ══════════════════════════════════════════════
+   GOUVERNEMENT (Direction only)
+══════════════════════════════════════════════ */
+async function loadGouvernement() {
+  const el = document.getElementById('gouvernementContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+ 
+  const data = await sb('gouvernement_comptes?select=*&order=created_at.desc');
+  if (!Array.isArray(data)||!data.length) {
+    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun compte gouvernement enregistré.</p></div>';
+    return;
+  }
+ 
+  el.innerHTML = `<div class="card">
+    <div class="card-title">🏛️ Registre du Gouvernement</div>
+    <div style="margin-bottom:14px;"><input class="form-input" id="gouvSearch" placeholder="🔍 Rechercher..." oninput="filtrerGouv(this.value)" style="max-width:300px;"></div>
+    <div id="gouvList">
+      ${renderGouvList(data)}
+    </div>
+  </div>`;
+}
+ 
+function renderGouvList(list) {
+  return list.map(g => {
+    const avatarHtml = g.avatar
+      ? `<img src="https://cdn.discordapp.com/avatars/${g.discord_id}/${g.avatar}.png" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+      : (g.prenom?.charAt(0)||'?').toUpperCase();
+    return `<div class="gouv-card" style="margin-bottom:10px;" id="gouv-${g.id}">
+      <div class="gouv-avatar">${avatarHtml}</div>
+      <div style="flex:1;">
+        <div style="font-weight:800;font-size:15px;">${g.prenom||''} ${g.nom||''}</div>
+        <div style="font-size:12px;color:var(--muted);">@${g.username||'—'} · ${g.discord_id||'—'}</div>
+        <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="badge badge-blue">${g.fonction||'—'}</span>
+          <span class="badge ${g.statut==='actif'?'badge-green':g.statut==='suspendu'?'badge-orange':'badge-red'}">${g.statut||'—'}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        ${g.statut==='actif' ? `<button class="btn btn-warn btn-sm" onclick="updateGouvStatut('${g.id}','suspendu')">⏸️ Suspendre</button>` : ''}
+        ${g.statut==='suspendu' ? `<button class="btn btn-success btn-sm" onclick="updateGouvStatut('${g.id}','actif')">▶️ Réactiver</button>` : ''}
+        ${g.statut !== 'revoque' ? `<button class="btn btn-danger btn-sm" onclick="updateGouvStatut('${g.id}','revoque')">🚫 Révoquer</button>` : ''}
+        <button class="btn btn-outline btn-sm" onclick="deleteGouvCompte('${g.id}','${g.prenom} ${g.nom}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+ 
+let allGouv = [];
+async function filtrerGouv(v) {
+  if (!allGouv.length) {
+    allGouv = await sb('gouvernement_comptes?select=*&order=created_at.desc') || [];
+  }
+  const f = v.toLowerCase();
+  const list = allGouv.filter(g => `${g.prenom} ${g.nom} ${g.username} ${g.fonction}`.toLowerCase().includes(f));
+  const el = document.getElementById('gouvList');
+  if (el) el.innerHTML = renderGouvList(list);
+}
+ 
+async function updateGouvStatut(id, statut) {
+  await sb(`gouvernement_comptes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut})});
+  loadGouvernement();
+}
+async function deleteGouvCompte(id, nom) {
+  if (!confirm(`Supprimer le compte de ${nom} ?`)) return;
+  await sb(`gouvernement_comptes?id=eq.${id}`,{method:'DELETE'});
+  loadGouvernement();
+}
+ 
+/* ══════════════════════════════════════════════
+   EMPLOYÉS
 ══════════════════════════════════════════════ */
 async function loadEmployes() {
   const el = document.getElementById('empGrid');
   if (!el) return;
   el.innerHTML = '<div class="loading"><div class="spin"></div> Chargement...</div>';
-
   const semaine = getSemaine();
   const [data, cmds, allCmds, primes] = await Promise.all([
     sb('employes?select=*&order=created_at.desc'),
@@ -1659,38 +1817,29 @@ async function loadEmployes() {
     sb('commandes?select=employe_discord_id,total_apres_reduction,total'),
     sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
   ]);
-
   if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>'; return; }
-
-  // Maps CA
-  const caWeek = {}, caTotal = {}, cmdWeek = {}, primesMap = {};
-  (cmds||[]).forEach(c => {
-    caWeek[c.employe_discord_id] = (caWeek[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);
-    cmdWeek[c.employe_discord_id] = (cmdWeek[c.employe_discord_id]||0)+1;
-  });
-  (allCmds||[]).forEach(c => {
-    caTotal[c.employe_discord_id] = (caTotal[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);
-  });
-  (primes||[]).forEach(p => {
-    primesMap[p.employe_discord] = (primesMap[p.employe_discord]||0)+p.montant;
-  });
-
+ 
+  const caWeek={}, caTotal={}, cmdWeek={}, primesMap={};
+  (cmds||[]).forEach(c=>{caWeek[c.employe_discord_id]=(caWeek[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);cmdWeek[c.employe_discord_id]=(cmdWeek[c.employe_discord_id]||0)+1;});
+  (allCmds||[]).forEach(c=>{caTotal[c.employe_discord_id]=(caTotal[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);});
+  (primes||[]).forEach(p=>{primesMap[p.employe_discord]=(primesMap[p.employe_discord]||0)+p.montant;});
+ 
   el.innerHTML = data.map(e => {
-    const initials = `${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
-    const primeActuelle = primesMap[e.discord_id]||0;
-    const quotaMax = e.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
-    const quotaDone = e.quota_validee||0;
-    const quotaPct = quotaMax>0 ? Math.min(100,Math.round((quotaDone/quotaMax)*100)) : 0;
-    const tauxPoste = {'Patron':.4,'Co-Patron':.35,'Manager':.25,"Chef d'équipe":.15,'Employé':.10};
-    const taux = tauxPoste[e.poste] ?? .10;
-    const caEmp = caWeek[e.discord_id] || 0;
-
+    const initials=`${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
+    const primeActuelle=primesMap[e.discord_id]||0;
+    const quotaMax=e.contrat==='CDI'?quotaConfig.cdi_quota:quotaConfig.cdd_quota;
+    const quotaDone=e.quota_validee||0;
+    const quotaPct=quotaMax>0?Math.min(100,Math.round((quotaDone/quotaMax)*100)):0;
+    const tauxPoste={'Patron':.4,'Co-Patron':.35,'Manager':.25,'Responsable':.20,"Chef d'équipe":.15,'Employé':.10};
+    const taux=tauxPoste[e.poste]??.10;
+    const caEmp=caWeek[e.discord_id]||0;
+ 
     return `<div class="emp-card">
       <div class="emp-card-header">
         <div class="emp-avatar">${initials}</div>
         <div style="flex:1;">
           <div class="emp-name">${e.prenom} ${e.nom}</div>
-          <div class="emp-discord">Discord: ${e.discord_id||'—'}</div>
+          <div class="emp-discord">${e.discord_id||'—'}</div>
           <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
             <span class="badge ${e.actif?'badge-green':'badge-red'}">${e.actif?'Actif':'Inactif'}</span>
             <span class="badge badge-orange">${e.poste||'—'}</span>
@@ -1700,23 +1849,13 @@ async function loadEmployes() {
       </div>
       <div class="emp-card-body">
         <div class="emp-stats-row">
-          <div class="emp-stat">
-            <div class="emp-stat-val">${cmdWeek[e.discord_id]||0}</div>
-            <div class="emp-stat-lbl">Cmds sem.</div>
-          </div>
-          <div class="emp-stat">
-            <div class="emp-stat-val" style="font-size:14px;">${(caWeek[e.discord_id]||0).toLocaleString('fr-FR')}$</div>
-            <div class="emp-stat-lbl">CA sem.</div>
-          </div>
-          <div class="emp-stat">
-            <div class="emp-stat-val" style="font-size:13px;">${(caTotal[e.discord_id]||0).toLocaleString('fr-FR')}$</div>
-            <div class="emp-stat-lbl">CA total</div>
-          </div>
+          <div class="emp-stat"><div class="emp-stat-val">${cmdWeek[e.discord_id]||0}</div><div class="emp-stat-lbl">Cmds sem.</div></div>
+          <div class="emp-stat"><div class="emp-stat-val" style="font-size:14px;">${(caWeek[e.discord_id]||0).toLocaleString('fr-FR')}$</div><div class="emp-stat-lbl">CA sem.</div></div>
+          <div class="emp-stat"><div class="emp-stat-val" style="font-size:13px;">${(caTotal[e.discord_id]||0).toLocaleString('fr-FR')}$</div><div class="emp-stat-lbl">CA total</div></div>
         </div>
-
         <div class="emp-prime">
           <div>
-            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">CA apporté sem.</div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">CA sem.</div>
             <div class="emp-prime-val" style="color:var(--blue);">${caEmp.toLocaleString('fr-FR')}$</div>
           </div>
           <div>
@@ -1725,25 +1864,16 @@ async function loadEmployes() {
           </div>
           <button class="btn btn-outline btn-sm" onclick="voirPrimeEmploye('${e.discord_id}','${e.prenom} ${e.nom}')">Détails</button>
         </div>
-
         <div style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;">
-            <span>Quota ${e.contrat}: ${quotaDone}/${quotaMax}</span>
-            <span>${quotaPct}%</span>
+            <span>Quota ${e.contrat}: ${quotaDone}/${quotaMax}</span><span>${quotaPct}%</span>
           </div>
           <div class="quota-bar-bg" style="height:6px;"><div class="quota-bar-fill" style="width:${quotaPct}%"></div></div>
         </div>
-
         <div class="emp-selects">
-          <select onchange="updateEmpPoste('${e.id}',this.value)">
-            ${POSTES.map(p=>`<option${p===e.poste?' selected':''}>${p}</option>`).join('')}
-          </select>
-          <select onchange="updateEmpContrat('${e.id}',this.value)">
-            <option${e.contrat==='CDD'?' selected':''}>CDD</option>
-            <option${e.contrat==='CDI'?' selected':''}>CDI</option>
-          </select>
+          <select onchange="updateEmpPoste('${e.id}',this.value)">${POSTES.map(p=>`<option${p===e.poste?' selected':''}>${p}</option>`).join('')}</select>
+          <select onchange="updateEmpContrat('${e.id}',this.value)"><option${e.contrat==='CDD'?' selected':''}>CDD</option><option${e.contrat==='CDI'?' selected':''}>CDI</option></select>
         </div>
-
         <div class="emp-card-actions">
           <button class="btn btn-outline btn-sm" onclick="toggleEmploye('${e.id}',${e.actif})">${e.actif?'🔴 Désactiver':'🟢 Activer'}</button>
           <button class="btn btn-danger btn-sm" onclick="virer('${e.id}','${e.prenom} ${e.nom}')">🚪 Virer</button>
@@ -1752,40 +1882,26 @@ async function loadEmployes() {
     </div>`;
   }).join('');
 }
-
-async function updateEmpPoste(id, poste) {
-  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({poste})});
-}
-async function updateEmpContrat(id, contrat) {
-  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({contrat})});
-}
-async function toggleEmploye(id, actif) {
-  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});
-  loadEmployes();
-}
-async function virer(id, nom) {
-  if (!confirm(`Virer ${nom} ? Cette action désactivera son compte.`)) return;
-  await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:false})});
-  loadEmployes();
-}
-
-async function voirPrimeEmploye(discordId, nom) {
-  document.getElementById('ovEmpPrimeTitle').textContent = `💰 Prime — ${nom}`;
-  document.getElementById('ovEmpPrime').style.display = 'flex';
-  const el = document.getElementById('ovEmpPrimeContent');
-  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
-  const data = await sb(`primes?employe_discord=eq.${discordId}&order=created_at.desc&limit=20`);
-  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucune prime.</p>'; return; }
-  const total = data.filter(p=>!p.verse).reduce((a,p)=>a+p.montant,0);
-  el.innerHTML = `<div style="margin-bottom:14px;padding:12px;background:rgba(39,174,96,.08);border-radius:8px;display:flex;justify-content:space-between;">
+ 
+async function updateEmpPoste(id,poste){await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({poste})});}
+async function updateEmpContrat(id,contrat){await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({contrat})});}
+async function toggleEmploye(id,actif){await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadEmployes();}
+async function virer(id,nom){if(!confirm(`Virer ${nom} ?`))return;await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:false})});loadEmployes();}
+ 
+async function voirPrimeEmploye(discordId,nom) {
+  document.getElementById('ovEmpPrimeTitle').textContent=`💰 Prime — ${nom}`;
+  document.getElementById('ovEmpPrime').style.display='flex';
+  const el=document.getElementById('ovEmpPrimeContent');
+  el.innerHTML='<div class="loading"><div class="spin"></div></div>';
+  const data=await sb(`primes?employe_discord=eq.${discordId}&order=created_at.desc&limit=20`);
+  if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime.</p>';return;}
+  const total=data.filter(p=>!p.verse).reduce((a,p)=>a+p.montant,0);
+  el.innerHTML=`<div style="margin-bottom:14px;padding:12px;background:rgba(39,174,96,.08);border-radius:8px;display:flex;justify-content:space-between;">
     <span style="font-weight:700;">Total en attente</span>
     <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);">${total.toLocaleString('fr-FR')}$</span>
-  </div>` +
+  </div>`+
   data.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-    <div>
-      <span class="badge badge-blue">${p.type||'vente'}</span>
-      <span style="font-size:12px;color:var(--muted);margin-left:8px;">${p.semaine}</span>
-    </div>
+    <div><span class="badge badge-blue">${p.type||'vente'}</span><span style="font-size:12px;color:var(--muted);margin-left:8px;">${p.semaine}</span></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong>
       <span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span>
@@ -1793,70 +1909,41 @@ async function voirPrimeEmploye(discordId, nom) {
     </div>
   </div>`).join('');
 }
-
-function openAddEmploye() {
-  const f=document.getElementById('addEmployeForm');
-  f.style.display=f.style.display==='none'?'block':'none';
-}
-async function saveEmploye() {
-  const nom=document.getElementById('empNom').value.trim();
-  const prenom=document.getElementById('empPrenom').value.trim();
-  const discord=document.getElementById('empDiscord').value.trim();
+ 
+function openAddEmploye(){const f=document.getElementById('addEmployeForm');f.style.display=f.style.display==='none'?'block':'none';}
+async function saveEmploye(){
+  const nom=document.getElementById('empNom').value.trim(),prenom=document.getElementById('empPrenom').value.trim(),discord=document.getElementById('empDiscord').value.trim();
   const alertEl=document.getElementById('alertEmploye');
-  if (!nom||!prenom||!discord) { alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom, prénom et Discord obligatoires.</div>'; return; }
-  await sb('employes',{method:'POST',body:JSON.stringify({
-    nom,prenom,
-    date_naissance:document.getElementById('empNaissance').value||null,
-    telephone:document.getElementById('empTel').value.trim()||null,
-    discord_id:discord,
-    poste:document.getElementById('empPoste').value,
-    contrat:document.getElementById('empContrat').value,
-    actif:document.getElementById('empActif').value==='true',
-    date_embauche:document.getElementById('empEmbauche').value||null,
-    quota_validee:0
-  })});
+  if(!nom||!prenom||!discord){alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom, prénom et Discord obligatoires.</div>';return;}
+  await sb('employes',{method:'POST',body:JSON.stringify({nom,prenom,date_naissance:document.getElementById('empNaissance').value||null,telephone:document.getElementById('empTel').value.trim()||null,discord_id:discord,poste:document.getElementById('empPoste').value,contrat:document.getElementById('empContrat').value,actif:document.getElementById('empActif').value==='true',date_embauche:document.getElementById('empEmbauche').value||null,quota_validee:0})});
   alertEl.innerHTML='<div class="alert alert-ok">✅ Employé ajouté !</div>';
   document.getElementById('addEmployeForm').style.display='none';
   loadEmployes();
 }
-
+ 
 /* ══════════════════════════════════════════════
-   QUOTA PAGE (employé)
+   QUOTA PAGE
 ══════════════════════════════════════════════ */
 async function loadQuotaPage() {
   const el = document.getElementById('quotaPageContent');
   if (!el) return;
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
-
   const empData = await sb(`employes?discord_id=eq.${USER.id}&select=*`);
   const emp = empData?.[0];
-
-  if (!emp) {
-    el.innerHTML = '<div class="alert alert-warn">⚠️ Votre profil employé n\'est pas encore configuré. Contactez la direction.</div>';
-    return;
-  }
-
-  const quotaMax = emp.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
-  const primeMax = emp.contrat==='CDI' ? quotaConfig.cdi_prime : quotaConfig.cdd_prime;
-  const quotaDone = parseInt(emp.quota_validee||0);
-  const pct = quotaMax>0 ? Math.min(100, Math.round((quotaDone/quotaMax)*100)) : 0;
-  const restant = Math.max(0, quotaMax - quotaDone);
-  const primeEstimee = Math.round((pct/100)*primeMax);
-
-  // Mes tickets
-  const tickets = await sb(`quotas_tickets?employe_discord_id=eq.${USER.id}&semaine=eq.${getSemaine()}&order=created_at.desc`);
-  const hasTicketEnAttente = (tickets||[]).some(t => t.statut==='en_attente');
-
-  // Peut valider si chef d'équipe ou plus
-  const canValidate = ROLE==='direction' || USER_NIVEAU>=1;
-
-  // Tickets en attente si autorisé
-  let ticketsEnAttente = [];
-  if (canValidate) {
-    ticketsEnAttente = await sb('quotas_tickets?statut=eq.en_attente&order=created_at.desc') || [];
-  }
-
-  el.innerHTML = `
+  if (!emp) { el.innerHTML='<div class="alert alert-warn">⚠️ Profil employé non configuré.</div>'; return; }
+  const quotaMax=emp.contrat==='CDI'?quotaConfig.cdi_quota:quotaConfig.cdd_quota;
+  const primeMax=emp.contrat==='CDI'?quotaConfig.cdi_prime:quotaConfig.cdd_prime;
+  const quotaDone=parseInt(emp.quota_validee||0);
+  const pct=quotaMax>0?Math.min(100,Math.round((quotaDone/quotaMax)*100)):0;
+  const restant=Math.max(0,quotaMax-quotaDone);
+  const primeEstimee=Math.round((pct/100)*primeMax);
+  const tickets=await sb(`quotas_tickets?employe_discord_id=eq.${USER.id}&semaine=eq.${getSemaine()}&order=created_at.desc`);
+  const hasTicketEnAttente=(tickets||[]).some(t=>t.statut==='en_attente');
+  const canValidate=ROLE==='direction'||USER_NIVEAU>=1;
+  let ticketsEnAttente=[];
+  if(canValidate)ticketsEnAttente=await sb('quotas_tickets?statut=eq.en_attente&order=created_at.desc')||[];
+ 
+  el.innerHTML=`
   <div class="quota-hero">
     <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
       <div>
@@ -1871,445 +1958,229 @@ async function loadQuotaPage() {
     </div>
     <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pct}%"></div></div>
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px;">
-      <span style="color:var(--muted);">${quotaDone} unités validées / ${quotaMax} requises</span>
+      <span style="color:var(--muted);">${quotaDone} unités / ${quotaMax} requises</span>
       <span style="color:${restant===0?'var(--success)':'var(--red)'};">${restant===0?'✅ Quota atteint !':restant+' restantes'}</span>
     </div>
   </div>
-
-  ${!hasTicketEnAttente ? `
-  <div style="margin-bottom:24px;">
-    <button class="btn btn-primary" onclick="openOverlay('ovQuota');prepareQuotaForm('${emp.contrat}',${quotaMax},${quotaDone},${primeMax})">🚚 Déclarer un remplissage</button>
-  </div>` : `
-  <div class="alert alert-warn" style="margin-bottom:24px;">⏳ Vous avez une déclaration en attente de validation. Vous ne pouvez en soumettre qu'une à la fois.</div>
-  `}
-
+  ${!hasTicketEnAttente?`<div style="margin-bottom:24px;"><button class="btn btn-primary" onclick="openOverlay('ovQuota');prepareQuotaForm('${emp.contrat}',${quotaMax},${quotaDone},${primeMax})">🚚 Déclarer un remplissage</button></div>`:`<div class="alert alert-warn" style="margin-bottom:24px;">⏳ Déclaration en attente de validation.</div>`}
   <div class="card" style="margin-bottom:24px;">
-    <div class="card-title">📋 Mes déclarations de la semaine</div>
-    ${(tickets||[]).length ? (tickets||[]).map(t => `
-      <div class="quota-ticket ${t.statut}">
-        <div style="display:flex;justify-content:space-between;align-items:start;">
-          <div>
-            <div style="font-weight:700;margin-bottom:4px;">🚚 ${t.plaque} — ${t.quantite} unités</div>
-            <div style="font-size:12px;color:var(--muted);">${new Date(t.created_at).toLocaleString('fr-FR')}</div>
-            ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">${t.notes}</div>`:''}
-          </div>
-          <span class="badge ${t.statut==='valide'?'badge-green':t.statut==='refuse'?'badge-red':'badge-orange'}">
-            ${t.statut==='valide'?'✅ Validé':t.statut==='refuse'?'❌ Refusé':'⏳ En attente'}
-          </span>
-        </div>
-      </div>`).join('') : '<p style="color:var(--muted)">Aucune déclaration cette semaine.</p>'}
+    <div class="card-title">📋 Mes déclarations</div>
+    ${(tickets||[]).length?(tickets||[]).map(t=>`<div class="quota-ticket ${t.statut}"><div style="display:flex;justify-content:space-between;align-items:start;"><div><div style="font-weight:700;">🚚 ${t.plaque} — ${t.quantite} unités</div><div style="font-size:12px;color:var(--muted);">${new Date(t.created_at).toLocaleString('fr-FR')}</div>${t.notes?`<div style="font-size:12px;color:var(--muted);">${t.notes}</div>`:''}</div><span class="badge ${t.statut==='valide'?'badge-green':t.statut==='refuse'?'badge-red':'badge-orange'}">${t.statut==='valide'?'✅ Validé':t.statut==='refuse'?'❌ Refusé':'⏳ En attente'}</span></div></div>`).join(''):'<p style="color:var(--muted)">Aucune déclaration.</p>'}
   </div>
-
-  ${canValidate && ticketsEnAttente.length>0 ? `
-  <div class="card">
-    <div class="card-title">🔔 Tickets à valider (${ticketsEnAttente.length})</div>
-    <div id="quotaValidationList">
-      ${await renderQuotaTicketsList(ticketsEnAttente)}
-    </div>
-  </div>` : ''}`;
-}
-
-async function renderQuotaTicketsList(tickets) {
-  // Récupère les noms des employés
-  const discordIds = [...new Set(tickets.map(t=>t.employe_discord_id).filter(Boolean))];
-  let empMap = {};
-  if (discordIds.length) {
-    const emps = await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);
-    (emps||[]).forEach(e => empMap[e.discord_id] = e);
+  ${canValidate&&ticketsEnAttente.length>0?`<div class="card"><div class="card-title">🔔 Tickets à valider (${ticketsEnAttente.length})</div><div id="quotaValidationList"></div></div>`:''}`;
+ 
+  if (canValidate && ticketsEnAttente.length > 0) {
+    const listEl = document.getElementById('quotaValidationList');
+    if (listEl) listEl.innerHTML = await renderQuotaTicketsList(ticketsEnAttente);
   }
-
-  return tickets.map(t => {
-    const emp = empMap[t.employe_discord_id]||{};
-    const quotaMax = emp.contrat==='CDI' ? quotaConfig.cdi_quota : quotaConfig.cdd_quota;
-    const primeMax = emp.contrat==='CDI' ? quotaConfig.cdi_prime : quotaConfig.cdd_prime;
-    const pct = quotaMax>0 ? Math.min(100,Math.round((t.quantite/quotaMax)*100)) : 0;
-    const primeEstimee = Math.round((pct/100)*primeMax);
-
-    return `<div class="quota-ticket pending" id="ticket-${t.id}">
-      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
-        <div>
-          <div style="font-weight:800;font-size:15px;">${emp.prenom||'?'} ${emp.nom||''}</div>
-          <div style="font-size:12px;color:var(--muted);">${emp.contrat||'—'} · ${new Date(t.created_at).toLocaleString('fr-FR')}</div>
-        </div>
-        <span class="badge badge-orange">⏳ En attente</span>
-      </div>
-      <div class="g2" style="margin-bottom:10px;gap:8px;">
-        <div style="background:var(--card);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Plaque</div>
-          <div style="font-weight:800;font-size:16px;margin-top:2px;">🚚 ${t.plaque}</div>
-        </div>
-        <div style="background:var(--card);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Quantité</div>
-          <div style="font-weight:800;font-size:16px;margin-top:2px;">${t.quantite} unités</div>
-        </div>
-        <div style="background:var(--card);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">% du quota</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red);margin-top:2px;">${pct}%</div>
-        </div>
-        <div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Prime estimée</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);margin-top:2px;">${primeEstimee.toLocaleString('fr-FR')}$</div>
-        </div>
-      </div>
-      ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;padding:8px;background:var(--card);border-radius:6px;">${t.notes}</div>`:''}
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-success btn-sm" onclick="validerQuotaTicket('${t.id}','${t.employe_discord_id||''}',${t.quantite},${primeEstimee})">✅ Valider</button>
-        <button class="btn btn-danger btn-sm" onclick="refuserQuotaTicket('${t.id}')">❌ Refuser</button>
-      </div>
-    </div>`;
+}
+ 
+async function renderQuotaTicketsList(tickets) {
+  const discordIds=[...new Set(tickets.map(t=>t.employe_discord_id).filter(Boolean))];
+  let empMap={};
+  if(discordIds.length){const emps=await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
+  return tickets.map(t=>{
+    const emp=empMap[t.employe_discord_id]||{};
+    const quotaMax=emp.contrat==='CDI'?quotaConfig.cdi_quota:quotaConfig.cdd_quota;
+    const primeMax=emp.contrat==='CDI'?quotaConfig.cdi_prime:quotaConfig.cdd_prime;
+    const pct=quotaMax>0?Math.min(100,Math.round((t.quantite/quotaMax)*100)):0;
+    const primeEstimee=Math.round((pct/100)*primeMax);
+    return `<div class="quota-ticket pending" id="ticket-${t.id}"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;"><div><div style="font-weight:800;">${emp.prenom||'?'} ${emp.nom||''}</div><div style="font-size:12px;color:var(--muted);">${emp.contrat||'—'} · ${new Date(t.created_at).toLocaleString('fr-FR')}</div></div><span class="badge badge-orange">⏳</span></div><div style="display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;"><span>🚚 <strong>${t.plaque}</strong></span><span>📦 <strong>${t.quantite}</strong></span><span>📊 <strong style="color:var(--red);">${pct}%</strong></span><span style="color:var(--success);font-weight:700;">${primeEstimee.toLocaleString('fr-FR')}$</span></div>${t.notes?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">${t.notes}</div>`:''}<div style="display:flex;gap:8px;"><button class="btn btn-success btn-sm" onclick="validerQuotaTicket('${t.id}','${t.employe_discord_id||''}',${t.quantite},${primeEstimee})">✅ Valider</button><button class="btn btn-danger btn-sm" onclick="refuserQuotaTicket('${t.id}')">❌ Refuser</button></div></div>`;
   }).join('');
 }
-
-function prepareQuotaForm(contrat, quotaMax, quotaDone, primeMax) {
-  document.getElementById('quotaFormInfo').innerHTML = `
-    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <div><span style="color:var(--muted);">Contrat</span> <strong>${contrat}</strong></div>
-      <div><span style="color:var(--muted);">Validé</span> <strong>${quotaDone}/${quotaMax}</strong></div>
-      <div><span style="color:var(--muted);">Prime max</span> <strong style="color:var(--success);">${primeMax.toLocaleString('fr-FR')}$</strong></div>
-    </div>`;
-  // Store pour preview
-  window._quotaFormData = { quotaMax, quotaDone, primeMax };
+ 
+function prepareQuotaForm(contrat,quotaMax,quotaDone,primeMax){
+  document.getElementById('quotaFormInfo').innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div><span style="color:var(--muted);">Contrat</span> <strong>${contrat}</strong></div><div><span style="color:var(--muted);">Validé</span> <strong>${quotaDone}/${quotaMax}</strong></div><div><span style="color:var(--muted);">Prime max</span> <strong style="color:var(--success);">${primeMax.toLocaleString('fr-FR')}$</strong></div></div>`;
+  window._quotaFormData={quotaMax,quotaDone,primeMax};
 }
-
-function updateQuotaPreview() {
-  const qte = parseInt(document.getElementById('quotaQte').value)||0;
-  const el = document.getElementById('quotaPreview');
-  if (!qte||!window._quotaFormData) { el.style.display='none'; return; }
-  const {quotaMax, quotaDone, primeMax} = window._quotaFormData;
-  const newTotal = quotaDone + qte;
-  const pct = Math.min(100, Math.round((newTotal/quotaMax)*100));
-  const primeEstimee = Math.round((pct/100)*primeMax);
-  el.style.display = 'block';
-  el.innerHTML = `
-    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <div>Nouveau total : <strong>${newTotal}/${quotaMax}</strong></div>
-      <div>Avancement : <strong style="color:var(--red);">${pct}%</strong></div>
-      <div>Prime estimée : <strong style="color:var(--success);">${primeEstimee.toLocaleString('fr-FR')}$</strong></div>
-    </div>`;
+function updateQuotaPreview(){
+  const qte=parseInt(document.getElementById('quotaQte').value)||0;
+  const el=document.getElementById('quotaPreview');
+  if(!qte||!window._quotaFormData){el.style.display='none';return;}
+  const{quotaMax,quotaDone,primeMax}=window._quotaFormData;
+  const newTotal=quotaDone+qte,pct=Math.min(100,Math.round((newTotal/quotaMax)*100)),primeEstimee=Math.round((pct/100)*primeMax);
+  el.style.display='block';
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div>Total : <strong>${newTotal}/${quotaMax}</strong></div><div>Avancement : <strong style="color:var(--red);">${pct}%</strong></div><div>Prime : <strong style="color:var(--success);">${primeEstimee.toLocaleString('fr-FR')}$</strong></div></div>`;
 }
-
-async function soumettreQuota() {
-  const plaque = document.getElementById('quotaPlaque').value.trim();
-  const qte = parseInt(document.getElementById('quotaQte').value);
-  const notes = document.getElementById('quotaNotes').value.trim();
-  if (!plaque||!qte) { alert('Plaque et quantité obligatoires.'); return; }
-
-  await sb('quotas_tickets',{method:'POST',body:JSON.stringify({
-    employe_discord_id:USER.id, plaque, quantite:qte,
-    notes:notes||null, semaine:getSemaine(), statut:'en_attente'
-  })});
-
-  document.getElementById('quotaPlaque').value='';
-  document.getElementById('quotaQte').value='';
-  document.getElementById('quotaNotes').value='';
-  closeOverlay('ovQuota');
-  alert('✅ Déclaration envoyée !');
-  loadQuotaPage();
+async function soumettreQuota(){
+  const plaque=document.getElementById('quotaPlaque').value.trim(),qte=parseInt(document.getElementById('quotaQte').value),notes=document.getElementById('quotaNotes').value.trim();
+  if(!plaque||!qte){alert('Plaque et quantité obligatoires.');return;}
+  await sb('quotas_tickets',{method:'POST',body:JSON.stringify({employe_discord_id:USER.id,plaque,quantite:qte,notes:notes||null,semaine:getSemaine(),statut:'en_attente'})});
+  document.getElementById('quotaPlaque').value='';document.getElementById('quotaQte').value='';document.getElementById('quotaNotes').value='';
+  closeOverlay('ovQuota');alert('✅ Déclaration envoyée !');loadQuotaPage();
 }
-
-async function validerQuotaTicket(ticketId, discordId, quantite, primeEstimee) {
+async function validerQuotaTicket(ticketId,discordId,quantite,primeEstimee){
   await sb(`quotas_tickets?id=eq.${ticketId}`,{method:'PATCH',body:JSON.stringify({statut:'valide'})});
-
-  if (discordId) {
-    const empData = await sb(`employes?discord_id=eq.${discordId}&select=id,quota_validee`);
-    if (empData?.[0]) {
-      await sb(`employes?id=eq.${empData[0].id}`,{method:'PATCH',body:JSON.stringify({
-        quota_validee:(empData[0].quota_validee||0)+quantite
-      })});
-    }
-    if (primeEstimee>0) {
-      await sb('primes',{method:'POST',body:JSON.stringify({
-        employe_discord:discordId, montant:primeEstimee,
-        semaine:getSemaine(), verse:false, type:'quota'
-      })});
-    }
-  }
-
-  const el = document.getElementById(`ticket-${ticketId}`);
-  if (el) el.remove();
-  alert(`✅ Quota validé ! Prime de ${primeEstimee.toLocaleString('fr-FR')}$ attribuée.`);
-  loadQuotaPage();
+  if(discordId){const empData=await sb(`employes?discord_id=eq.${discordId}&select=id,quota_validee`);if(empData?.[0]){await sb(`employes?id=eq.${empData[0].id}`,{method:'PATCH',body:JSON.stringify({quota_validee:(empData[0].quota_validee||0)+quantite})});} if(primeEstimee>0)await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primeEstimee,semaine:getSemaine(),verse:false,type:'quota'})});}
+  const el=document.getElementById(`ticket-${ticketId}`);if(el)el.remove();alert(`✅ Quota validé ! Prime de ${primeEstimee.toLocaleString('fr-FR')}$ attribuée.`);loadQuotaPage();
 }
-
-async function refuserQuotaTicket(id) {
-  await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});
-  const el = document.getElementById(`ticket-${id}`);
-  if (el) el.remove();
-  loadQuotaPage();
-}
-
+async function refuserQuotaTicket(id){await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});const el=document.getElementById(`ticket-${id}`);if(el)el.remove();loadQuotaPage();}
+ 
 /* ══════════════════════════════════════════════
-   MENU
+   MENU — avec composition
 ══════════════════════════════════════════════ */
 async function loadMenu() {
   const data = await sb('produits?select=*&order=categorie.asc,nom.asc');
   const el = document.getElementById('menuGrid');
   if (!el) return;
   if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucun produit.</p>'; return; }
-  const cats = [...new Set(data.map(p=>p.categorie))];
-  el.innerHTML = cats.map(cat => `
-    <div style="margin-bottom:20px;">
-      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">${cat}</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;">
-        ${data.filter(p=>p.categorie===cat).map(p=>`
-          <div class="menu-prod-card" style="opacity:${p.actif?1:.5}">
-            <div class="menu-prod-actions">
-              <button onclick="toggleProd('${p.id}',${p.actif})">${p.actif?'✅':'❌'}</button>
-              <button onclick="deleteProd('${p.id}')">🗑️</button>
-            </div>
-            ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:32px;margin-bottom:6px;">${getEmoji(p.categorie)}</div>`}
-            <div style="font-size:12px;font-weight:700;margin-bottom:3px;">${p.nom}</div>
-            <div style="font-size:12px;color:var(--red);">${p.prix}$</div>
-          </div>`).join('')}
-      </div>
-    </div>`).join('');
+  const cats=[...new Set(data.map(p=>p.categorie))];
+  el.innerHTML=cats.map(cat=>`<div style="margin-bottom:20px;"><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">${cat}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;">${data.filter(p=>p.categorie===cat).map(p=>`<div class="menu-prod-card" style="opacity:${p.actif?1:.5}"><div class="menu-prod-actions"><button onclick="toggleProd('${p.id}',${p.actif})">${p.actif?'✅':'❌'}</button><button onclick="deleteProd('${p.id}')">🗑️</button></div>${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:32px;margin-bottom:6px;">${getEmoji(p.categorie)}</div>`}<div style="font-size:12px;font-weight:700;margin-bottom:3px;">${p.nom}</div><div style="font-size:12px;color:var(--red);">${p.prix}$</div>${p.composition?`<div style="font-size:9px;color:var(--muted);margin-top:3px;">📋 ${Array.isArray(p.composition)?p.composition.map(c=>c.nom).join('+'):'Composé'}</div>`:''}</div>`).join('')}</div></div>`).join('');
+ 
+  // Prépare les listes composition si cat = Menu
+  updateMenuCatUI(document.getElementById('mCat')?.value||'Burger', data);
 }
-
+ 
+async function updateMenuCatUI(val, existingProds) {
+  const compDiv = document.getElementById('menuComposition');
+  if (!compDiv) return;
+  if (val !== 'Menu') { compDiv.style.display='none'; return; }
+  compDiv.style.display='block';
+  const prods = existingProds || await sb('produits?select=*&actif=eq.true') || [];
+  const burgers = prods.filter(p=>p.categorie==='Burger');
+  const boissons = prods.filter(p=>p.categorie==='Boisson');
+  const accomps = prods.filter(p=>p.categorie==='Accompagnement');
+  const makeItems = (list, prefix) => list.map(p=>`<label class="menu-comp-item"><input type="checkbox" id="${prefix}-${p.id}" data-nom="${p.nom}" data-id="${p.id}"> ${p.nom} <input class="menu-comp-qty" id="${prefix}-qty-${p.id}" value="1" min="1" max="5" type="number" title="Quantité"></label>`).join('');
+  document.getElementById('compBurgers').innerHTML = makeItems(burgers,'cb');
+  document.getElementById('compBoissons').innerHTML = makeItems(boissons,'cbo');
+  document.getElementById('compAccomps').innerHTML = makeItems(accomps,'ca');
+}
+ 
 function updateMenuImgPreview(v) {
-  const prev=document.getElementById('mImgPreview'), img=document.getElementById('mImgPrev');
-  if (!prev||!img) return;
-  if (v.trim()) { img.src=v.trim(); prev.style.display='block'; }
-  else prev.style.display='none';
+  const prev=document.getElementById('mImgPreview'),img=document.getElementById('mImgPrev');
+  if(!prev||!img)return;
+  if(v.trim()){img.src=v.trim();prev.style.display='block';}else prev.style.display='none';
 }
-
+ 
 async function saveProduit() {
-  const nom=document.getElementById('mNom').value.trim();
-  const prix=document.getElementById('mPrix').value;
+  const nom=document.getElementById('mNom').value.trim(),prix=document.getElementById('mPrix').value;
   const alertEl=document.getElementById('alertMenu');
-  if (!nom||!prix) { alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom et prix obligatoires.</div>'; return; }
-  const res = await sb('produits',{method:'POST',body:JSON.stringify({
-    nom, prix:parseFloat(prix),
-    points:parseInt(document.getElementById('mPoints').value)||0,
-    categorie:document.getElementById('mCat').value,
-    image_url:document.getElementById('mImg').value.trim()||null,
-    contenu:document.getElementById('mContenu').value.trim()||null,
+  if(!nom||!prix){alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom et prix obligatoires.</div>';return;}
+  const cat=document.getElementById('mCat').value;
+ 
+  // Récupère composition si Menu
+  let composition = null;
+  if (cat === 'Menu') {
+    composition = [];
+    // Burgers
+    document.querySelectorAll('[id^="cb-"]:not([id*="qty"])').forEach(cb=>{
+      if(cb.checked && cb.id.startsWith('cb-')){
+        const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`cb-qty-${prodId}`)?.value||1);
+        composition.push({id:prodId, nom:cb.dataset.nom, qty, type:'Burger'});
+      }
+    });
+    // Boissons
+    document.querySelectorAll('[id^="cbo-"]:not([id*="qty"])').forEach(cb=>{
+      if(cb.checked){const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`cbo-qty-${prodId}`)?.value||1);composition.push({id:prodId,nom:cb.dataset.nom,qty,type:'Boisson'});}
+    });
+    // Accompagnements
+    document.querySelectorAll('[id^="ca-"]:not([id*="qty"])').forEach(cb=>{
+      if(cb.checked){const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`ca-qty-${prodId}`)?.value||1);composition.push({id:prodId,nom:cb.dataset.nom,qty,type:'Accompagnement'});}
+    });
+  }
+ 
+  const res=await sb('produits',{method:'POST',body:JSON.stringify({
+    nom,prix:parseFloat(prix),points:parseInt(document.getElementById('mPoints').value)||0,
+    categorie:cat,image_url:document.getElementById('mImg').value.trim()||null,
+    contenu:composition?composition.map(c=>`${c.qty} ${c.nom}`).join(' + '):null,
+    composition:composition?JSON.stringify(composition):null,
     actif:true
   })});
-  if (Array.isArray(res)&&res.length) {
+  if(Array.isArray(res)&&res.length){
     alertEl.innerHTML='<div class="alert alert-ok">✅ Produit ajouté !</div>';
-    ['mNom','mPrix','mPoints','mImg','mContenu'].forEach(id=>document.getElementById(id).value='');
-    const prev=document.getElementById('mImgPreview'); if(prev) prev.style.display='none';
+    ['mNom','mPrix','mPoints','mImg'].forEach(id=>document.getElementById(id).value='');
+    const prev=document.getElementById('mImgPreview');if(prev)prev.style.display='none';
     loadMenu();
-  } else {
-    alertEl.innerHTML='<div class="alert alert-err">❌ Erreur lors de l\'ajout. Vérifiez Supabase.</div>';
-  }
+  } else alertEl.innerHTML='<div class="alert alert-err">❌ Erreur.</div>';
 }
-
-async function toggleProd(id,actif) { await sb(`produits?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})}); loadMenu(); }
-async function deleteProd(id) { if(!confirm('Supprimer ?'))return; await sb(`produits?id=eq.${id}`,{method:'DELETE'}); loadMenu(); }
-
+ 
+async function toggleProd(id,actif){await sb(`produits?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadMenu();}
+async function deleteProd(id){if(!confirm('Supprimer ?'))return;await sb(`produits?id=eq.${id}`,{method:'DELETE'});loadMenu();}
+ 
 /* ══════════════════════════════════════════════
    CONTRATS
 ══════════════════════════════════════════════ */
-async function loadContrats() {
-  const data = await sb('contrats_reduction?select=*&order=created_at.desc');
-  const el = document.getElementById('contratsTable');
-  if (!el) return;
-  if (!Array.isArray(data)||!data.length) { el.innerHTML='<p style="color:var(--muted)">Aucun contrat.</p>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Entreprise</th><th>Réduction</th><th>Statut</th><th>Action</th></tr></thead><tbody>` +
-    data.map(c=>`<tr>
-      <td><strong>${c.nom}</strong></td>
-      <td><span class="badge badge-orange">-${c.pourcentage}%</span></td>
-      <td><span class="badge ${c.actif?'badge-green':'badge-red'}">${c.actif?'Actif':'Inactif'}</span></td>
-      <td><button class="btn btn-outline btn-sm" onclick="toggleContrat('${c.id}',${c.actif})">${c.actif?'Désactiver':'Activer'}</button></td>
-    </tr>`).join('')+'</tbody></table>';
+async function loadContrats(){
+  const data=await sb('contrats_reduction?select=*&order=created_at.desc');
+  const el=document.getElementById('contratsTable');
+  if(!el)return;
+  if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun contrat.</p>';return;}
+  el.innerHTML=`<table><thead><tr><th>Entreprise</th><th>Réduction</th><th>Statut</th><th>Action</th></tr></thead><tbody>`+data.map(c=>`<tr><td><strong>${c.nom}</strong></td><td><span class="badge badge-orange">-${c.pourcentage}%</span></td><td><span class="badge ${c.actif?'badge-green':'badge-red'}">${c.actif?'Actif':'Inactif'}</span></td><td><button class="btn btn-outline btn-sm" onclick="toggleContrat('${c.id}',${c.actif})">${c.actif?'Désactiver':'Activer'}</button></td></tr>`).join('')+'</tbody></table>';
 }
-async function saveContrat() {
-  const nom=document.getElementById('cNom').value.trim(), pct=document.getElementById('cPct').value;
+async function saveContrat(){
+  const nom=document.getElementById('cNom').value.trim(),pct=document.getElementById('cPct').value;
   const alertEl=document.getElementById('alertContrat');
-  if (!nom||!pct) { alertEl.innerHTML='<div class="alert alert-err">⚠️ Champs obligatoires.</div>'; return; }
+  if(!nom||!pct){alertEl.innerHTML='<div class="alert alert-err">⚠️ Champs obligatoires.</div>';return;}
   await sb('contrats_reduction',{method:'POST',body:JSON.stringify({nom,pourcentage:parseFloat(pct),actif:true})});
   alertEl.innerHTML='<div class="alert alert-ok">✅ Contrat créé !</div>';
-  document.getElementById('cNom').value=''; document.getElementById('cPct').value='';
+  document.getElementById('cNom').value='';document.getElementById('cPct').value='';
   loadContrats();
 }
-async function toggleContrat(id,actif) { await sb(`contrats_reduction?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})}); loadContrats(); }
-
+async function toggleContrat(id,actif){await sb(`contrats_reduction?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadContrats();}
+ 
 /* ══════════════════════════════════════════════
    CALENDRIER
 ══════════════════════════════════════════════ */
-async function loadCalendrier() {
-  const now = new Date();
-  calYear=now.getFullYear(); calMonth=now.getMonth();
-  await renderCal();
-}
-async function renderCal() {
+async function loadCalendrier(){const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();await renderCal();}
+async function renderCal(){
   const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
   document.getElementById('calTitle').textContent=`${MONTHS[calMonth]} ${calYear}`;
-
-  const firstDay = new Date(calYear,calMonth,1).getDay();
-  const start = firstDay===0?6:firstDay-1;
-  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
-  const daysInPrev = new Date(calYear,calMonth,0).getDate();
-
-  const from=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
-  const to=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
-  const events = await sb(`reservations?select=*&date_debut=gte.${from}T00:00:00&date_debut=lte.${to}T23:59:59&order=date_debut.asc`)||[];
-
-  const today=new Date();
-  const canAdd = ROLE==='direction' || USER_NIVEAU>=2;
-
-  // Header
+  const firstDay=new Date(calYear,calMonth,1).getDay(),start=firstDay===0?6:firstDay-1,daysInMonth=new Date(calYear,calMonth+1,0).getDate(),daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const from=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`,to=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
+  const events=await sb(`reservations?select=*&date_debut=gte.${from}T00:00:00&date_debut=lte.${to}T23:59:59&order=date_debut.asc`)||[];
+  const today=new Date(),canAdd=ROLE==='direction'||USER_NIVEAU>=2;
   let html=`<table class="cal-table"><thead><tr>${DAYS.map(d=>`<th class="cal-th">${d}</th>`).join('')}</tr></thead><tbody>`;
-
-  let cellIdx=0;
-  let totalCells = start + daysInMonth;
-  let rows = Math.ceil(totalCells/7);
-
-  for (let row=0; row<rows; row++) {
-    html += '<tr>';
-    for (let col=0; col<7; col++) {
-      const idx = row*7+col;
-      let day, isCurrentMonth=true;
-
-      if (idx<start) {
-        day = daysInPrev-(start-1-idx);
-        isCurrentMonth=false;
-      } else if (idx >= start+daysInMonth) {
-        day = idx-(start+daysInMonth)+1;
-        isCurrentMonth=false;
-      } else {
-        day = idx-start+1;
-      }
-
-      const isToday = isCurrentMonth && today.getDate()===day && today.getMonth()===calMonth && today.getFullYear()===calYear;
-      const dayEvents = isCurrentMonth ? events.filter(e=>new Date(e.date_debut).getDate()===day) : [];
-
-      const clickAttr = canAdd && isCurrentMonth
-        ? `onclick="prefillResa(${calYear},${calMonth+1},${day})"`
-        : isCurrentMonth ? `onclick="voirEventsDuJour(${calYear},${calMonth+1},${day})"` : '';
-
-      html+=`<td class="cal-td">
-        <div class="cal-cell${isToday?' today':''}${!isCurrentMonth?' other-month':''}" ${clickAttr}>
-          <div class="cal-cell-num">${day}</div>
-          ${dayEvents.slice(0,3).map(e=>`<span class="cal-event-pill ${e.type||''}" title="${e.titre||''}">${e.titre||e.type}</span>`).join('')}
-          ${dayEvents.length>3?`<span style="font-size:9px;color:var(--muted);">+${dayEvents.length-3}</span>`:''}
-          ${canAdd&&isCurrentMonth?`<div class="cal-cell-add">+</div>`:''}
-        </div>
-      </td>`;
+  const rows=Math.ceil((start+daysInMonth)/7);
+  for(let row=0;row<rows;row++){
+    html+='<tr>';
+    for(let col=0;col<7;col++){
+      const idx=row*7+col;let day,isCurrentMonth=true;
+      if(idx<start){day=daysInPrev-(start-1-idx);isCurrentMonth=false;}
+      else if(idx>=start+daysInMonth){day=idx-(start+daysInMonth)+1;isCurrentMonth=false;}
+      else day=idx-start+1;
+      const isToday=isCurrentMonth&&today.getDate()===day&&today.getMonth()===calMonth&&today.getFullYear()===calYear;
+      const dayEvents=isCurrentMonth?events.filter(e=>new Date(e.date_debut).getDate()===day):[];
+      const clickAttr=canAdd&&isCurrentMonth?`onclick="prefillResa(${calYear},${calMonth+1},${day})"`:isCurrentMonth?`onclick="voirEventsDuJour(${calYear},${calMonth+1},${day})"`:'' ;
+      html+=`<td class="cal-td"><div class="cal-cell${isToday?' today':''}${!isCurrentMonth?' other-month':''}" ${clickAttr}><div class="cal-cell-num">${day}</div>${dayEvents.slice(0,3).map(e=>`<span class="cal-event-pill ${e.type||''}" title="${e.titre||''}">${e.titre||e.type}</span>`).join('')}${dayEvents.length>3?`<span style="font-size:9px;color:var(--muted);">+${dayEvents.length-3}</span>`:''}${canAdd&&isCurrentMonth?`<div class="cal-cell-add">+</div>`:''}</div></td>`;
     }
     html+='</tr>';
   }
   html+='</tbody></table>';
   document.getElementById('calContainer').innerHTML=html;
-
-  // Liste événements
-  const listeEl=document.getElementById('calListe');
-  if (!events.length) { listeEl.innerHTML='<p style="color:var(--muted)">Aucun événement ce mois.</p>'; return; }
-  const typeColors={reservation:'badge-blue',evenement:'badge-orange',reunion:'badge-purple'};
-  listeEl.innerHTML=events.map(e=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card2);border-radius:8px;margin-bottom:8px;">
-      <div style="flex:1;">
-        <div style="font-weight:700;">${e.titre||'Sans titre'}</div>
-        <div style="font-size:12px;color:var(--muted);">${new Date(e.date_debut).toLocaleString('fr-FR')}${e.date_fin?` → ${new Date(e.date_fin).toLocaleString('fr-FR')}`:''}</div>
-        ${e.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px;">${e.notes}</div>`:''}
-      </div>
-      <span class="badge ${typeColors[e.type]||'badge-blue'}">${e.type||'événement'}</span>
-      ${canAdd?`<button class="btn btn-outline btn-sm" onclick="deleteResa('${e.id}')">🗑️</button>`:''}
-    </div>`).join('');
 }
-function calNav(dir) { calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
-function prefillResa(y,m,d) {
-  const pad=n=>String(n).padStart(2,'0');
-  document.getElementById('resaDebut').value=`${y}-${pad(m)}-${pad(d)}T12:00`;
-  document.getElementById('resaFin').value=`${y}-${pad(m)}-${pad(d)}T14:00`;
-  openOverlay('ovResa');
-}
-async function saveResa() {
-  const titre=document.getElementById('resaTitre').value.trim(), debut=document.getElementById('resaDebut').value;
-  if (!titre||!debut) { alert('Titre et date obligatoires.'); return; }
-  await sb('reservations',{method:'POST',body:JSON.stringify({
-    titre,date_debut:debut,date_fin:document.getElementById('resaFin').value||null,
-    type:document.getElementById('resaType').value,notes:document.getElementById('resaNotes').value.trim()||null
-  })});
-  closeOverlay('ovResa');
-  renderCal();
-}
-async function deleteResa(id) { if(!confirm('Supprimer ?'))return; await sb(`reservations?id=eq.${id}`,{method:'DELETE'}); renderCal(); }
-
+function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCal();}
+function prefillResa(y,m,d){const pad=n=>String(n).padStart(2,'0');document.getElementById('resaDebut').value=`${y}-${pad(m)}-${pad(d)}T12:00`;document.getElementById('resaFin').value=`${y}-${pad(m)}-${pad(d)}T14:00`;openOverlay('ovResa');}
+async function saveResa(){const titre=document.getElementById('resaTitre').value.trim(),debut=document.getElementById('resaDebut').value;if(!titre||!debut){alert('Titre et date obligatoires.');return;}await sb('reservations',{method:'POST',body:JSON.stringify({titre,date_debut:debut,date_fin:document.getElementById('resaFin').value||null,type:document.getElementById('resaType').value,notes:document.getElementById('resaNotes').value.trim()||null})});closeOverlay('ovResa');renderCal();}
+async function deleteResa(id){if(!confirm('Supprimer ?'))return;await sb(`reservations?id=eq.${id}`,{method:'DELETE'});renderCal();}
+ 
 /* ══════════════════════════════════════════════
    STATS
 ══════════════════════════════════════════════ */
-async function loadStats() {
+async function loadStats(){
   const semaine=getSemaine();
-  const [cmds,clients,employes,caData]=await Promise.all([
-    sb(`commandes?select=*&semaine=eq.${semaine}`),
-    sb('clients?select=id'),
-    sb('employes?select=id&actif=eq.true'),
-    sb('parametres?cle=eq.ca_semaine'),
-  ]);
-  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
-  const impots=Math.round(calcImpot(ca));
-
-  document.getElementById('statsCards').innerHTML=[
-    {label:'Commandes',value:Array.isArray(cmds)?cmds.length:0,icon:'📦',accent:'var(--blue)'},
-    {label:'CA Semaine',value:`${ca.toLocaleString('fr-FR')}$`,icon:'💰',accent:'var(--success)'},
-    {label:'Clients',value:Array.isArray(clients)?clients.length:0,icon:'👥',accent:'var(--orange)'},
-    {label:'Employés actifs',value:Array.isArray(employes)?employes.length:0,icon:'👤',accent:'var(--red)'},
-  ].map(s=>`<div class="stat-card" style="--accent:${s.accent};">
-    <div class="stat-icon">${s.icon}</div><div class="stat-label">${s.label}</div>
-    <div class="stat-value">${s.value}</div>
-  </div>`).join('');
-
+  const[cmds,clients,employes,caData]=await Promise.all([sb(`commandes?select=*&semaine=eq.${semaine}`),sb('clients?select=id'),sb('employes?select=id&actif=eq.true'),sb('parametres?cle=eq.ca_semaine')]);
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0,impots=Math.round(calcImpot(ca));
+  document.getElementById('statsCards').innerHTML=[{label:'Commandes',value:Array.isArray(cmds)?cmds.length:0,icon:'📦',accent:'var(--blue)'},{label:'CA Semaine',value:`${ca.toLocaleString('fr-FR')}$`,icon:'💰',accent:'var(--success)'},{label:'Clients',value:Array.isArray(clients)?clients.length:0,icon:'👥',accent:'var(--orange)'},{label:'Employés actifs',value:Array.isArray(employes)?employes.length:0,icon:'👤',accent:'var(--red)'}].map(s=>`<div class="stat-card" style="--accent:${s.accent};"><div class="stat-icon">${s.icon}</div><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>`).join('');
   const recentEl=document.getElementById('statsCommandes');
-  if (!Array.isArray(cmds)||!cmds.length) recentEl.innerHTML='<p style="color:var(--muted)">Aucune commande cette semaine.</p>';
-  else recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th><th>Réduction</th><th>Points</th></tr></thead><tbody>`+
-    cmds.slice(0,10).map(c=>`<tr>
-      <td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td>
-      <td><strong>${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong></td>
-      <td>${c.reduction_pct?`<span class="badge badge-orange">-${c.reduction_pct}%</span>`:'—'}</td>
-      <td>${c.points_gagnes||0} pts</td>
-    </tr>`).join('')+'</tbody></table>';
-
-  document.getElementById('statsFinances').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>CA brut</span><strong>${ca.toLocaleString('fr-FR')}$</strong></div>
-      <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>Taux impôt</span><strong style="color:var(--red);">${tauxLabel(ca)}</strong></div>
-      <div style="display:flex;justify-content:space-between;padding:12px;background:rgba(192,57,43,.08);border-radius:8px;border:1px solid rgba(192,57,43,.2);"><span>Impôts estimés</span><strong style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</strong></div>
-    </div>`;
-
+  if(!Array.isArray(cmds)||!cmds.length)recentEl.innerHTML='<p style="color:var(--muted)">Aucune commande.</p>';
+  else recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th><th>Réduction</th></tr></thead><tbody>`+cmds.slice(0,10).map(c=>`<tr><td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td><td><strong>${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong></td><td>${c.reduction_pct?`<span class="badge badge-orange">-${c.reduction_pct}%</span>`:'—'}</td></tr>`).join('')+'</tbody></table>';
+  document.getElementById('statsFinances').innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;"><div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>CA brut</span><strong>${ca.toLocaleString('fr-FR')}$</strong></div><div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>Taux impôt</span><strong style="color:var(--red);">${tauxLabel(ca)}</strong></div><div style="display:flex;justify-content:space-between;padding:12px;background:rgba(192,57,43,.08);border-radius:8px;border:1px solid rgba(192,57,43,.2);"><span>Impôts estimés</span><strong style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</strong></div></div>`;
   renderHeatmap(cmds);
-
-  const paliers=[
-    {min:0,max:199999,taux:'0%'},{min:200000,max:399999,taux:'5%'},
-    {min:400000,max:599999,taux:'8%'},{min:600000,max:799999,taux:'11%'},
-    {min:800000,max:999999,taux:'14%'},{min:1000000,max:2499999,taux:'17%'},
-    {min:2500000,max:Infinity,taux:'19%'},
-  ];
-  document.getElementById('statsImpots').innerHTML=`<table><thead><tr><th>Tranche</th><th>Taux</th><th>Statut</th></tr></thead><tbody>`+
-    paliers.map(p=>`<tr>
-      <td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td>
-      <td><span class="badge badge-blue">${p.taux}</span></td>
-      <td>${ca>=p.min&&ca<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td>
-    </tr>`).join('')+'</tbody></table>';
+  const paliers=[{min:0,max:199999,taux:'0%'},{min:200000,max:399999,taux:'5%'},{min:400000,max:599999,taux:'8%'},{min:600000,max:799999,taux:'11%'},{min:800000,max:999999,taux:'14%'},{min:1000000,max:2499999,taux:'17%'},{min:2500000,max:Infinity,taux:'19%'}];
+  document.getElementById('statsImpots').innerHTML=`<table><thead><tr><th>Tranche</th><th>Taux</th><th>Statut</th></tr></thead><tbody>`+paliers.map(p=>`<tr><td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td><td><span class="badge badge-blue">${p.taux}</span></td><td>${ca>=p.min&&ca<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td></tr>`).join('')+'</tbody></table>';
 }
-
-function renderHeatmap(cmds) {
-  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  const hours=['8h','10h','12h','14h','16h','18h','20h'];
-  const grid=Array.from({length:7},()=>Array(7).fill(0));
-  (cmds||[]).forEach(c=>{
-    const d=new Date(c.created_at||Date.now());
-    const di=(d.getDay()+6)%7;
-    const hi=Math.min(6,Math.max(0,Math.floor((d.getHours()-8)/2)));
-    grid[di][hi]++;
-  });
+function renderHeatmap(cmds){
+  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],hours=['8h','10h','12h','14h','16h','18h','20h'],grid=Array.from({length:7},()=>Array(7).fill(0));
+  (cmds||[]).forEach(c=>{const d=new Date(c.created_at||Date.now()),di=(d.getDay()+6)%7,hi=Math.min(6,Math.max(0,Math.floor((d.getHours()-8)/2)));grid[di][hi]++;});
   const maxVal=Math.max(1,...grid.flat());
-  document.getElementById('statsHeatmap').innerHTML=`<div style="display:grid;grid-template-columns:50px repeat(7,1fr);gap:3px;margin-top:10px;">
-    <div></div>${hours.map(h=>`<div style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:4px;">${h}</div>`).join('')}
-    ${days.map((day,di)=>`
-      <div style="font-size:10px;color:var(--muted);display:flex;align-items:center;">${day}</div>
-      ${grid[di].map(v=>{const p=v/maxVal;const a=0.05+p*.85;return `<div style="height:32px;border-radius:4px;background:rgba(192,57,43,${a.toFixed(2)});display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${p>.4?'#fff':'var(--muted)'};">${v||''}</div>`;}).join('')}
-    `).join('')}
-  </div>`;
+  document.getElementById('statsHeatmap').innerHTML=`<div style="display:grid;grid-template-columns:50px repeat(7,1fr);gap:3px;margin-top:10px;"><div></div>${hours.map(h=>`<div style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:4px;">${h}</div>`).join('')}${days.map((day,di)=>`<div style="font-size:10px;color:var(--muted);display:flex;align-items:center;">${day}</div>${grid[di].map(v=>{const p=v/maxVal,a=0.05+p*.85;return`<div style="height:32px;border-radius:4px;background:rgba(192,57,43,${a.toFixed(2)});display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${p>.4?'#fff':'var(--muted)'};">${v||''}</div>`;}).join('')}`).join('')}</div>`;
 }
-
+ 
 /* ══════════════════════════════════════════════
    GESTION
 ══════════════════════════════════════════════ */
-async function loadGestion() {
-  // Config quotas
+async function loadGestion(){
   const configs=await sb('parametres?cle=in.(quota_cdd,quota_cdi,prime_quota_cdd,prime_quota_cdi)')||[];
   configs.forEach(c=>{
     if(c.cle==='quota_cdd'){const el=document.getElementById('gQuotaCDD');if(el)el.value=c.valeur;}
@@ -2320,246 +2191,73 @@ async function loadGestion() {
   await loadQuotaTickets();
   await loadCoffre();
   await loadPrimesTable();
-  await loadGouvDemandes();
 }
-
-async function loadGouvDemandes() {
-  const el = document.getElementById('gouvDemandes');
-  if (!el) return;
-  const demandes = await sb('gouvernement_demandes?statut=eq.en_attente&order=created_at.desc') || [];
-  if (!demandes.length) { el.innerHTML='<p style="color:var(--muted)">Aucune demande en attente.</p>'; return; }
-  el.innerHTML = demandes.map(d => `
-    <div style="padding:16px;background:var(--card2);border-radius:10px;margin-bottom:10px;border-left:3px solid var(--orange);">
-      <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
-        <div>
-          <strong style="font-size:15px;">${d.prenom} ${d.nom}</strong>
-          <span class="badge badge-orange" style="margin-left:8px;">${d.fonction}</span>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px;">@${d.username} · ${d.discord_id}</div>
-          <div style="font-size:11px;color:var(--muted);">${new Date(d.created_at).toLocaleString('fr-FR')}</div>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-success btn-sm" onclick="validerGouv('${d.id}','${d.discord_id}','${d.nom}','${d.prenom}','${d.fonction}')">✅ Valider</button>
-          <button class="btn btn-danger btn-sm" onclick="refuserGouv('${d.id}')">❌ Refuser</button>
-        </div>
-      </div>
-      ${d.preuve_url && d.preuve_url.startsWith('http') ? `<img src="${d.preuve_url}" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain;border:1px solid var(--border);">` : d.preuve_url ? '<span style="font-size:12px;color:var(--muted);">📎 Preuve uploadée</span>' : ''}
-    </div>`).join('');
-}
-
-async function validerGouv(id, discordId, nom, prenom, fonction) {
-  await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'valide'})});
-  alert(`✅ ${prenom} ${nom} validé comme ${fonction} !`);
-  loadGouvDemandes();
-}
-
-async function refuserGouv(id) {
-  if (!confirm('Refuser cette demande ?')) return;
-  await sb(`gouvernement_demandes?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({statut:'refuse'})});
-  loadGouvDemandes();
-}
-
-async function loadQuotaTickets() {
-  const el=document.getElementById('quotaTickets');
-  if(!el)return;
+ 
+async function loadQuotaTickets(){
+  const el=document.getElementById('quotaTickets');if(!el)return;
   const data=await sb('quotas_tickets?select=*&statut=eq.en_attente&order=created_at.desc');
   pendingQuotaCount=Array.isArray(data)?data.length:0;
-  const badge=document.getElementById('quota-badge');
-  if(badge)badge.textContent=pendingQuotaCount||'';
-
+  const badge=document.getElementById('quota-badge');if(badge)badge.textContent=pendingQuotaCount||'';
   if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun ticket en attente.</p>';return;}
-  
-  // Récupère les infos employés
   const discordIds=[...new Set(data.map(t=>t.employe_discord_id).filter(Boolean))];
   let empMap={};
-  if(discordIds.length){
-    const emps=await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);
-    (emps||[]).forEach(e=>empMap[e.discord_id]=e);
-  }
-
+  if(discordIds.length){const emps=await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
   el.innerHTML=data.map(t=>{
-    const emp=empMap[t.employe_discord_id]||{};
-    const quotaMax=emp.contrat==='CDI'?quotaConfig.cdi_quota:quotaConfig.cdd_quota;
-    const primeMax=emp.contrat==='CDI'?quotaConfig.cdi_prime:quotaConfig.cdd_prime;
-    const pct=quotaMax>0?Math.min(100,Math.round((t.quantite/quotaMax)*100)):0;
-    const primeEstimee=Math.round((pct/100)*primeMax);
-    return `<div class="quota-ticket pending">
-      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
-        <div>
-          <strong>${emp.prenom||'?'} ${emp.nom||''}</strong>
-          <span class="badge badge-blue" style="margin-left:6px;">${emp.contrat||'—'}</span>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(t.created_at).toLocaleString('fr-FR')}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);">${primeEstimee.toLocaleString('fr-FR')}$</div>
-          <div style="font-size:10px;color:var(--muted);">prime estimée</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
-        <span>🚚 <strong>${t.plaque}</strong></span>
-        <span>📦 <strong>${t.quantite} unités</strong></span>
-        <span>📊 <strong style="color:var(--red);">${pct}%</strong> du quota</span>
-      </div>
-      <div class="quota-bar-bg" style="margin-bottom:10px;"><div class="quota-bar-fill" style="width:${pct}%"></div></div>
-      ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">${t.notes}</div>`:''}
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-success btn-sm" onclick="validerQuotaGestion('${t.id}','${t.employe_discord_id||''}',${t.quantite},${primeEstimee})">✅ Valider</button>
-        <button class="btn btn-danger btn-sm" onclick="refuserQuotaGestion('${t.id}')">❌ Refuser</button>
-      </div>
-    </div>`;
+    const emp=empMap[t.employe_discord_id]||{},quotaMax=emp.contrat==='CDI'?quotaConfig.cdi_quota:quotaConfig.cdd_quota,primeMax=emp.contrat==='CDI'?quotaConfig.cdi_prime:quotaConfig.cdd_prime,pct=quotaMax>0?Math.min(100,Math.round((t.quantite/quotaMax)*100)):0,primeEstimee=Math.round((pct/100)*primeMax);
+    return`<div class="quota-ticket pending"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div><strong>${emp.prenom||'?'} ${emp.nom||''}</strong><span class="badge badge-blue" style="margin-left:6px;">${emp.contrat||'—'}</span><div style="font-size:11px;color:var(--muted);margin-top:2px;">${new Date(t.created_at).toLocaleString('fr-FR')}</div></div><div style="text-align:right;"><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--success);">${primeEstimee.toLocaleString('fr-FR')}$</div><div style="font-size:10px;color:var(--muted);">prime estimée</div></div></div><div style="display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;"><span>🚚 <strong>${t.plaque}</strong></span><span>📦 <strong>${t.quantite}</strong> unités</span><span>📊 <strong style="color:var(--red);">${pct}%</strong></span></div><div class="quota-bar-bg" style="margin-bottom:10px;"><div class="quota-bar-fill" style="width:${pct}%"></div></div>${t.notes?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">${t.notes}</div>`:''}<div style="display:flex;gap:8px;"><button class="btn btn-success btn-sm" onclick="validerQuotaGestion('${t.id}','${t.employe_discord_id||''}',${t.quantite},${primeEstimee})">✅ Valider</button><button class="btn btn-danger btn-sm" onclick="refuserQuotaGestion('${t.id}')">❌ Refuser</button></div></div>`;
   }).join('');
 }
-
-async function validerQuotaGestion(ticketId, discordId, quantite, primeEstimee) {
-  await sb(`quotas_tickets?id=eq.${ticketId}`,{method:'PATCH',body:JSON.stringify({statut:'valide'})});
-  if(discordId){
-    const empData=await sb(`employes?discord_id=eq.${discordId}&select=id,quota_validee`);
-    if(empData?.[0]) await sb(`employes?id=eq.${empData[0].id}`,{method:'PATCH',body:JSON.stringify({quota_validee:(empData[0].quota_validee||0)+quantite})});
-    if(primeEstimee>0) await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primeEstimee,semaine:getSemaine(),verse:false,type:'quota'})});
-  }
-  alert(`✅ Quota validé ! Prime de ${primeEstimee.toLocaleString('fr-FR')}$ attribuée.`);
-  loadQuotaTickets();
-}
-
-async function refuserQuotaGestion(id){
-  await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});
-  loadQuotaTickets();
-}
-
-async function saveQuotaConfig() {
-  const vals=[
-    ['quota_cdd',document.getElementById('gQuotaCDD')?.value],
-    ['quota_cdi',document.getElementById('gQuotaCDI')?.value],
-    ['prime_quota_cdd',document.getElementById('gPrimeCDD')?.value],
-    ['prime_quota_cdi',document.getElementById('gPrimeCDI')?.value],
-  ];
-  for(const [cle,val] of vals){
-    if(!val)continue;
-    const ex=await sb(`parametres?cle=eq.${cle}`);
-    if(ex?.[0]) await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});
-    else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});
-  }
-  const alertEl=document.getElementById('alertGestion');
-  if(alertEl)alertEl.innerHTML='<div class="alert alert-ok">✅ Configuration sauvegardée !</div>';
+async function validerQuotaGestion(ticketId,discordId,quantite,primeEstimee){await sb(`quotas_tickets?id=eq.${ticketId}`,{method:'PATCH',body:JSON.stringify({statut:'valide'})});if(discordId){const empData=await sb(`employes?discord_id=eq.${discordId}&select=id,quota_validee`);if(empData?.[0])await sb(`employes?id=eq.${empData[0].id}`,{method:'PATCH',body:JSON.stringify({quota_validee:(empData[0].quota_validee||0)+quantite})});if(primeEstimee>0)await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primeEstimee,semaine:getSemaine(),verse:false,type:'quota'})});}alert(`✅ Quota validé ! Prime de ${primeEstimee.toLocaleString('fr-FR')}$ attribuée.`);loadQuotaTickets();}
+async function refuserQuotaGestion(id){await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});loadQuotaTickets();}
+ 
+async function saveQuotaConfig(){
+  const vals=[['quota_cdd',document.getElementById('gQuotaCDD')?.value],['quota_cdi',document.getElementById('gQuotaCDI')?.value],['prime_quota_cdd',document.getElementById('gPrimeCDD')?.value],['prime_quota_cdi',document.getElementById('gPrimeCDI')?.value]];
+  for(const[cle,val]of vals){if(!val)continue;const ex=await sb(`parametres?cle=eq.${cle}`);if(ex?.[0])await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});}
+  const alertEl=document.getElementById('alertGestion');if(alertEl)alertEl.innerHTML='<div class="alert alert-ok">✅ Sauvegardé !</div>';
   await loadQuotaConfig();
 }
-
-async function loadCoffre() {
-  const [caData,primesData]=await Promise.all([
-    sb('parametres?cle=eq.ca_semaine'),
-    sb(`primes?select=montant,verse&semaine=eq.${getSemaine()}`),
-  ]);
-  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
-  const totalPrimes=(primesData||[]).reduce((a,p)=>a+p.montant,0);
-  const impots=Math.round(calcImpot(ca));
-  const net=ca-totalPrimes-impots;
-  const statsId=ROLE==='gouvernement'?'gouv-coffreStats':'coffreStats';
-  const histoId=ROLE==='gouvernement'?'gouv-coffreHisto':'coffreHisto';
-  const statsEl=document.getElementById(statsId);
-  if(statsEl)statsEl.innerHTML=[
-    {label:'CA brut semaine',value:`${ca.toLocaleString('fr-FR')}$`,accent:'var(--blue)'},
-    {label:'Primes totales',value:`${totalPrimes.toLocaleString('fr-FR')}$`,accent:'var(--warning)'},
-    {label:`Impôts (${tauxLabel(ca)})`,value:`${impots.toLocaleString('fr-FR')}$`,accent:'var(--red)'},
-    {label:'Net coffre estimé',value:`${net.toLocaleString('fr-FR')}$`,accent:'var(--success)'},
-  ].map(s=>`<div class="stat-card" style="--accent:${s.accent};">
-    <div class="stat-label">${s.label}</div><div class="stat-value" style="font-size:26px;">${s.value}</div>
-  </div>`).join('');
+ 
+async function loadCoffre(){
+  const[caData,primesData]=await Promise.all([sb('parametres?cle=eq.ca_semaine'),sb(`primes?select=montant,verse&semaine=eq.${getSemaine()}`)]);
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0,totalPrimes=(primesData||[]).reduce((a,p)=>a+p.montant,0),impots=Math.round(calcImpot(ca)),net=ca-totalPrimes-impots;
+  const statsEl=document.getElementById('coffreStats');
+  if(statsEl)statsEl.innerHTML=[{label:'CA brut',value:`${ca.toLocaleString('fr-FR')}$`,accent:'var(--blue)'},{label:'Primes',value:`${totalPrimes.toLocaleString('fr-FR')}$`,accent:'var(--warning)'},{label:`Impôts (${tauxLabel(ca)})`,value:`${impots.toLocaleString('fr-FR')}$`,accent:'var(--red)'},{label:'Net coffre',value:`${net.toLocaleString('fr-FR')}$`,accent:'var(--success)'}].map(s=>`<div class="stat-card" style="--accent:${s.accent};"><div class="stat-label">${s.label}</div><div class="stat-value" style="font-size:26px;">${s.value}</div></div>`).join('');
   const hist=await sb('caisse?select=*&order=created_at.desc&limit=10');
-  const histoEl=document.getElementById(histoId);
-  if(histoEl){
-    if(!Array.isArray(hist)||!hist.length){histoEl.innerHTML='<p style="color:var(--muted)">Aucun historique.</p>';return;}
-    histoEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Primes</th><th>Impôts</th><th>Net coffre</th></tr></thead><tbody>`+
-      hist.map(h=>`<tr>
-        <td>${h.semaine}</td>
-        <td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td>
-        <td style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</td>
-        <td style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</td>
-        <td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td>
-      </tr>`).join('')+'</tbody></table>';
-  }
+  const histoEl=document.getElementById('coffreHisto');
+  if(histoEl){if(!Array.isArray(hist)||!hist.length){histoEl.innerHTML='<p style="color:var(--muted)">Aucun historique.</p>';return;}histoEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Primes</th><th>Impôts</th><th>Net coffre</th></tr></thead><tbody>`+hist.map(h=>`<tr><td>${h.semaine}</td><td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td><td style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</td><td style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</td><td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td></tr>`).join('')+'</tbody></table>';}
 }
-
-/* ══════════════════════════════════════════════
-   PRIMES & CLÔTURE
-══════════════════════════════════════════════ */
-async function calculerPrimes() {
+ 
+async function calculerPrimes(){
   const semaine=getSemaine();
-  const [employes,caData]=await Promise.all([
-    sb('employes?select=*&actif=eq.true'),
-    sb('parametres?cle=eq.ca_semaine'),
-  ]);
-  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
-  if(!ca){alert('CA semaine = 0$. Pas de primes.');return;}
-  const tauxPoste={'Patron':.4,'Co-Patron':.35,'Manager':.25,"Chef d'équipe":.15};
-  const tauxContrat={CDI:.2,CDD:.1};
-  for(const emp of (employes||[])){
-    const t=tauxPoste[emp.poste]??tauxContrat[emp.contrat]??.1;
-    const montant=Math.round(ca*t);
-    if(!montant)continue;
-    const exist=await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.vente`);
-    if(!exist?.length) await sb('primes',{method:'POST',body:JSON.stringify({
-      employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false,type:'vente'
-    })});
-  }
-  alert('✅ Primes calculées !');
-  await loadPrimesTable();
+  const[employes,caData]=await Promise.all([sb('employes?select=*&actif=eq.true'),sb('parametres?cle=eq.ca_semaine')]);
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0;if(!ca){alert('CA semaine = 0$.');return;}
+  const tauxPoste={'Patron':.4,'Co-Patron':.35,'Manager':.25,'Responsable':.20,"Chef d'équipe":.15};const tauxContrat={CDI:.2,CDD:.1};
+  for(const emp of(employes||[])){const t=tauxPoste[emp.poste]??tauxContrat[emp.contrat]??.1,montant=Math.round(ca*t);if(!montant)continue;const exist=await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.vente`);if(!exist?.length)await sb('primes',{method:'POST',body:JSON.stringify({employe_id:emp.id,employe_discord:emp.discord_id,montant,semaine,verse:false,type:'vente'})});}
+  alert('✅ Primes calculées !');await loadPrimesTable();
 }
-
-async function loadPrimesTable() {
-  const el=document.getElementById('primesTable');
-  if(!el)return;
+async function loadPrimesTable(){
+  const el=document.getElementById('primesTable');if(!el)return;
   const data=await sb(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${getSemaine()}&order=created_at.desc`);
-  lastPrimes=Array.isArray(data)?data:[];
-  if(!lastPrimes.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime. Cliquez sur Calculer.</p>';return;}
-  el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Action</th></tr></thead><tbody>`+
-    lastPrimes.map(p=>{
-      const emp=p.employes||{};
-      return `<tr>
-        <td><strong>${emp.prenom||'—'} ${emp.nom||''}</strong></td>
-        <td>${emp.poste||'—'}</td>
-        <td><span class="badge badge-blue">${p.type||'vente'}</span></td>
-        <td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td>
-        <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td>
-        <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
-      </tr>`;
-    }).join('')+'</tbody></table>';
+  if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime.</p>';return;}
+  el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Action</th></tr></thead><tbody>`+data.map(p=>{const emp=p.employes||{};return`<tr><td><strong>${emp.prenom||'—'} ${emp.nom||''}</strong></td><td>${emp.poste||'—'}</td><td><span class="badge badge-blue">${p.type||'vente'}</span></td><td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td><td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td><td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td></tr>`;}).join('')+'</tbody></table>';
 }
-
 async function verserPrime(id){await sb(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})});loadPrimesTable();}
-
 async function cloturerSemaine(){
-  if(!confirm('⚠️ Clôturer la semaine ? Cette action est irréversible.'))return;
+  if(!confirm('⚠️ Clôturer la semaine ?'))return;
   const semaine=getSemaine();
-  const [caData,primesData,employes]=await Promise.all([
-    sb('parametres?cle=eq.ca_semaine'),
-    sb(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${semaine}`),
-    sb('employes?select=*&actif=eq.true'),
-  ]);
-  const ca=parseFloat(caData?.[0]?.valeur||0)||0;
-  const totalPrimes=(primesData||[]).reduce((a,p)=>a+p.montant,0);
-  const impots=Math.round(calcImpot(ca));
-  const net=ca-totalPrimes-impots;
+  const[caData,primesData,employes]=await Promise.all([sb('parametres?cle=eq.ca_semaine'),sb(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${semaine}`),sb('employes?select=*&actif=eq.true')]);
+  const ca=parseFloat(caData?.[0]?.valeur||0)||0,totalPrimes=(primesData||[]).reduce((a,p)=>a+p.montant,0),impots=Math.round(calcImpot(ca)),net=ca-totalPrimes-impots;
   await sb('caisse',{method:'POST',body:JSON.stringify({semaine,ca_brut:ca,salaires:totalPrimes,impots,coffre_net:net})});
   await sb('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:'0'})});
-  for(const emp of (employes||[])) await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({quota_validee:0})});
-  genPDFCloture(semaine,ca,totalPrimes,impots,net,primesData||[]);
-  alert('✅ Semaine clôturée !');
-  loadGestion();
+  for(const emp of(employes||[]))await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({quota_validee:0})});
+  alert('✅ Semaine clôturée !');loadGestion();
 }
-
-function genPDFCloture(semaine,ca,primes,impots,net,primesData){
-  const now=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Clôture ${semaine}</title>
-<style>body{font-family:'Segoe UI',sans-serif;max-width:800px;margin:0 auto;padding:40px;}table{width:100%;border-collapse:collapse;}th{background:#c0392b;color:#fff;padding:10px 12px;}td{padding:10px 12px;border-bottom:1px solid #eee;}</style></head><body>
-<h2>🍔 BURGER SHOT — Clôture ${semaine}</h2>
-<p>CA Brut: ${ca.toLocaleString('fr-FR')}$ | Primes: ${primes.toLocaleString('fr-FR')}$ | Impôts: ${impots.toLocaleString('fr-FR')}$ | Net: ${net.toLocaleString('fr-FR')}$</p>
-<table><thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Prime</th><th>Statut</th></tr></thead><tbody>
-${primesData.map(p=>{const e=p.employes||{};return`<tr><td>${e.prenom||'?'} ${e.nom||''}</td><td>${e.poste||'?'}</td><td>${e.contrat||'?'}</td><td>${p.montant.toLocaleString('fr-FR')}$</td><td>${p.verse?'✅':'⏳'}</td></tr>`;}).join('')}
-</tbody></table>
-<p style="margin-top:20px;font-size:11px;color:#999;">Généré le ${now} · Burger Shot · Confidentiel</p></body></html>`;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
-  a.download=`BurgerShot_Cloture_${semaine}.html`;
-  a.click();
+ 
+function genPDFCommande(c, pts) {
+  const now=new Date(),numFacture=`BS-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+  const tva=Math.round(c.net*.20);
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Facture ${numFacture}</title><style>body{font-family:'Segoe UI',sans-serif;max-width:700px;margin:0 auto;padding:30px;}h2{color:#c0392b;}table{width:100%;border-collapse:collapse;}th{background:#1a1a1a;color:#fff;padding:8px;}td{padding:8px;border-bottom:1px solid #eee;}</style></head><body><h2>🍔 BURGER SHOT — ${numFacture}</h2><p>${now.toLocaleString('fr-FR')}</p><p>Client : ${clientActif?`${clientActif.prenom} ${clientActif.nom}`:'Client comptant'} | Employé : ${USER?.displayName||'—'}</p><table><thead><tr><th>Produit</th><th>Qté</th><th>PU</th><th>Total</th></tr></thead><tbody>${commande.map(p=>`<tr><td>${p.nom}</td><td>${p.qte}</td><td>${p.prix}$</td><td>${p.prix*p.qte}$</td></tr>`).join('')}</tbody></table><p>Sous-total : ${c.brut}$${c.r>0?` | Réduction -${c.r}% : -${c.montantR}$`:''} | TVA 20% : ${tva}$ | <strong>TOTAL : ${c.net}$</strong></p>${pts>0?`<p>🎯 +${pts} points fidélité</p>`:''}<p style="font-size:11px;color:#aaa;">Burger Shot © ${now.getFullYear()} — Confidentiel</p></body></html>`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download=`BS_Facture_${numFacture}.html`;a.click();
 }
 </script>
 </body>
