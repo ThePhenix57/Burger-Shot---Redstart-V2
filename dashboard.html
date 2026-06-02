@@ -681,7 +681,10 @@ function buildPages() {
     </div>
     <div class="ticket-wrap">
       <div class="ticket">
-        <div class="ticket-head"><div class="ticket-logo-txt">🍔 BURGER SHOT</div><div class="ticket-addr">Los Santos · Hawick Avenue</div></div>
+        <div class="ticket-head">
+  <img src="https://upload.redstartrp.fr/uploads/photo-1780360523-24bbcce97dc8.png" alt="Burger Shot" style="height:54px;object-fit:contain;margin-bottom:4px;" onerror="this.style.display='none'">
+  <div class="ticket-addr">Los Santos · Hawick Avenue</div>
+</div>
         <div style="font-size:11px;color:#666;margin-bottom:8px;"><div id="tktId">BS-000000</div><div id="tktDate"></div></div>
         <hr class="t-sep">
         <div class="ticket-lines" id="tktLines"><div class="t-empty">Aucun article</div></div>
@@ -814,6 +817,7 @@ function buildPages() {
           <div id="menuCompBurger" class="menu-comp-section"><div class="menu-comp-title">🍔 Burgers</div><div class="menu-comp-items" id="compBurgers"></div></div>
           <div id="menuCompBoisson" class="menu-comp-section"><div class="menu-comp-title">🥤 Boissons</div><div class="menu-comp-items" id="compBoissons"></div></div>
           <div id="menuCompAccomp" class="menu-comp-section"><div class="menu-comp-title">🍟 Accompagnements</div><div class="menu-comp-items" id="compAccomps"></div></div>
+          <div id="menuCompDessert" class="menu-comp-section"><div class="menu-comp-title">🍦 Desserts</div><div class="menu-comp-items" id="compDesserts"></div></div>
         </div>
         <button class="btn btn-primary" onclick="saveProduit()">✅ Ajouter au menu</button>
       </div>
@@ -1162,15 +1166,30 @@ function renderTicket() {
   if (!linesEl) return;
   linesEl.innerHTML = !commande.length
     ? '<div class="t-empty">Aucun article</div>'
-    : commande.map(p =>
-        `<div class="t-line">
+    : commande.map(p => {
+        let comp = null;
+        try { comp = typeof p.composition === 'string' ? JSON.parse(p.composition) : p.composition; } catch {}
+        const hasComp = Array.isArray(comp) && comp.length > 0;
+        const mainLine = `<div class="t-line" style="font-weight:700;">
           <div>${p.nom} ×${p.qte}</div>
           <div style="display:flex;align-items:center;gap:6px;">
             <span>${p.prix*p.qte}$</span>
             <span class="t-line-del" onclick="removeFromTicket('${p.id}')">✕</span>
           </div>
-        </div>`
-      ).join('');
+        </div>`;
+        if (!hasComp) return mainLine;
+        const subLines = comp.map(c => {
+          const sous_total = c.prix ? (c.prix * c.qty * p.qte) : null;
+          return `<div class="t-line" style="padding-left:10px;font-size:11px;color:#666;border-left:2px solid #ddd;margin-left:4px;margin-bottom:2px;">
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span style="color:#999;">${c.type==='Burger'?'🍔':c.type==='Boisson'?'🥤':c.type==='Dessert'?'🍦':'🍟'}</span>
+              <span>${p.qte > 1 ? p.qte+'×' : ''}${c.qty > 1 ? c.qty+'×' : ''}${c.nom}</span>
+            </div>
+            <span>${sous_total ? sous_total+'$' : ''}</span>
+          </div>`;
+        }).join('');
+        return mainLine + subLines;
+      }).join('');
   const c = calcCmd(); const pts = calcPts();
   document.getElementById('tktTotal').textContent = `${c.brut}$`;
   const rEl = document.getElementById('tktReduc');
@@ -1207,7 +1226,21 @@ function ouvrirValidation() {
   if (!commande.length) { alert('Commande vide.'); return; }
   const c = calcCmd(); const pts = calcPts();
   document.getElementById('validationRecap').innerHTML =
-    commande.map(p=>`<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;"><div>${p.nom} ×${p.qte}</div><div>${p.prix*p.qte}$</div></div>`).join('') +
+    commande.map(p => {
+      let comp = null;
+      try { comp = typeof p.composition === 'string' ? JSON.parse(p.composition) : p.composition; } catch {}
+      const hasComp = Array.isArray(comp) && comp.length > 0;
+      const mainLine = `<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:14px;font-weight:700;"><div>${p.nom} ×${p.qte}</div><div>${p.prix*p.qte}$</div></div>`;
+      if (!hasComp) return mainLine;
+      const subLines = comp.map(c => {
+        const st = c.prix ? (c.prix * c.qty * p.qte) : null;
+        return `<div style="display:flex;justify-content:space-between;margin-bottom:2px;font-size:12px;color:var(--muted);padding-left:12px;border-left:2px solid var(--border);">
+          <div>${c.type==='Burger'?'🍔':c.type==='Boisson'?'🥤':c.type==='Dessert'?'🍦':'🍟'} ${p.qte>1?p.qte+'×':''}${c.qty>1?c.qty+'×':''}${c.nom}</div>
+          <div>${st ? st+'$' : ''}</div>
+        </div>`;
+      }).join('');
+      return mainLine + subLines + `<div style="height:6px;"></div>`;
+    }).join('') +
     `<hr style="border:none;border-top:1px dashed #666;margin:12px 0;">
     <div style="text-align:right;">Brut : ${c.brut}$</div>
     ${c.r>0?`<div style="text-align:right;color:var(--red);">Réduction -${c.r}% : -${c.montantR}$</div>`:''}
@@ -1951,10 +1984,12 @@ async function updateMenuCatUI(val, existingProds) {
   const burgers = prods.filter(p=>p.categorie==='Burger');
   const boissons = prods.filter(p=>p.categorie==='Boisson');
   const accomps = prods.filter(p=>p.categorie==='Accompagnement');
-  const makeItems = (list, prefix) => list.map(p=>`<label class="menu-comp-item"><input type="checkbox" id="${prefix}-${p.id}" data-nom="${p.nom}" data-id="${p.id}"> ${p.nom} <input class="menu-comp-qty" id="${prefix}-qty-${p.id}" value="1" min="1" max="5" type="number" title="Quantité"></label>`).join('');
+  const desserts = prods.filter(p=>p.categorie==='Dessert');
+  const makeItems = (list, prefix) => list.length ? list.map(p=>`<label class="menu-comp-item"><input type="checkbox" id="${prefix}-${p.id}" data-nom="${p.nom}" data-id="${p.id}" data-prix="${p.prix}"> ${p.nom} <span style="font-size:10px;color:var(--muted);">(${p.prix}$)</span> <input class="menu-comp-qty" id="${prefix}-qty-${p.id}" value="1" min="1" max="9" type="number" title="Quantité"></label>`).join('') : '<span style="font-size:11px;color:var(--muted);">Aucun produit dans cette catégorie</span>';
   document.getElementById('compBurgers').innerHTML = makeItems(burgers,'cb');
   document.getElementById('compBoissons').innerHTML = makeItems(boissons,'cbo');
   document.getElementById('compAccomps').innerHTML = makeItems(accomps,'ca');
+  document.getElementById('compDesserts').innerHTML = makeItems(desserts,'cd');
 }
  
 function updateMenuImgPreview(v) {
@@ -1974,19 +2009,23 @@ async function saveProduit() {
   if (cat === 'Menu') {
     composition = [];
     // Burgers
-    document.querySelectorAll('[id^="cb-"]:not([id*="qty"])').forEach(cb=>{
+    document.querySelectorAll('[id^="cb-"]:not([id*="qty"])').forEach(cb => {
       if(cb.checked && cb.id.startsWith('cb-')){
         const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`cb-qty-${prodId}`)?.value||1);
-        composition.push({id:prodId, nom:cb.dataset.nom, qty, type:'Burger'});
+        composition.push({id:prodId, nom:cb.dataset.nom, qty, prix:parseFloat(cb.dataset.prix||0), type:'Burger'});
       }
     });
     // Boissons
     document.querySelectorAll('[id^="cbo-"]:not([id*="qty"])').forEach(cb=>{
-      if(cb.checked){const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`cbo-qty-${prodId}`)?.value||1);composition.push({id:prodId,nom:cb.dataset.nom,qty,type:'Boisson'});}
+      if(cb.checked){const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`cbo-qty-${prodId}`)?.value||1);composition.push({id:prodId,nom:cb.dataset.nom,qty,prix:parseFloat(cb.dataset.prix||0),type:'Boisson'});}
     });
     // Accompagnements
     document.querySelectorAll('[id^="ca-"]:not([id*="qty"])').forEach(cb=>{
-      if(cb.checked){const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`ca-qty-${prodId}`)?.value||1);composition.push({id:prodId,nom:cb.dataset.nom,qty,type:'Accompagnement'});}
+      if(cb.checked){const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`ca-qty-${prodId}`)?.value||1);composition.push({id:prodId,nom:cb.dataset.nom,qty,prix:parseFloat(cb.dataset.prix||0),type:'Accompagnement'});}
+    });
+    // Desserts
+    document.querySelectorAll('[id^="cd-"]:not([id*="qty"])').forEach(cb=>{
+      if(cb.checked){const prodId=cb.dataset.id,qty=parseInt(document.getElementById(`cd-qty-${prodId}`)?.value||1);composition.push({id:prodId,nom:cb.dataset.nom,qty,prix:parseFloat(cb.dataset.prix||0),type:'Dessert'});}
     });
   }
  
