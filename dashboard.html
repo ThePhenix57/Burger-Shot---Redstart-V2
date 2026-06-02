@@ -509,9 +509,15 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (DIR_IDS.includes(id)) ROLE = 'direction';
  
   if (ROLE === 'employe') {
-    const empData = await sb(`employes?discord_id=eq.${id}&select=poste`);
-    if (empData?.[0]?.poste) USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
+  const empData = await sb(`employes?discord_id=eq.${id}&select=poste,actif`);
+  if (!empData?.[0] || !empData[0].actif) {
+    // Pas dans la table ou inactif → accès refusé
+    localStorage.removeItem('bs_user');
+    location.href = '/';
+    return;
   }
+  USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
+}
  
   const empRP = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
   const nomRP = empRP?.[0]?.nom;
