@@ -748,6 +748,18 @@ async function loadQuotaConfig(){
   });
 }
 
+function refreshCurrentPage() {
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+  const id = activePage.id.replace('page-', '');
+  const loaders = {
+    'accueil': loadAccueil, 'stats': loadStats, 'stats_readonly': loadStatsReadonly,
+    'gestion': loadGestion, 'quota': loadQuotaPage,
+  };
+  if (loaders[id]) loaders[id]();
+  autoRefresh();
+}
+
 async function autoRefresh(){
   if(ROLE==='direction'||USER_NIVEAU>=1){
     const tickets=await sb('quotas_tickets?select=id&statut=eq.en_attente');
@@ -759,8 +771,12 @@ async function autoRefresh(){
   if(activePage?.id==='page-stats')loadStats();
   if(activePage?.id==='page-accueil')loadAccueil();
   if(activePage?.id==='page-gestion'){loadQuotaTickets();loadCoffre();}
-  // Update statuts activité
   if(ROLE==='direction')updateStatutsActivite();
+  if(pendingQuotaCount > 0){
+    document.title=`(${pendingQuotaCount}) Burger Shot — Dashboard`;
+  } else {
+    document.title='Burger Shot — Dashboard';
+  }
 }
 
 async function updateStatutsActivite(){
@@ -901,6 +917,13 @@ function buildPages(){
           <div>Client : <strong id="tktClient">Inconnu</strong></div>
           <div id="tktPassInfo" style="margin-top:2px;"></div>
           <div>Employé : <strong id="tktEmploye">—</strong></div>
+        </div>
+          <div id="tktPointsInfo" style="margin-top:6px;display:none;background:#f0f9f4;border:1px solid #a8e6c4;border-radius:6px;padding:6px 10px;">
+          <div style="font-size:13px;font-weight:700;color:#27ae60;">🎯 Points disponibles : <span id="tktPointsDispo">0</span></div>
+          <div style="font-size:11px;color:#555;margin-top:2px;">Commande actuelle : <strong id="tktPointsCumul" style="font-size:15px;color:#c0392b;">0 pts</strong></div>
+        </div>
+          <div id="tktBtnPoints" style="display:none;margin-top:10px;">
+          <button class="btn btn-success" style="width:100%;justify-content:center;background:#27ae60;" onclick="payerParPoints()">🎯 Payer par points (<span id="tktCoutPoints">0</span> pts)</button>
         </div>
         <div class="ticket-btns">
           <button class="btn btn-danger" onclick="annulerCommande()">❌ Annuler</button>
@@ -1397,12 +1420,14 @@ function calcPts(){
 function renderTicket(){
   const linesEl=document.getElementById('tktLines');if(!linesEl)return;
   linesEl.innerHTML=!commande.length?'<div class="t-empty">Aucun article</div>':commande.map(p=>{
-    let comp=null;try{comp=typeof p.composition==='string'?JSON.parse(p.composition):p.composition;}catch{}
-    const hasComp=Array.isArray(comp)&&comp.length>0;
-    const mainLine=`<div class="t-line" style="font-weight:700;"><div>${p.nom} ×${p.qte}</div><div style="display:flex;align-items:center;gap:6px;"><span>${p.prix*p.qte}$</span><span class="t-line-del" onclick="removeFromTicket('${p.id}')">✕</span></div></div>`;
-    if(!hasComp)return mainLine;
-    return mainLine+comp.map(c=>`<div class="t-line" style="padding-left:10px;font-size:11px;color:#666;border-left:2px solid #ddd;margin-left:4px;"><span>${p.qte>1?p.qte+'×':''}${c.qty>1?c.qty+'×':''}${c.nom}</span></div>`).join('');
-  }).join('');
+  let comp=null;try{comp=typeof p.composition==='string'?JSON.parse(p.composition):p.composition;}catch{}
+  const hasComp=Array.isArray(comp)&&comp.length>0;
+  const mainLine=`<div class="t-line" style="font-weight:700;margin-bottom:2px;"><div>${p.nom} ×${p.qte}</div><div style="display:flex;align-items:center;gap:6px;"><span>${p.prix*p.qte}$</span><span class="t-line-del" onclick="removeFromTicket('${p.id}')">✕</span></div></div>`;
+  if(!hasComp)return mainLine;
+  const details=comp.map(c=>`<div style="padding-left:10px;font-size:10px;color:#666;font-family:'Courier New',monospace;line-height:1.6;">| ×${c.qty*p.qte} ${c.nom}</div>`).join('');
+  const sep=`<div style="border-top:1px dashed #ccc;margin:4px 0 6px 0;font-size:10px;color:#999;text-align:right;padding-top:2px;">${p.prix*p.qte}$</div>`;
+  return mainLine+details+sep;
+}).join('');
   const c=calcCmd(),pts=calcPts();
   document.getElementById('tktTotal').textContent=`${c.brut}$`;
   document.getElementById('tktTVX').textContent=`TVX (10%) : ${c.tvx}$`;
@@ -1411,6 +1436,21 @@ function renderTicket(){
   else rEl.style.display='none';
   document.getElementById('tktNet').textContent=`${c.net}$`;
   document.getElementById('tktPts').textContent=pts>0?`🎯 +${pts} points`:'';
+  const pointsInfoEl = document.getElementById('tktPointsInfo');
+const btnPointsEl = document.getElementById('tktBtnPoints');
+if (clientActif?.pass && clientActif?.points > 0) {
+  const ptsDispo = clientActif.points || 0;
+  const ptsCumul = calcPts();
+  const coutPts = calcPts(); // les points gagnés sur cette commande = ce qu'il faut pour payer
+  document.getElementById('tktPointsDispo').textContent = ptsDispo.toLocaleString('fr-FR');
+  document.getElementById('tktPointsCumul').textContent = ptsCumul > 0 ? `+${ptsCumul}` : '0';
+  document.getElementById('tktCoutPoints').textContent = coutPts.toLocaleString('fr-FR');
+  if (pointsInfoEl) pointsInfoEl.style.display = 'block';
+  if (btnPointsEl) btnPointsEl.style.display = ptsDispo >= coutPts ? 'block' : 'none';
+} else {
+  if (pointsInfoEl) pointsInfoEl.style.display = 'none';
+  if (btnPointsEl) btnPointsEl.style.display = 'none';
+}
   document.getElementById('tktClient').textContent=clientActif?`${clientActif.prenom} ${clientActif.nom}`:'Inconnu';
   const piEl=document.getElementById('tktPassInfo');
   if(clientActif?.pass){const pt=passTypes.find(p=>p.nom===clientActif.pass);piEl.textContent=`${clientActif.pass} • ×${pt?.multiplicateur||1}pts${pt?.reduction>0?` • -${pt.reduction}%`:''}`;}
@@ -1479,6 +1519,44 @@ async function confirmerCommande(avecApercu=false){
   genTicket();
   if(!avecApercu)alert('✅ Commande validée !');
   if(ROLE==='employe')trackActivity();
+}
+  async function payerParPoints() {
+  if (!clientActif) { alert('Aucun client sélectionné.'); return; }
+  const c = calcCmd();
+  const coutPts = calcPts();
+  const ptsDispo = clientActif.points || 0;
+  if (ptsDispo < coutPts) { alert(`Points insuffisants. Nécessaire : ${coutPts} pts, disponible : ${ptsDispo} pts`); return; }
+  if (!confirm(`Payer ${c.net}$ avec ${coutPts} points ? Le client passera de ${ptsDispo} à ${ptsDispo - coutPts} points.`)) return;
+
+  const semaine = getSemaine();
+  // Enregistre la commande avec total 0 (payée en points)
+  await sb('commandes', { method: 'POST', body: JSON.stringify({
+    client_id: clientActif.id,
+    employe_discord_id: USER.id,
+    items: JSON.stringify(commande),
+    total: c.brut,
+    reduction_pct: 100,
+    total_apres_reduction: 0,
+    points_gagnes: 0, // pas de points gagnés sur paiement points
+    contrat_id: contratActif?.id || null,
+    semaine,
+    tva: 0,
+    paye_en_points: true
+  })});
+
+  // Débite les points
+  const newPoints = ptsDispo - coutPts;
+  await sb(`clients?id=eq.${clientActif.id}`, { method: 'PATCH', body: JSON.stringify({ points: newPoints }) });
+  clientActif.points = newPoints;
+
+  await decrementStockForCommande();
+
+  alert(`✅ Payé par points ! Reste : ${newPoints.toLocaleString('fr-FR')} pts`);
+  commande = []; clientActif = null; contratActif = null;
+  const s = document.getElementById('caisseClientSearch'); if (s) s.value = '';
+  const r = document.getElementById('caisseClientResults'); if (r) r.innerHTML = '';
+  const cc = document.getElementById('caisseContrat'); if (cc) cc.value = '';
+  genTicket();
 }
 async function decrementStockForCommande(){
   for(const item of commande){
