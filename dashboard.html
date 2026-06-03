@@ -579,7 +579,7 @@ function getPermissions() {
   return perms;
 }
   
-let USER=null,ROLE='employe',USER_NIVEAU=0;
+let USER=null,ROLE='employe',USER_NIVEAU=0,USER_CONTRAT='CDD';
 let produits=[],passTypes=[],commande=[],clientActif=null,contratActif=null;
 let passClientActif=null;
 let calYear,calMonth;
@@ -738,16 +738,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
   document.addEventListener('change', e => {
     if (e.target.id === 'mCat') updateMenuCatUI(e.target.value);
-  });
-});
-
-  document.addEventListener('input',e=>{
-    if(e.target.id==='mImg')updateMenuImgPreview(e.target.value);
-    if(e.target.id==='caisseClientSearch')searchCaisseClient(e.target.value);
-    if(e.target.id==='passSearch')searchPassClient(e.target.value);
-  });
-  document.addEventListener('change',e=>{
-    if(e.target.id==='mCat')updateMenuCatUI(e.target.value);
   });
 });
 
@@ -2142,9 +2132,19 @@ function openAddEmploye() {
     dateInput.value = new Date().toISOString().split('T')[0];
   }
 }
- 
+ async function saveEmploye() {
+  const nom    = document.getElementById('empNom')?.value.trim();
+  const prenom = document.getElementById('empPrenom')?.value.trim();
+  const discord = document.getElementById('empDiscord')?.value.trim();
+  const alertEl = document.getElementById('alertEmploye');
+
+  if (!nom || !prenom || !discord) {
+    alertEl.innerHTML = '<div class="alert alert-err">⚠️ Nom, prénom et Discord obligatoires.</div>';
+    return;
+  }
+
   alertEl.innerHTML = '<div class="alert alert-warn">⏳ Enregistrement...</div>';
- 
+
   const payload = {
     nom,
     prenom,
@@ -2155,26 +2155,25 @@ function openAddEmploye() {
     poste:          document.getElementById('empPoste')?.value || 'Employé',
     contrat:        document.getElementById('empContrat')?.value || 'CDD',
     actif:          document.getElementById('empActif')?.value === 'true',
-    date_embauche:  document.getElementById('empEmbauche')?.value || new Date().toISOString().split('T')[0], // 👈 aujourd'hui par défaut
+    date_embauche:  document.getElementById('empEmbauche')?.value || new Date().toISOString().split('T')[0],
     quota_viande_validee: 0,
     quota_patates_validee: 0,
     statut_activite: 'actif'
-};
- 
+  };
+
   const result = await sb('employes', { method: 'POST', body: JSON.stringify(payload) });
- 
+
   if (result === null) {
     alertEl.innerHTML = '<div class="alert alert-err">❌ Erreur Supabase. Vérifie la console (F12) et lance le SQL fix_supabase.sql</div>';
     return;
   }
- 
+
   alertEl.innerHTML = '<div class="alert alert-ok">✅ Employé ajouté !</div>';
   document.getElementById('addEmployeForm').style.display = 'none';
- 
-  // Reset champs
+
   ['empNom','empPrenom','empNaissance','empTel','empDiscord','empPhoto','empEmbauche']
     .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
- 
+
   await loadEmployes();
 }
 
@@ -2678,41 +2677,40 @@ async function cloturerSemaine(){
   alert('✅ Semaine clôturée !');loadGestion();
 }
 function showPage(id) {
-  // Masquer toutes les pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-  // Afficher la page cible
   const page = document.getElementById(`page-${id}`);
   if (page) page.classList.add('active');
 
   const navItem = document.getElementById(`nav-${id}`);
   if (navItem) navItem.classList.add('active');
 
-  // Charger le contenu selon la page
   const loaders = {
-  'accueil':              loadAccueil,
-  'caisse':               loadCaisse,
-  'clients':              loadClients,
-  'quota':                loadQuotaPage,
-  'stock':                loadStock,
-  'stock_readonly':       loadStockReadonly,
-  'calendrier':           loadCalendrier,
-  'calendrier_readonly':  loadCalendrierReadonly,
-  'stats':                loadStats,
-  'stats_readonly':       loadStatsReadonly,
-  'employes':             loadEmployes,
-  'employes_readonly':    loadEmployesReadonly,
-  'employes_gouv':        loadEmployesGouv,
-  'menu':                 loadMenu,
-  'vehicules':            loadVehicules,
-  'vehicules_readonly':   loadVehiculesReadonly,
-  'contrats':             loadContrats,
-  'gestion':              loadGestion,
-  'gouvernement':         loadGouvernement,
-};
+    'accueil':              loadAccueil,
+    'caisse':               loadCaisse,
+    'clients':              loadClients,
+    'quota':                loadQuotaPage,
+    'stock':                loadStock,
+    'stock_readonly':       loadStockReadonly,
+    'calendrier':           loadCalendrier,
+    'calendrier_readonly':  loadCalendrierReadonly,
+    'stats':                loadStats,
+    'stats_readonly':       loadStatsReadonly,
+    'employes':             loadEmployes,
+    'employes_readonly':    loadEmployesReadonly,
+    'employes_gouv':        loadEmployesGouv,
+    'menu':                 loadMenu,
+    'vehicules':            loadVehicules,
+    'vehicules_readonly':   loadVehiculesReadonly,
+    'contrats':             loadContrats,
+    'gestion':              loadGestion,
+    'gouvernement':         loadGouvernement,
+  };
 
   if (loaders[id]) loaders[id]();
+}  // ← showPage se ferme ici
+
 async function loadEmployesReadonly() {
   const el = document.getElementById('empReadonlyGrid');
   if (!el) return;
@@ -2765,8 +2763,7 @@ async function loadEmployesReadonly() {
       </div>
     </div>`;
   }).join('');
- }
-
+}
 
 // STOCK READONLY
 async function loadStockReadonly() {
@@ -2791,7 +2788,7 @@ async function loadStockReadonly() {
     </div>`;
   }).join('');
  }
-}
+
 // VÉHICULES READONLY
 async function loadVehiculesReadonly() {
   const el = document.getElementById('vehReadonlyGrid');
@@ -2902,7 +2899,6 @@ async function loadStatsReadonly() {
   const heatEl = document.getElementById('statsHeatmapRo');
   if (heatEl) renderHeatmap(cmds, 'statsHeatmapRo');
 }
-  }
 </script>
 </body>
 </html>
