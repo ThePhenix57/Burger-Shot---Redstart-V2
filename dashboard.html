@@ -606,12 +606,6 @@ window.addEventListener('DOMContentLoaded',async()=>{
   const{id,username,avatar,nom,prenom}=userData;
   if(!id){location.href='/';return;}
 
-  if(!DIR_IDS.includes(id)){
-    const gouvData=await sb(`gouvernement_comptes?discord_id=eq.${id}&statut=eq.actif`);
-    if(gouvData?.length)ROLE='gouvernement';
-  }
-  if(DIR_IDS.includes(id))ROLE='direction';
-
   if(ROLE==='employe'){
     const empData=await sb(`employes?discord_id=eq.${id}&select=poste,actif`);
     if(!empData?.[0]||!empData[0].actif){localStorage.removeItem('bs_user');location.href='/';return;}
