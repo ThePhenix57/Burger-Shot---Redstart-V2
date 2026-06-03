@@ -732,22 +732,6 @@ function buildNav() {
     const badgeHtml = i.badge ? `<span class="nav-badge" id="${i.badge}"></span>` : '';
     return `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
   }).join('');
-  };
-  if(ROLE!=='direction'){
-    nav.style.justifyContent='center';
-    nav.innerHTML=items.map(renderItem).join('');
-    return;
-  }
-  const left=[],right=[];let center=false;
-  for(const i of items){
-    if(i==='LOGO'){center=true;continue;}
-    center?right.push(i):left.push(i);
-  }
-  nav.style.justifyContent='space-between';
-  nav.innerHTML=
-    `<div class="nav-group">${left.map(renderItem).join('')}</div>`+
-    `<div style="position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;height:100%;"><img src="https://upload.redstartrp.fr/uploads/photo-1780269854-a31c4ccbae7b.png" style="height:26px;object-fit:contain;filter:brightness(0) invert(1);"></div>`+
-    `<div class="nav-group">${right.map(renderItem).join('')}</div>`;
 }
 
 function showPage(name){
