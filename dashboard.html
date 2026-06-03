@@ -527,6 +527,57 @@ const NIVEAU_POSTE = {'Employé':0,"Chef d'équipe":1,'Responsable':2,'Manager':
 const TVX = 0.10; // TVX 10%
 const STOCK_CATS = ['Viande','Patate','Wraps','Burger','Nugget','Boisson','Dessert','Autres'];
 
+function getPermissions() {
+  const contrat = USER_CONTRAT; // 'CDD' ou 'CDI'
+  const niveau = USER_NIVEAU;   // 0=Employé, 1=Chef équipe, 2=Responsable, 3=Manager, 4=Co-Patron, 5=Patron
+  const role = ROLE;            // 'employe', 'direction', 'gouvernement'
+
+  if (role === 'gouvernement') return {
+    pages: ['accueil','stock','employes_gouv','stats','calendrier','vehicules'],
+    stock: 'read',
+    employes: 'read',
+    vehicules: 'read',
+    calendrier: 'read',
+    stats: 'read',
+  };
+
+  if (niveau >= 4) return { pages: 'ALL', all: true }; // Co-Patron / Patron
+
+  const perms = {
+    pages: ['accueil','employes_readonly','vehicules_readonly','calendrier_readonly','stats_readonly'],
+    caisse: false,
+    clients: false,
+    stock: false,
+    vehicules: 'read',
+    calendrier: 'read',
+    stats: 'read',
+    employes: 'read',
+    quota: true,
+  };
+
+  if (contrat === 'CDI' || niveau >= 1) {
+    perms.pages.push('stock_readonly','caisse','clients');
+    perms.caisse = true;
+    perms.clients = true;
+    perms.stock = 'read';
+  }
+
+  if (niveau >= 1) { // Chef d'équipe
+    perms.stock = 'write';
+    perms.pages.push('stock');
+  }
+
+  if (niveau >= 2) { // Responsable
+    perms.vehicules = 'write';
+  }
+
+  if (niveau >= 3) { // Manager
+    perms.pages.push('gestion');
+  }
+
+  return perms;
+}
+  
 let USER=null,ROLE='employe',USER_NIVEAU=0;
 let produits=[],passTypes=[],commande=[],clientActif=null,contratActif=null;
 let passClientActif=null;
@@ -650,12 +701,16 @@ window.addEventListener('DOMContentLoaded',async()=>{
   }
   if(DIR_IDS.includes(id))ROLE='direction';
 
-  if(ROLE==='employe'){
-    const empData=await sb(`employes?discord_id=eq.${id}&select=poste,actif`);
-    if(!empData?.[0]||!empData[0].actif){localStorage.removeItem('bs_user');location.href='/';return;}
-    USER_NIVEAU=NIVEAU_POSTE[empData[0].poste]||0;
-  }
+let USER_CONTRAT = 'CDD'; // global
 
+if (ROLE === 'employe') {
+  const empData = await sb(`employes?discord_id=eq.${id}&select=poste,actif,contrat`);
+  if (!empData?.[0] || !empData[0].actif) { localStorage.removeItem('bs_user'); location.href='/'; return; }
+  USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
+  USER_CONTRAT = empData[0].contrat || 'CDD';
+}
+
+  
   const empRP=await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
   const nomRP=empRP?.[0]?.nom,prenomRP=empRP?.[0]?.prenom;
   const displayName=(prenomRP&&nomRP)?`${prenomRP} ${nomRP}`:(prenom&&nom)?`${prenom} ${nom}`:username;
@@ -763,9 +818,41 @@ const NAV={
 
 function buildNav() {
   const nav = document.getElementById('topNav');
-  const items = (NAV[ROLE] || NAV.employe).filter(i => i !== 'LOGO');
+  const perms = getPermissions();
+
+  let items;
+
+  if (ROLE === 'gouvernement') {
+    items = [
+      {id:'accueil', icon:'🏠', label:'Accueil'},
+      {id:'stats', icon:'📊', label:'Stats'},
+      {id:'stock', icon:'📦', label:'Stock'},
+      {id:'employes_gouv', icon:'👤', label:'Employés'},
+      {id:'calendrier', icon:'📅', label:'Calendrier'},
+      {id:'vehicules', icon:'🚗', label:'Véhicules'},
+    ];
+  } else if (perms.all) {
+    items = NAV.direction;
+  } else {
+    // Construction selon contrat + niveau
+    items = [{id:'accueil', icon:'🏠', label:'Accueil'}];
+
+    if (perms.caisse)    items.push({id:'caisse', icon:'🧾', label:'Caisse'});
+    if (perms.clients)   items.push({id:'clients', icon:'👥', label:'Clients'});
+
+    items.push({id:'employes_readonly', icon:'👤', label:'Équipe'});
+    items.push({id:'quota', icon:'🚚', label:'Mon Quota'});
+
+    if (perms.stock === 'write') items.push({id:'stock', icon:'📦', label:'Stock'});
+    else if (perms.stock === 'read') items.push({id:'stock_readonly', icon:'📦', label:'Stock'});
+
+    items.push({id:'vehicules_readonly', icon:'🚗', label:'Véhicules'});
+    items.push({id:'calendrier_readonly', icon:'📅', label:'Calendrier'});
+    items.push({id:'stats_readonly', icon:'📊', label:'Stats'});
+  }
+
   nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
-  nav.innerHTML = items.map(i => {
+  nav.innerHTML = items.filter(i => i !== 'LOGO').map(i => {
     const badgeHtml = i.badge ? `<span class="nav-badge" id="${i.badge}"></span>` : '';
     return `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
   }).join('');
@@ -1039,6 +1126,41 @@ function buildPages(){
       <div id="gouvEmpList"></div>
     </div></div>`;
   }
+// EMPLOYÉS LECTURE SEULE
+html += `<div class="page" id="page-employes_readonly"><div class="red-line"></div>
+  <div class="card"><div class="card-title">👤 Équipe</div>
+  <div id="empReadonlyGrid" class="emp-grid"></div>
+</div></div>`;
+
+// STOCK LECTURE SEULE
+html += `<div class="page" id="page-stock_readonly"><div class="red-line"></div>
+  <div id="stockReadonlyContent"><div class="loading"><div class="spin"></div></div></div>
+</div>`;
+
+// VÉHICULES LECTURE SEULE
+html += `<div class="page" id="page-vehicules_readonly"><div class="red-line"></div>
+  <div id="vehReadonlyGrid" class="veh-grid"></div>
+</div>`;
+
+// CALENDRIER LECTURE SEULE
+html += `<div class="page" id="page-calendrier_readonly"><div class="red-line"></div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <button class="btn btn-outline btn-sm" onclick="calNav(-1)">◀</button>
+    <div id="calTitleRo" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--red);"></div>
+    <button class="btn btn-outline btn-sm" onclick="calNav(1)">▶</button>
+  </div>
+  <div class="card"><div id="calContainerRo"></div></div>
+</div>`;
+
+// STATS LECTURE SEULE (même contenu, sans boutons admin)
+html += `<div class="page" id="page-stats_readonly"><div class="red-line"></div>
+  <div class="g4" id="statsCardsRo" style="margin-bottom:24px;"></div>
+  <div class="g2" style="margin-bottom:24px;">
+    <div class="card"><div class="card-title">📦 Commandes récentes</div><div id="statsCommandesRo"></div></div>
+    <div class="card"><div class="card-title">🏦 Finances semaine</div><div id="statsFinancesRo"></div></div>
+  </div>
+  <div class="card"><div class="card-title">🌡️ Activité</div><div id="statsHeatmapRo"></div></div>
+</div>`;
 
   document.getElementById('mainContent').innerHTML=html;
 }
@@ -2560,25 +2682,217 @@ function showPage(id) {
 
   // Charger le contenu selon la page
   const loaders = {
-    'accueil':       loadAccueil,
-    'caisse':        loadCaisse,
-    'clients':       loadClients,
-    'quota':         loadQuotaPage,
-    'stock':         loadStock,
-    'calendrier':    loadCalendrier,
-    'stats':         loadStats,
-    'employes':      loadEmployes,
-    'menu':          loadMenu,
-    'vehicules':     loadVehicules,
-    'contrats':      loadContrats,
-    'gestion':       loadGestion,
-    'gouvernement':  loadGouvernement,
-    'employes_gouv': loadEmployesGouv,
-  };
+  'accueil':              loadAccueil,
+  'caisse':               loadCaisse,
+  'clients':              loadClients,
+  'quota':                loadQuotaPage,
+  'stock':                loadStock,
+  'stock_readonly':       loadStockReadonly,
+  'calendrier':           loadCalendrier,
+  'calendrier_readonly':  loadCalendrierReadonly,
+  'stats':                loadStats,
+  'stats_readonly':       loadStatsReadonly,
+  'employes':             loadEmployes,
+  'employes_readonly':    loadEmployesReadonly,
+  'employes_gouv':        loadEmployesGouv,
+  'menu':                 loadMenu,
+  'vehicules':            loadVehicules,
+  'vehicules_readonly':   loadVehiculesReadonly,
+  'contrats':             loadContrats,
+  'gestion':              loadGestion,
+  'gouvernement':         loadGouvernement,
+};
 
   if (loaders[id]) loaders[id]();
+async function loadEmployesReadonly() {
+  const el = document.getElementById('empReadonlyGrid');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const semaine = getSemaine();
+  const [data, cmds, primes] = await Promise.all([
+    sb('employes?select=*&actif=eq.true&order=nom.asc'),
+    sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
+    sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
+  ]);
+  const caWeek = {}, primesMap = {};
+  (cmds||[]).forEach(c => caWeek[c.employe_discord_id] = (caWeek[c.employe_discord_id]||0) + (c.total_apres_reduction||c.total||0));
+  (primes||[]).forEach(p => primesMap[p.employe_discord] = (primesMap[p.employe_discord]||0) + p.montant);
+
+  el.innerHTML = (data||[]).map(e => {
+    const isMe = e.discord_id === USER.id;
+    const statut = e.statut_activite || 'actif';
+    const initials = `${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
+    return `<div class="emp-card">
+      <div class="emp-card-header">
+        <div class="emp-card-header-bg"></div>
+        <div class="emp-avatar">
+          ${e.photo_url
+            ? `<img src="${e.photo_url}" onerror="this.style.display='none'">`
+            : `<span style="font-size:18px;font-weight:800;">${initials}</span>`}
+        </div>
+        <div style="flex:1;z-index:1;">
+          <div class="emp-name">${e.prenom} ${e.nom}</div>
+          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="badge ${statut==='actif'?'badge-green':statut==='absent'?'badge-orange':'badge-grey'}">
+              <span class="status-dot status-${statut}"></span>${statut.charAt(0).toUpperCase()+statut.slice(1)}
+            </span>
+            <span class="badge badge-orange">${e.poste||'—'}</span>
+            <span class="badge badge-blue">${e.contrat||'—'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="emp-card-body">
+        <div class="g2" style="gap:10px;margin-bottom:10px;">
+          <div class="emp-stat">
+            <div class="emp-stat-val" style="font-size:16px;">${(caWeek[e.discord_id]||0).toLocaleString('fr-FR')}$</div>
+            <div class="emp-stat-lbl">CA semaine</div>
+          </div>
+          <div class="emp-stat">
+            <div class="emp-stat-val" style="font-size:16px;color:var(--success);">${(primesMap[e.discord_id]||0).toLocaleString('fr-FR')}$</div>
+            <div class="emp-stat-lbl">Prime en attente</div>
+          </div>
+        </div>
+        ${isMe ? `<button class="btn btn-outline btn-sm" onclick="openOverlay('ovPersoCard')" style="width:100%;justify-content:center;">✏️ Modifier ma carte</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
-  
+
+// STOCK READONLY
+async function loadStockReadonly() {
+  const el = document.getElementById('stockReadonlyContent');
+  if (!el) return;
+  const data = await sb('produits_stock?select=*&order=categorie.asc,nom.asc');
+  if (!Array.isArray(data) || !data.length) { el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Stock vide.</p></div>'; return; }
+  const cats = [...new Set(data.map(p => p.categorie))];
+  el.innerHTML = cats.map(cat => {
+    const items = data.filter(p => p.categorie === cat);
+    return `<div class="card" style="margin-bottom:16px;">
+      <div class="card-title">${cat}</div>
+      <table><thead><tr><th>Produit</th><th>Quantité</th><th>Seuil</th></tr></thead>
+      <tbody>${items.map(p => {
+        const color = p.quantite <= (p.seuil_alerte||0) ? 'var(--red)' : p.quantite <= (p.seuil_alerte||0)*2 ? 'var(--warning)' : 'var(--success)';
+        return `<tr>
+          <td><strong>${p.nom}</strong></td>
+          <td><span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${color};">${p.quantite}</span></td>
+          <td><span class="badge badge-orange">${p.seuil_alerte||0}</span></td>
+        </tr>`;
+      }).join('')}</tbody></table>
+    </div>`;
+  }).join('');
+}
+
+// VÉHICULES READONLY
+async function loadVehiculesReadonly() {
+  const el = document.getElementById('vehReadonlyGrid');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const data = await sb('vehicules?select=*&order=created_at.desc');
+  if (!Array.isArray(data) || !data.length) { el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px;">Aucun véhicule.</p>'; return; }
+  const discordIds = [...new Set(data.map(v => v.employe_discord_id).filter(Boolean))];
+  let empMap = {};
+  if (discordIds.length) {
+    const emps = await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);
+    if (Array.isArray(emps)) emps.forEach(e => empMap[e.discord_id] = e);
+  }
+  el.innerHTML = data.map(v => {
+    const emp = empMap[v.employe_discord_id] || {};
+    return `<div class="veh-card">
+      <div class="veh-img">${v.image_url ? `<img src="${v.image_url}" alt="${v.plaque}">` : '<span class="veh-img-placeholder">🚗</span>'}</div>
+      <div class="veh-info">
+        <div class="veh-plaque">${v.plaque}</div>
+        <div class="veh-emp">${emp.prenom ? `${emp.prenom} ${emp.nom}` : 'Non attribué'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// CALENDRIER READONLY
+async function loadCalendrierReadonly() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  await renderCalReadonly();
+}
+
+async function renderCalReadonly() {
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const titleEl = document.getElementById('calTitleRo');
+  if (titleEl) titleEl.textContent = `${MONTHS[calMonth]} ${calYear}`;
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const start = firstDay === 0 ? 6 : firstDay - 1;
+  const from = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const to = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
+  const events = await sb(`reservations?select=*&date_debut=gte.${from}T00:00:00&date_debut=lte.${to}T23:59:59&order=date_debut.asc`) || [];
+  const today = new Date();
+  let html = `<table class="cal-table"><thead><tr>${DAYS.map(d=>`<th class="cal-th">${d}</th>`).join('')}</tr></thead><tbody>`;
+  const rows = Math.ceil((start + daysInMonth) / 7);
+  for (let row = 0; row < rows; row++) {
+    html += '<tr>';
+    for (let col = 0; col < 7; col++) {
+      const idx = row*7+col;
+      let day, isCurrentMonth = true;
+      const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+      if (idx < start) { day = daysInPrev-(start-1-idx); isCurrentMonth = false; }
+      else if (idx >= start+daysInMonth) { day = idx-(start+daysInMonth)+1; isCurrentMonth = false; }
+      else day = idx-start+1;
+      const isToday = isCurrentMonth && today.getDate()===day && today.getMonth()===calMonth && today.getFullYear()===calYear;
+      const dayEvents = isCurrentMonth ? events.filter(e => new Date(e.date_debut).getDate()===day) : [];
+      html += `<td class="cal-td"><div class="cal-cell${isToday?' today':''}${!isCurrentMonth?' other-month':''}">
+        <div class="cal-cell-num">${day}</div>
+        ${dayEvents.slice(0,3).map(e=>`<span class="cal-event-pill ${e.type||''}">${e.titre||e.type}</span>`).join('')}
+      </div></td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  const container = document.getElementById('calContainerRo');
+  if (container) container.innerHTML = html;
+}
+
+// STATS READONLY
+async function loadStatsReadonly() {
+  // Réutilise loadStats mais dans les bons éléments
+  const semaine = getSemaine();
+  const [cmds, clients, employes, caData, livraisons] = await Promise.all([
+    sb(`commandes?select=*&semaine=eq.${semaine}`),
+    sb('clients?select=id'),
+    sb('employes?select=id&actif=eq.true'),
+    sb('parametres?cle=eq.ca_semaine'),
+    sb(`livraisons?select=montant&semaine=eq.${semaine}`)
+  ]);
+  const ca = parseFloat(caData?.[0]?.valeur||0)||0;
+  const caLiv = (livraisons||[]).reduce((a,l)=>a+(l.montant||0),0);
+  const impots = Math.round(calcImpot(ca));
+
+  const cardsEl = document.getElementById('statsCardsRo');
+  if (cardsEl) cardsEl.innerHTML = [
+    {label:'Commandes', value: Array.isArray(cmds)?cmds.length:0, icon:'📦', accent:'var(--blue)'},
+    {label:'CA Semaine', value:`${ca.toLocaleString('fr-FR')}$`, icon:'💰', accent:'var(--success)'},
+    {label:'Employés actifs', value: Array.isArray(employes)?employes.length:0, icon:'👤', accent:'var(--red)'},
+    {label:'Clients', value: Array.isArray(clients)?clients.length:0, icon:'👥', accent:'var(--orange)'},
+  ].map(s=>`<div class="stat-card" style="--accent:${s.accent};"><div class="stat-icon">${s.icon}</div><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>`).join('');
+
+  const cmdEl = document.getElementById('statsCommandesRo');
+  if (cmdEl) {
+    if (!Array.isArray(cmds)||!cmds.length) cmdEl.innerHTML='<p style="color:var(--muted)">Aucune commande.</p>';
+    else cmdEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th></tr></thead><tbody>`+
+      cmds.slice(0,10).map(c=>`<tr><td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td><td><strong>${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong></td></tr>`).join('')+'</tbody></table>';
+  }
+
+  const finEl = document.getElementById('statsFinancesRo');
+  if (finEl) finEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>CA brut</span><strong>${ca.toLocaleString('fr-FR')}$</strong></div>
+    <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>Taux impôt</span><strong style="color:var(--red);">${tauxLabel(ca)}</strong></div>
+    <div style="display:flex;justify-content:space-between;padding:12px;background:rgba(192,57,43,.08);border-radius:8px;border:1px solid rgba(192,57,43,.2);"><span>Impôts estimés</span><strong style="color:var(--red);">${impots.toLocaleString('fr-FR')}$</strong></div>
+  </div>`;
+
+  const heatEl = document.getElementById('statsHeatmapRo');
+  if (heatEl) renderHeatmap(cmds, 'statsHeatmapRo');
+}
+  }
 </script>
 </body>
 </html>
