@@ -170,7 +170,7 @@ tr:hover td{background:var(--card2);}
 .stock-bar-bg{height:8px;background:var(--card3);border-radius:4px;overflow:hidden;margin-top:6px;}
 .stock-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
 /* EMPLOYEE CARDS */
-.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.emp-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}@media(max-width:1400px){.emp-grid{grid-template-columns:repeat(4,1fr);}}@media(max-width:1100px){.emp-grid{grid-template-columns:repeat(3,1fr);}}@media(max-width:768px){.emp-grid{grid-template-columns:repeat(2,1fr);}}@media(max-width:480px){.emp-grid{grid-template-columns:1fr;}}
 .emp-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.2s;}
 .emp-card:hover{border-color:rgba(192,57,43,.4);box-shadow:0 8px 32px rgba(0,0,0,.3);}
 .emp-card-header{padding:18px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);position:relative;}
@@ -557,11 +557,16 @@ function getPermissions() {
   };
 
   if (contrat === 'CDI' || niveau >= 1) {
-    perms.pages.push('stock_readonly','caisse','clients');
-    perms.caisse = true;
-    perms.clients = true;
-    perms.stock = 'read';
-  }
+  perms.pages.push('stock_readonly','caisse','clients');
+  perms.caisse = true;
+  perms.clients = true;
+  perms.stock = 'read';
+}
+  if (contrat === 'CDD' && niveau === 0) {
+  perms.caisse = false;
+  perms.clients = false;
+  perms.pages = perms.pages.filter(p => p !== 'caisse' && p !== 'clients');
+}
 
   if (niveau >= 1) { // Chef d'équipe
     perms.stock = 'write';
