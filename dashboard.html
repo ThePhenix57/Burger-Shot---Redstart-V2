@@ -562,11 +562,6 @@ function getPermissions() {
   perms.clients = true;
   perms.stock = 'read';
 }
-  if (contrat === 'CDD' && niveau === 0) {
-  perms.caisse = false;
-  perms.clients = false;
-  perms.pages = perms.pages.filter(p => p !== 'caisse' && p !== 'clients');
-}
 
   if (niveau >= 1) { // Chef d'équipe
     perms.stock = 'write';
