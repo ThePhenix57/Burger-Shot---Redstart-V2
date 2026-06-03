@@ -649,6 +649,9 @@ async function sb(endpoint, opts = {}) {
 /* ══════════════════════════════════════════════
    HORLOGE
 ══════════════════════════════════════════════ */
+function initRealtime() {
+  // Realtime Supabase non utilisé — stub pour éviter l'erreur
+}
 function startClock() {
   let el = document.getElementById('clockDisplay');
   if (!el) {
@@ -2260,8 +2263,7 @@ async function loadQuotaPage(){
           <span style="color:var(--muted);">${qV}/${qMaxV} unités</span>
           <span style="color:${pctV>=100?'var(--success)':'var(--red)'};">${pctV>=100?'✅ OK':Math.max(0,qMaxV-qV)+' restantes'}</span>
         </div>
-        ${!hasPendingViande&&pctV<100?`<button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="ouvrirQuotaForm('viande','${emp.contrat}',${qMaxV},${qV},${primeMax})">🚚 Déclarer viande</button>`:''}
-        ${hasPendingViande?`<div class="badge badge-orange" style="margin-top:10px;">⏳ En attente de validation</div>`:''}
+        ${hasPendingViande?`<div class="badge badge-orange" style="margin-top:10px;">⏳ Viande en attente</div>`:''}
       </div>
       <div>
         <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🥔 Patates — ${pctP}%</div>
@@ -2270,8 +2272,13 @@ async function loadQuotaPage(){
           <span style="color:var(--muted);">${qP}/${qMaxP} unités</span>
           <span style="color:${pctP>=100?'var(--success)':'var(--orange)'};">${pctP>=100?'✅ OK':Math.max(0,qMaxP-qP)+' restantes'}</span>
         </div>
-        ${!hasPendingPatates&&pctP<100?`<button class="btn btn-orange btn-sm" style="margin-top:10px;" onclick="ouvrirQuotaForm('patates','${emp.contrat}',${qMaxP},${qP},${primeMax})">🚚 Déclarer patates</button>`:''}
-        ${hasPendingPatates?`<div class="badge badge-orange" style="margin-top:10px;">⏳ En attente de validation</div>`:''}
+        ${hasPendingPatates?`<div class="badge badge-orange" style="margin-top:10px;">⏳ Patates en attente</div>`:''}
+      </div>
+    </div>
+    ${(!hasPendingViande&&pctV<100)||(!hasPendingPatates&&pctP<100)?`
+  <div style="margin-top:16px;">
+    <button class="btn btn-primary" onclick="ouvrirQuotaForm('${emp.contrat}',${qMaxV},${qV},${qMaxP},${qP},${primeMax})">🚚 Déclarer mon quota</button>
+  </div>`:''}
       </div>
     </div>
   </div>
@@ -2297,38 +2304,65 @@ async function loadQuotaPage(){
   if(ROLE==='employe')trackActivity();
 }
 
-function ouvrirQuotaForm(type,contrat,qMax,qDone,primeMax){
-  const icon=type==='viande'?'🥩':'🥔';
-  document.getElementById('quotaFormInfo').innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div><span style="color:var(--muted);">Type</span> <strong>${icon} ${type}</strong></div><div><span style="color:var(--muted);">Contrat</span> <strong>${contrat}</strong></div><div><span style="color:var(--muted);">Validé</span> <strong>${qDone}/${qMax}</strong></div><div><span style="color:var(--muted);">Prime si 100%</span> <strong style="color:var(--success);">${primeMax.toLocaleString('fr-FR')}$</strong></div></div>`;
-  window._quotaFormData={type,qMax,qDone,primeMax};
-  // Reset fields
-  document.getElementById('quotaPlaque').value='';
-  const vField=document.getElementById('quotaQteViande'),pField=document.getElementById('quotaQtePatates');
-  if(type==='viande'){vField.disabled=false;pField.disabled=true;pField.value='';}
-  else{vField.disabled=true;vField.value='';pField.disabled=false;}
-  document.getElementById('quotaNotes').value='';
-  document.getElementById('quotaPreview').style.display='none';
+function ouvrirQuotaForm(contrat, qMaxV, qDoneV, qMaxP, qDoneP, primeMax) {
+  document.getElementById('quotaFormInfo').innerHTML=`
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div><span style="color:var(--muted);">Contrat</span> <strong>${contrat}</strong></div>
+      <div><span style="color:var(--muted);">🥩 Viande validée</span> <strong>${qDoneV}/${qMaxV}</strong></div>
+      <div><span style="color:var(--muted);">🥔 Patates validées</span> <strong>${qDoneP}/${qMaxP}</strong></div>
+      <div><span style="color:var(--muted);">Prime si 100%</span> <strong style="color:var(--success);">${primeMax.toLocaleString('fr-FR')}$</strong></div>
+    </div>`;
+  window._quotaFormData = { contrat, qMaxV, qDoneV, qMaxP, qDoneP, primeMax };
+  document.getElementById('quotaPlaque').value = '';
+  document.getElementById('quotaQteViande').value = '';
+  document.getElementById('quotaQteViande').disabled = false;
+  document.getElementById('quotaQtePatates').value = '';
+  document.getElementById('quotaQtePatates').disabled = false;
+  document.getElementById('quotaNotes').value = '';
+  document.getElementById('quotaPreview').style.display = 'none';
   openOverlay('ovQuota');
 }
 
-function updateQuotaPreview(){
-  const fd=window._quotaFormData;if(!fd){return;}
-  const qte=parseInt(fd.type==='viande'?document.getElementById('quotaQteViande').value:document.getElementById('quotaQtePatates').value)||0;
-  const el=document.getElementById('quotaPreview');
-  if(!qte){el.style.display='none';return;}
-  const newTotal=fd.qDone+qte,pct=Math.min(100,Math.round((newTotal/fd.qMax)*100));
-  el.style.display='block';
-  el.innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div>Total : <strong>${newTotal}/${fd.qMax}</strong></div><div>Avancement : <strong style="color:var(--red);">${pct}%</strong></div></div>`;
+function updateQuotaPreview() {
+  const fd = window._quotaFormData; if (!fd) return;
+  const qteV = parseInt(document.getElementById('quotaQteViande').value) || 0;
+  const qteP = parseInt(document.getElementById('quotaQtePatates').value) || 0;
+  const el = document.getElementById('quotaPreview');
+  if (!qteV && !qteP) { el.style.display = 'none'; return; }
+  const newV = fd.qDoneV + qteV, pctV = Math.min(100, Math.round((newV / fd.qMaxV) * 100));
+  const newP = fd.qDoneP + qteP, pctP = Math.min(100, Math.round((newP / fd.qMaxP) * 100));
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      ${qteV?`<div>🥩 Viande : <strong>${newV}/${fd.qMaxV}</strong> → <strong style="color:var(--red);">${pctV}%</strong></div>`:''}
+      ${qteP?`<div>🥔 Patates : <strong>${newP}/${fd.qMaxP}</strong> → <strong style="color:var(--orange);">${pctP}%</strong></div>`:''}
+    </div>`;
 }
 
-async function soumettreQuota(){
-  const fd=window._quotaFormData;
-  const plaque=document.getElementById('quotaPlaque').value.trim();
-  const qte=parseInt(fd?.type==='viande'?document.getElementById('quotaQteViande').value:document.getElementById('quotaQtePatates').value);
-  const notes=document.getElementById('quotaNotes').value.trim();
-  if(!plaque||!qte){alert('Plaque et quantité obligatoires.');return;}
-  await sb('quotas_tickets',{method:'POST',body:JSON.stringify({employe_discord_id:USER.id,plaque,quantite:qte,type:fd?.type||'viande',notes:notes||null,semaine:getSemaine(),statut:'en_attente'})});
-  closeOverlay('ovQuota');alert('✅ Déclaration envoyée !');loadQuotaPage();
+async function soumettreQuota() {
+  const fd = window._quotaFormData;
+  const plaque = document.getElementById('quotaPlaque').value.trim();
+  const qteV = parseInt(document.getElementById('quotaQteViande').value) || 0;
+  const qteP = parseInt(document.getElementById('quotaQtePatates').value) || 0;
+  const notes = document.getElementById('quotaNotes').value.trim();
+  if (!plaque) { alert('Plaque obligatoire.'); return; }
+  if (!qteV && !qteP) { alert('Remplis au moins une quantité.'); return; }
+
+  if (qteV > 0) {
+    await sb('quotas_tickets', { method: 'POST', body: JSON.stringify({
+      employe_discord_id: USER.id, plaque, quantite: qteV,
+      type: 'viande', notes: notes || null, semaine: getSemaine(), statut: 'en_attente'
+    })});
+  }
+  if (qteP > 0) {
+    await sb('quotas_tickets', { method: 'POST', body: JSON.stringify({
+      employe_discord_id: USER.id, plaque, quantite: qteP,
+      type: 'patates', notes: notes || null, semaine: getSemaine(), statut: 'en_attente'
+    })});
+  }
+  closeOverlay('ovQuota');
+  alert('✅ Déclaration envoyée !');
+  loadQuotaPage();
 }
 
 async function renderQuotaTicketsList(tickets){
@@ -2440,7 +2474,7 @@ async function saveProduit(){
     push('cb','Burger');push('cbo','Boisson');push('ca','Accompagnement');push('cd','Dessert');
   }
   const res=await sb('produits',{method:'POST',body:JSON.stringify({nom,prix:parseFloat(prix),cout_achat:parseFloat(coutAchat)||0,points:parseInt(document.getElementById('mPoints').value)||0,categorie:cat,image_url:document.getElementById('mImg').value.trim()||null,composition:composition?JSON.stringify(composition):null,actif:true})});
-  if(Array.isArray(res)&&res.length){alertEl.innerHTML='<div class="alert alert-ok">✅ Produit ajouté !</div>';['mNom','mPrix','mCoutAchat','mPoints','mImg'].forEach(id=>document.getElementById(id).value='');loadMenu();}
+  if(res !== null){alertEl.innerHTML='<div class="alert alert-ok">✅ Produit ajouté !</div>';['mNom','mPrix','mCoutAchat','mPoints','mImg'].forEach(id=>document.getElementById(id).value='');loadMenu();}
   else alertEl.innerHTML='<div class="alert alert-err">❌ Erreur.</div>';
 }
 async function toggleProd(id,actif){await sb(`produits?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadMenu();}
