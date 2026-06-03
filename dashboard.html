@@ -260,6 +260,7 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 .emp-perso-card{background:linear-gradient(135deg,var(--red-dark),#1a0a0a);border:2px solid rgba(192,57,43,.5);border-radius:16px;padding:20px;color:#fff;position:relative;overflow:hidden;max-width:340px;}
 .emp-perso-card::before{content:'BURGER SHOT';position:absolute;right:-10px;bottom:-14px;font-family:'Bebas Neue',sans-serif;font-size:64px;color:rgba(255,255,255,.04);letter-spacing:3px;pointer-events:none;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -347,8 +348,8 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
     <div class="popup-title">➕ Nouveau Client</div>
     <div id="alertNewClient"></div>
     <div class="g2">
-      <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="ncNom" placeholder="Dupont"></div>
-      <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" id="ncPrenom" placeholder="Jean"></div>
+      <input class="form-input" id="ncNom" placeholder="DOE" oninput="this.value=this.value.toUpperCase()">
+      <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" id="ncPrenom" placeholder="John"></div>
     </div>
     <div class="form-group"><label class="form-label">Date de naissance</label><input class="form-input" id="ncNaissance" type="date"></div>
     <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="ncTel" placeholder="(555) 555-5555" oninput="fmtPhone(this)" maxlength="14"></div>
@@ -685,51 +686,60 @@ async function trackActivity(){
 /* ══════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded',async()=>{
+window.addEventListener('DOMContentLoaded', async () => {
   startClock();
-  const raw=localStorage.getItem('bs_user');
-  if(!raw){location.href='/';return;}
+  const raw = localStorage.getItem('bs_user');
+  if (!raw) { location.href = '/'; return; }
   let userData;
-  try{userData=JSON.parse(raw);}
-  catch(e){localStorage.removeItem('bs_user');location.href='/';return;}
-  const{id,username,avatar,nom,prenom}=userData;
-  if(!id){location.href='/';return;}
+  try { userData = JSON.parse(raw); }
+  catch(e) { localStorage.removeItem('bs_user'); location.href = '/'; return; }
+  const { id, username, avatar, nom, prenom } = userData;
+  if (!id) { location.href = '/'; return; }
 
-  if(!DIR_IDS.includes(id)){
-    const gouvData=await sb(`gouvernement_comptes?discord_id=eq.${id}&statut=eq.actif`);
-    if(gouvData?.length)ROLE='gouvernement';
+  if (!DIR_IDS.includes(id)) {
+    const gouvData = await sb(`gouvernement_comptes?discord_id=eq.${id}&statut=eq.actif`);
+    if (gouvData?.length) ROLE = 'gouvernement';
   }
-  if(DIR_IDS.includes(id))ROLE='direction';
+  if (DIR_IDS.includes(id)) ROLE = 'direction';
 
-let USER_CONTRAT = 'CDD'; // global
+  if (ROLE === 'employe') {
+    const empData = await sb(`employes?discord_id=eq.${id}&select=poste,actif,contrat`);
+    if (!empData?.[0] || !empData[0].actif) { localStorage.removeItem('bs_user'); location.href = '/'; return; }
+    USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
+    USER_CONTRAT = empData[0].contrat || 'CDD'; // ✅ variable globale, pas de let ici
+  }
 
-if (ROLE === 'employe') {
-  const empData = await sb(`employes?discord_id=eq.${id}&select=poste,actif,contrat`);
-  if (!empData?.[0] || !empData[0].actif) { localStorage.removeItem('bs_user'); location.href='/'; return; }
-  USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
-  USER_CONTRAT = empData[0].contrat || 'CDD';
-}
+  const empRP = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
+  const nomRP = empRP?.[0]?.nom, prenomRP = empRP?.[0]?.prenom;
+  const displayName = (prenomRP && nomRP) ? `${prenomRP} ${nomRP}` : (prenom && nom) ? `${prenom} ${nom}` : username;
+  USER = { id, username, displayName, avatar, role: ROLE };
 
-  
-  const empRP=await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
-  const nomRP=empRP?.[0]?.nom,prenomRP=empRP?.[0]?.prenom;
-  const displayName=(prenomRP&&nomRP)?`${prenomRP} ${nomRP}`:(prenom&&nom)?`${prenom} ${nom}`:username;
-  USER={id,username,displayName,avatar,role:ROLE};
-
-  const av=document.getElementById('topAvatar');
-  if(avatar){const img=document.createElement('img');img.src=`https://cdn.discordapp.com/avatars/${id}/${avatar}.png`;img.onerror=()=>av.textContent=displayName.charAt(0).toUpperCase();av.appendChild(img);}
-  else av.textContent=displayName.charAt(0).toUpperCase();
-  document.getElementById('topName').textContent=displayName;
-  document.getElementById('topRole').textContent=ROLE==='direction'?'⭐ Direction':ROLE==='gouvernement'?'🏛️ Gouvernement':'🧾 Employé';
+  const av = document.getElementById('topAvatar');
+  if (avatar) { const img = document.createElement('img'); img.src = `https://cdn.discordapp.com/avatars/${id}/${avatar}.png`; img.onerror = () => av.textContent = displayName.charAt(0).toUpperCase(); av.appendChild(img); }
+  else av.textContent = displayName.charAt(0).toUpperCase();
+  document.getElementById('topName').textContent = displayName;
+  document.getElementById('topRole').textContent = ROLE === 'direction' ? '⭐ Direction' : ROLE === 'gouvernement' ? '🏛️ Gouvernement' : '🧾 Employé';
 
   await loadQuotaConfig();
-  passTypes=await sb('pass_types?select=*')||[];
+  passTypes = await sb('pass_types?select=*') || [];
 
-  buildNav();buildPages();
-  showPage(ROLE==='gouvernement'?'stats':'accueil');
-  if(ROLE==='employe')trackActivity();
+  buildNav(); buildPages();
+  showPage(ROLE === 'gouvernement' ? 'stats' : 'accueil');
+  if (ROLE === 'employe') trackActivity();
 
-  autoRefreshInterval=setInterval(autoRefresh,30000);
+  initRealtime();
+  autoRefreshInterval = setInterval(refreshCurrentPage, 60000);
+
+  // ✅ Garde le contenu original de ces listeners
+  document.addEventListener('input', e => {
+    if (e.target.id === 'mImg') updateMenuImgPreview(e.target.value);
+    if (e.target.id === 'caisseClientSearch') searchCaisseClient(e.target.value);
+    if (e.target.id === 'passSearch') searchPassClient(e.target.value);
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 'mCat') updateMenuCatUI(e.target.value);
+  });
+});
 
   document.addEventListener('input',e=>{
     if(e.target.id==='mImg')updateMenuImgPreview(e.target.value);
@@ -979,8 +989,8 @@ function buildPages(){
       <div class="card">
         <div class="card-title">Nouvel employé</div>
         <div class="g2">
-          <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="empNom" placeholder="Dupont"></div>
-          <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" id="empPrenom" placeholder="Jean"></div>
+          <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="empNom" placeholder="DOE" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" id="empPrenom" placeholder="John"></div>
         </div>
         <div class="g2">
           <div class="form-group"><label class="form-label">Date de naissance</label><input class="form-input" id="empNaissance" type="date"></div>
@@ -2122,17 +2132,16 @@ function voirDocsEmploye(empId, nom, docs) {
   openOverlay('ovDocs');
 }
 
-function openAddEmploye(){const f=document.getElementById('addEmployeForm');f.style.display=f.style.display==='none'?'block':'none';}
-async function saveEmploye() {
-  const nom    = document.getElementById('empNom')?.value.trim();
-  const prenom = document.getElementById('empPrenom')?.value.trim();
-  const discord = document.getElementById('empDiscord')?.value.trim();
-  const alertEl = document.getElementById('alertEmploye');
- 
-  if (!nom || !prenom || !discord) {
-    alertEl.innerHTML = '<div class="alert alert-err">⚠️ Nom, prénom et Discord obligatoires.</div>';
-    return;
+function openAddEmploye() {
+  const f = document.getElementById('addEmployeForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  
+  // ✅ Rempli automatiquement la date d'aujourd'hui
+  const dateInput = document.getElementById('empEmbauche');
+  if (dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
   }
+}
  
   alertEl.innerHTML = '<div class="alert alert-warn">⏳ Enregistrement...</div>';
  
@@ -2146,11 +2155,11 @@ async function saveEmploye() {
     poste:          document.getElementById('empPoste')?.value || 'Employé',
     contrat:        document.getElementById('empContrat')?.value || 'CDD',
     actif:          document.getElementById('empActif')?.value === 'true',
-    date_embauche:  document.getElementById('empEmbauche')?.value || null,
+    date_embauche:  document.getElementById('empEmbauche')?.value || new Date().toISOString().split('T')[0], // 👈 aujourd'hui par défaut
     quota_viande_validee: 0,
     quota_patates_validee: 0,
     statut_activite: 'actif'
-  };
+};
  
   const result = await sb('employes', { method: 'POST', body: JSON.stringify(payload) });
  
