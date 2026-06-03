@@ -22,88 +22,71 @@
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
 a{color:inherit;text-decoration:none;}
 button,input,select{font-family:'Barlow',sans-serif;}
-
 .checker{height:10px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:10px 10px;position:fixed;top:0;left:0;right:0;z-index:100;}
-
 .wrap{width:100%;max-width:500px;margin-top:16px;}
-
 .logo-wrap{text-align:center;margin-bottom:28px;}
 .logo-wrap img{height:72px;filter:drop-shadow(0 0 18px rgba(192,57,43,.45));}
 .logo-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:var(--red);margin-top:10px;line-height:1;}
 .logo-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
-
 .progress{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;}
 .prog-dot{width:8px;height:8px;border-radius:50%;background:var(--card3);border:1px solid var(--border);transition:.3s;}
 .prog-dot.active{background:var(--red);width:28px;border-radius:4px;}
 .prog-dot.done{background:var(--success);border-color:var(--success);}
-
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--orange),var(--red));}
-
 .step{display:none;} .step.active{display:block;animation:fadeIn .25s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
 .step-title{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--red);letter-spacing:1.5px;margin-bottom:6px;}
 .step-desc{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.55;}
-
 .form-group{margin-bottom:15px;}
 .form-label{display:block;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.form-input,.form-select{width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;transition:border-color .2s;}
-.form-input:focus,.form-select:focus{outline:none;border-color:var(--red);}
-.form-select option{background:var(--card2);}
+.form-input{width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;transition:border-color .2s;}
+.form-input:focus{outline:none;border-color:var(--red);}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-
 .btn{width:100%;padding:12px 20px;border-radius:9px;border:none;font-size:13px;font-weight:800;cursor:pointer;transition:.2s;letter-spacing:.8px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:6px;}
 .btn-primary{background:var(--red);color:#fff;}
 .btn-primary:hover{background:var(--red-dark);transform:translateY(-1px);}
 .btn-discord{background:#5865F2;color:#fff;font-size:14px;}
 .btn-discord:hover{background:#4752C4;transform:translateY(-1px);}
 .btn-discord svg{width:20px;height:20px;flex-shrink:0;}
-.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
-.btn-outline:hover{border-color:var(--red);color:var(--red);}
-
 .alert{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px;}
 .alert-ok{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);color:var(--success);}
 .alert-err{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.25);color:var(--red);}
 .alert-warn{background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.25);color:var(--warning);}
 .alert-info{background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.25);color:var(--blue);}
-
 .user-info-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;}
 .user-av{width:42px;height:42px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;overflow:hidden;flex-shrink:0;border:2px solid rgba(192,57,43,.4);}
 .user-av img{width:100%;height:100%;object-fit:cover;}
 .user-name{font-weight:800;font-size:14px;}
 .user-id{font-size:11px;color:var(--muted);margin-top:2px;}
-
 .fonctions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
 .fn-card{background:var(--card2);border:2px solid var(--border);border-radius:10px;padding:12px 10px;cursor:pointer;transition:.2s;text-align:center;}
 .fn-card:hover{border-color:rgba(192,57,43,.4);}
 .fn-card.selected{border-color:var(--red);background:rgba(192,57,43,.08);}
 .fn-card-icon{font-size:24px;margin-bottom:5px;}
 .fn-card-label{font-size:11px;font-weight:800;letter-spacing:.5px;}
-
 .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden;}
 .upload-zone:hover{border-color:var(--red);background:rgba(192,57,43,.03);}
 .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .upload-icon{font-size:30px;margin-bottom:8px;}
 .upload-text{font-size:13px;color:var(--muted);}
 .upload-preview{width:100%;border-radius:8px;margin-top:12px;display:none;max-height:200px;object-fit:contain;}
-
 .recap-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px;font-size:13px;}
 .recap-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
 .recap-row:last-child{border-bottom:none;}
 .recap-key{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;}
 .recap-val{font-weight:700;}
-
 .success-icon{font-size:60px;text-align:center;margin-bottom:16px;}
 .success-title{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--success);letter-spacing:2px;text-align:center;}
 .success-sub{font-size:13px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.6;}
-
+.employe-block{background:rgba(192,57,43,.07);border:1px solid rgba(192,57,43,.2);border-radius:12px;padding:24px;text-align:center;margin-bottom:18px;}
+.employe-block-icon{font-size:44px;margin-bottom:12px;}
+.employe-block-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red);letter-spacing:1px;margin-bottom:8px;}
+.employe-block-desc{font-size:13px;color:var(--muted);line-height:1.6;}
 .theme-btn{position:fixed;top:18px;right:18px;width:32px;height:32px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:200;}
 .theme-btn:hover{border-color:var(--red);}
-
 .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 .back-link{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;cursor:pointer;transition:.2s;}
 .back-link:hover{color:var(--red);}
 </style>
@@ -130,10 +113,10 @@ button,input,select{font-family:'Barlow',sans-serif;}
   <div class="card">
     <div id="alertMain"></div>
 
-    <!-- STEP 0 : Connexion -->
+    <!-- STEP 0 : Connexion Discord -->
     <div class="step active" id="step0">
       <div class="step-title">🔐 Connexion Discord</div>
-      <div class="step-desc">Connectez-vous avec Discord pour créer votre compte gouvernement et accéder aux statistiques du Burger Shot.</div>
+      <div class="step-desc">Connectez-vous avec Discord pour créer votre compte gouvernement et accéder au dashboard du Burger Shot.</div>
       <button class="btn btn-discord" onclick="loginDiscord()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.101 18.079.11 18.1.127 18.113a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
         Se connecter avec Discord
@@ -141,40 +124,19 @@ button,input,select{font-family:'Barlow',sans-serif;}
       <div class="back-link" onclick="location.href='/'">← Retour à l'accueil</div>
     </div>
 
-    <!-- STEP 1 : Vérification -->
+    <!-- STEP 1 : Dynamique (employé bloqué ou formulaire gouv) -->
     <div class="step" id="step1">
-      <div class="step-title">👤 Vos informations</div>
-      <div class="step-desc">Renseignez vos informations pour créer votre compte gouvernement.</div>
       <div id="userCardWrap"></div>
-      <div class="g2">
-        <div class="form-group">
-          <label class="form-label">Nom (majuscules)</label>
-          <input class="form-input" id="gNom" placeholder="DUPONT" oninput="this.value=this.value.toUpperCase()">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Prénom</label>
-          <input class="form-input" id="gPrenom" placeholder="Jean">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Fonction</label>
-        <div class="fonctions" id="fonctionsGrid"></div>
-      </div>
-      <div class="form-group" id="autreFonctionGroup" style="display:none;">
-        <label class="form-label">Précisez votre fonction</label>
-        <input class="form-input" id="gAutreFonction" placeholder="Ex : Inspecteur général...">
-      </div>
-      <button class="btn btn-primary" id="btnStep1" onclick="goStep2()">Continuer →</button>
-      <div class="back-link" onclick="setStep(0)">← Retour</div>
+      <div id="step1Content"></div>
     </div>
 
     <!-- STEP 2 : Preuve -->
     <div class="step" id="step2">
       <div class="step-title">📸 Preuve de fonction</div>
-      <div class="step-desc">Fournissez une capture d'écran ou un lien prouvant votre appartenance au gouvernement (badge officiel, document, etc.)</div>
+      <div class="step-desc">Fournissez une capture d'écran ou un lien prouvant votre appartenance au gouvernement.</div>
       <div class="form-group">
         <label class="form-label">Upload image</label>
-        <div class="upload-zone" id="uploadZone">
+        <div class="upload-zone">
           <input type="file" accept="image/*" onchange="handleUpload(event)">
           <div class="upload-icon">📁</div>
           <div class="upload-text">Cliquez ou glissez une image ici</div>
@@ -182,7 +144,7 @@ button,input,select{font-family:'Barlow',sans-serif;}
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Ou URL du lien de preuve</label>
+        <label class="form-label">Ou URL de preuve</label>
         <input class="form-input" id="gPreuveUrl" placeholder="https://imgur.com/...">
       </div>
       <button class="btn btn-primary" id="btnStep2" onclick="soumettre()">✅ Enregistrer mon compte</button>
@@ -193,7 +155,7 @@ button,input,select{font-family:'Barlow',sans-serif;}
     <div class="step" id="step3">
       <div class="success-icon">✅</div>
       <div class="success-title">Compte créé !</div>
-      <div class="success-sub">Votre compte gouvernement est maintenant enregistré.<br>Accédez au dashboard pour voir les statistiques du Burger Shot.</div>
+      <div class="success-sub">Votre compte gouvernement est enregistré.<br>Accédez au dashboard pour consulter les statistiques.</div>
       <div id="recapWrap" class="recap-box" style="margin-top:18px;"></div>
       <button class="btn btn-primary" style="margin-top:18px;" onclick="location.href='/'">🏠 Accéder au Dashboard</button>
     </div>
@@ -203,8 +165,6 @@ button,input,select{font-family:'Barlow',sans-serif;}
 <script>
 const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
-
-// ⚠️ REMPLACE PAR TON CLIENT ID DISCORD
 const DISCORD_CLIENT_ID = '1508986297660870806';
 const REDIRECT_URI = encodeURIComponent(window.location.origin + '/gouv.html');
 
@@ -249,9 +209,8 @@ function loginDiscord() {
 function setStep(n) {
   document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('active', i === n));
   document.querySelectorAll('.prog-dot').forEach((d, i) => {
-    d.classList.toggle('active', i === n);
-    d.classList.toggle('done', i < n);
     d.classList.remove('active');
+    d.classList.toggle('done', i < n);
   });
   document.querySelectorAll('.prog-dot')[n]?.classList.add('active');
   clearAlert();
@@ -259,12 +218,13 @@ function setStep(n) {
 }
 
 function renderUserCard(user) {
-  const av = user.avatar
-    ? `<img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" onerror="this.parentElement.textContent='${(user.username||'?').charAt(0).toUpperCase()}';">`
-    : user.username?.charAt(0)?.toUpperCase() || '?';
+  const initial = (user.username || '?').charAt(0).toUpperCase();
+  const avHtml = user.avatar
+    ? `<img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" onerror="this.outerHTML='${initial}'">`
+    : initial;
   document.getElementById('userCardWrap').innerHTML = `
     <div class="user-info-card">
-      <div class="user-av">${av}</div>
+      <div class="user-av">${avHtml}</div>
       <div>
         <div class="user-name">${user.username || 'Utilisateur Discord'}</div>
         <div class="user-id">ID : ${user.id}</div>
@@ -272,8 +232,54 @@ function renderUserCard(user) {
     </div>`;
 }
 
+// Affiche le bon contenu selon si l'utilisateur est employé ou non
+function renderStep1Content(isEmploye) {
+  const c = document.getElementById('step1Content');
+  if (isEmploye) {
+    c.innerHTML = `
+      <div class="employe-block">
+        <div class="employe-block-icon">🍔</div>
+        <div class="employe-block-title">Vous êtes employé Burger Shot</div>
+        <div class="employe-block-desc">
+          Votre compte Discord est enregistré comme employé du Burger Shot.<br><br>
+          L'espace Gouvernement est réservé aux membres du gouvernement uniquement.<br>
+          Utilisez l'espace employé pour accéder à votre dashboard.
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="location.href='/'">🏠 Aller à l'espace employé</button>
+      <div class="back-link" onclick="deconnecterEtRevenir()">← Se connecter avec un autre compte</div>`;
+  } else {
+    c.innerHTML = `
+      <div class="step-title">👤 Vos informations</div>
+      <div class="step-desc">Renseignez vos informations pour créer votre compte gouvernement.</div>
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label">Nom (majuscules)</label>
+          <input class="form-input" id="gNom" placeholder="DUPONT" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input class="form-input" id="gPrenom" placeholder="Jean">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fonction</label>
+        <div class="fonctions" id="fonctionsGrid"></div>
+      </div>
+      <div class="form-group" id="autreFonctionGroup" style="display:none;">
+        <label class="form-label">Précisez votre fonction</label>
+        <input class="form-input" id="gAutreFonction" placeholder="Ex : Inspecteur général...">
+      </div>
+      <button class="btn btn-primary" onclick="goStep2()">Continuer →</button>
+      <div class="back-link" onclick="setStep(0)">← Retour</div>`;
+    buildFonctions();
+  }
+}
+
 function buildFonctions() {
-  document.getElementById('fonctionsGrid').innerHTML = FONCTIONS.map(f => `
+  const grid = document.getElementById('fonctionsGrid');
+  if (!grid) return;
+  grid.innerHTML = FONCTIONS.map(f => `
     <div class="fn-card" id="fn-${f.id}" onclick="selectFonction('${f.id}','${f.label}')">
       <div class="fn-card-icon">${f.icon}</div>
       <div class="fn-card-label">${f.label}</div>
@@ -284,7 +290,8 @@ function selectFonction(id, label) {
   document.querySelectorAll('.fn-card').forEach(c => c.classList.remove('selected'));
   document.getElementById(`fn-${id}`)?.classList.add('selected');
   selectedFonction = label;
-  document.getElementById('autreFonctionGroup').style.display = id === 'autre' ? 'block' : 'none';
+  const ag = document.getElementById('autreFonctionGroup');
+  if (ag) ag.style.display = id === 'autre' ? 'block' : 'none';
 }
 
 function handleUpload(e) {
@@ -309,6 +316,13 @@ function goStep2() {
   setStep(2);
 }
 
+function deconnecterEtRevenir() {
+  localStorage.removeItem('bs_user');
+  localStorage.removeItem('bs_gouv_user');
+  currentUser = null;
+  setStep(0);
+}
+
 async function soumettre() {
   const nom = document.getElementById('gNom').value.trim();
   const prenom = document.getElementById('gPrenom').value.trim();
@@ -324,7 +338,6 @@ async function soumettre() {
   btn.disabled = true;
 
   try {
-    // Vérif doublon
     const existing = await sb(`gouvernement_comptes?discord_id=eq.${currentUser.id}`);
     if (existing?.length) {
       const ex = existing[0];
@@ -332,13 +345,11 @@ async function soumettre() {
         showAlert('❌ Votre accès a été révoqué. Contactez la direction.');
         btn.innerHTML = '✅ Enregistrer mon compte'; btn.disabled = false; return;
       }
-      // Mise à jour si déjà existant
       await sb(`gouvernement_comptes?id=eq.${ex.id}`, {
         method: 'PATCH',
         body: JSON.stringify({ nom, prenom, fonction: fonctionFinale, preuve_url: preuveUrl, statut: ex.statut || 'actif', username: currentUser.username, avatar: currentUser.avatar || null })
       });
     } else {
-      // Nouveau compte
       await sb('gouvernement_comptes', {
         method: 'POST',
         body: JSON.stringify({
@@ -353,6 +364,16 @@ async function soumettre() {
       });
     }
 
+    // Sauvegarder la session gouvernement
+    localStorage.setItem('bs_gouv_user', JSON.stringify({
+      id: currentUser.id,
+      username: currentUser.username,
+      avatar: currentUser.avatar,
+      nom, prenom,
+      fonction: fonctionFinale,
+      role: 'gouvernement'
+    }));
+
     document.getElementById('recapWrap').innerHTML = `
       <div class="recap-row"><span class="recap-key">Nom</span><span class="recap-val">${prenom} ${nom}</span></div>
       <div class="recap-row"><span class="recap-key">Fonction</span><span class="recap-val">${fonctionFinale}</span></div>
@@ -361,7 +382,7 @@ async function soumettre() {
 
     setStep(3);
   } catch(e) {
-    showAlert('❌ Erreur lors de l\'enregistrement. Réessayez.');
+    showAlert("❌ Erreur lors de l'enregistrement. Réessayez.");
     btn.innerHTML = '✅ Enregistrer mon compte'; btn.disabled = false;
   }
 }
@@ -374,25 +395,22 @@ function toggleTheme() {
 
 // ═══ INIT ═══
 window.addEventListener('DOMContentLoaded', async () => {
-  buildFonctions();
 
-  // 1. Déjà connecté via le dashboard principal
-  const stored = localStorage.getItem('bs_user');
-  if (stored) {
+  // Priorité 1 : session gouvernement active
+  const storedGouv = localStorage.getItem('bs_gouv_user');
+  if (storedGouv) {
     try {
-      const user = JSON.parse(stored);
+      const user = JSON.parse(storedGouv);
       if (user?.id) {
         currentUser = user;
         renderUserCard(user);
-        setStep(1);
 
-        // Vérifie si compte gouv déjà existant
         const existing = await sb(`gouvernement_comptes?discord_id=eq.${user.id}`);
         if (existing?.length) {
           const ex = existing[0];
           if (ex.statut === 'revoque') {
             setStep(0);
-            showAlert('❌ Votre accès gouvernement a été révoqué. Contactez la direction du Burger Shot.', 'err');
+            showAlert('❌ Votre accès gouvernement a été révoqué. Contactez la direction.', 'err');
             return;
           }
           if (ex.statut === 'suspendu') {
@@ -400,22 +418,57 @@ window.addEventListener('DOMContentLoaded', async () => {
             showAlert('⏸️ Votre accès est suspendu. Contactez la direction.', 'warn');
             return;
           }
-          // Déjà enregistré et actif → on peut aller directement au dashboard
-          showAlert(`✅ Vous êtes déjà enregistré en tant que ${ex.fonction || 'gouvernement'}. Accédez au <a href="/" style="color:var(--success);text-decoration:underline;">dashboard</a>.`, 'ok');
+          showAlert(`✅ Déjà enregistré en tant que ${ex.fonction}. <a href="/" style="color:var(--success);text-decoration:underline;">Accéder au dashboard</a>.`, 'ok');
+          setStep(1);
+          renderStep1Content(false);
           return;
         }
+        // Compte gouv pas encore finalisé → formulaire
+        setStep(1);
+        renderStep1Content(false);
         return;
       }
     } catch {}
   }
 
-  // 2. Callback OAuth Discord
+  // Priorité 2 : session employé active → bloquer
+  const storedEmp = localStorage.getItem('bs_user');
+  if (storedEmp) {
+    try {
+      const user = JSON.parse(storedEmp);
+      if (user?.id) {
+        currentUser = user;
+
+        // Vérifier dans la table employes
+        const empCheck = await sb(`employes?discord_id=eq.${user.id}`);
+        if (empCheck?.length) {
+          renderUserCard(user);
+          setStep(1);
+          renderStep1Content(true); // Bloquer : c'est un employé
+          return;
+        }
+
+        // L'utilisateur a une session bs_user mais n'est pas dans employes
+        // → le laisser s'inscrire comme gouvernement
+        currentUser = user;
+        renderUserCard(user);
+        setStep(1);
+        renderStep1Content(false);
+        return;
+      }
+    } catch {}
+  }
+
+  // Priorité 3 : callback OAuth Discord
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   if (code) {
     window.history.replaceState({}, document.title, window.location.pathname);
-    showAlert('⚠️ OAuth Discord non configuré. Connectez-vous d\'abord via la page principale, puis revenez ici.', 'warn');
+    showAlert("⚠️ OAuth Discord non configuré côté serveur. Connectez-vous d'abord via la page principale, puis revenez ici.", 'warn');
+    return;
   }
+
+  // Sinon → étape 0 (connexion Discord)
 });
 </script>
 </body>
