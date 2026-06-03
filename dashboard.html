@@ -529,50 +529,42 @@ const TVX = 0.10; // TVX 10%
 const STOCK_CATS = ['Viande','Patate','Wraps','Burger','Nugget','Boisson','Dessert','Autres'];
 
 function getPermissions() {
-  const contrat = USER_CONTRAT; // 'CDD' ou 'CDI'
-  const niveau = USER_NIVEAU;   // 0=Employé, 1=Chef équipe, 2=Responsable, 3=Manager, 4=Co-Patron, 5=Patron
-  const role = ROLE;            // 'employe', 'direction', 'gouvernement'
+  if (ROLE === 'direction') return { pages: 'ALL', all: true };
 
-  if (role === 'gouvernement') return {
-    pages: ['accueil','stock','employes_gouv','stats','calendrier','vehicules'],
-    stock: 'read',
-    employes: 'read',
-    vehicules: 'read',
-    calendrier: 'read',
-    stats: 'read',
+  if (ROLE === 'gouvernement') return {
+    pages: ['stats', 'employes_gouv', 'vehicules_readonly', 'stock_readonly'],
+    all: false
   };
 
-  if (niveau >= 4) return { pages: 'ALL', all: true }; // Co-Patron / Patron
-
+  // Employés
   const perms = {
-    pages: ['accueil','employes_readonly','vehicules_readonly','calendrier_readonly','stats_readonly'],
+    pages: ['accueil', 'employes_readonly', 'quota', 'vehicules_readonly', 'calendrier_readonly', 'stats_readonly'],
     caisse: false,
     clients: false,
     stock: false,
     vehicules: 'read',
-    calendrier: 'read',
-    stats: 'read',
-    employes: 'read',
-    quota: true,
   };
 
-  if (contrat === 'CDI' || niveau >= 1) {
-  perms.pages.push('stock_readonly','caisse','clients');
-  perms.caisse = true;
-  perms.clients = true;
-  perms.stock = 'read';
-}
-
-  if (niveau >= 1) { // Chef d'équipe
-    perms.stock = 'write';
-    perms.pages.push('stock');
+  if (USER_CONTRAT === 'CDI') {
+    perms.pages.push('caisse', 'clients');
+    perms.caisse = true;
+    perms.clients = true;
   }
 
-  if (niveau >= 2) { // Responsable
+  if (USER_NIVEAU >= 1) { // Chef d'équipe
+    perms.pages.push('stock_readonly');
+    perms.stock = 'read';
+    perms.vehicules = 'assign'; // peut assigner pas supprimer/modifier
+  }
+
+  if (USER_NIVEAU >= 2) { // Responsable
+    perms.pages = perms.pages.filter(p => p !== 'stock_readonly');
+    perms.pages.push('stock');
+    perms.stock = 'write';
     perms.vehicules = 'write';
   }
 
-  if (niveau >= 3) { // Manager
+  if (USER_NIVEAU >= 3) { // Manager
     perms.pages.push('gestion');
   }
 
@@ -822,33 +814,37 @@ function buildNav() {
 
   let items;
 
-  if (ROLE === 'gouvernement') {
-    items = [
-      {id:'accueil', icon:'🏠', label:'Accueil'},
-      {id:'stats', icon:'📊', label:'Stats'},
-      {id:'stock', icon:'📦', label:'Stock'},
-      {id:'employes_gouv', icon:'👤', label:'Employés'},
-      {id:'calendrier', icon:'📅', label:'Calendrier'},
-      {id:'vehicules', icon:'🚗', label:'Véhicules'},
-    ];
-  } else if (perms.all) {
+  if (ROLE === 'direction') {
     items = NAV.direction;
+  } else if (ROLE === 'gouvernement') {
+    items = [
+      {id:'stats',          icon:'📊', label:'Stats'},
+      {id:'employes_gouv',  icon:'👤', label:'Employés'},
+      {id:'vehicules_readonly', icon:'🚗', label:'Véhicules'},
+      {id:'stock_readonly', icon:'📦', label:'Stock'},
+    ];
   } else {
-    // Construction selon contrat + niveau
     items = [{id:'accueil', icon:'🏠', label:'Accueil'}];
 
-    if (perms.caisse)    items.push({id:'caisse', icon:'🧾', label:'Caisse'});
-    if (perms.clients)   items.push({id:'clients', icon:'👥', label:'Clients'});
+    if (perms.caisse)  items.push({id:'caisse',  icon:'🧾', label:'Caisse'});
+    if (perms.clients) items.push({id:'clients', icon:'👥', label:'Clients'});
 
     items.push({id:'employes_readonly', icon:'👤', label:'Équipe'});
-    items.push({id:'quota', icon:'🚚', label:'Mon Quota'});
+    items.push({id:'quota',             icon:'🚚', label:'Mon Quota'});
 
-    if (perms.stock === 'write') items.push({id:'stock', icon:'📦', label:'Stock'});
-    else if (perms.stock === 'read') items.push({id:'stock_readonly', icon:'📦', label:'Stock'});
+    if (perms.stock === 'write')      items.push({id:'stock',          icon:'📦', label:'Stock'});
+    else if (perms.stock === 'read')  items.push({id:'stock_readonly', icon:'📦', label:'Stock'});
 
-    items.push({id:'vehicules_readonly', icon:'🚗', label:'Véhicules'});
+    if (perms.vehicules === 'write' || perms.vehicules === 'assign') {
+      items.push({id:'vehicules', icon:'🚗', label:'Véhicules'});
+    } else {
+      items.push({id:'vehicules_readonly', icon:'🚗', label:'Véhicules'});
+    }
+
     items.push({id:'calendrier_readonly', icon:'📅', label:'Calendrier'});
-    items.push({id:'stats_readonly', icon:'📊', label:'Stats'});
+    items.push({id:'stats_readonly',      icon:'📊', label:'Stats'});
+
+    if (USER_NIVEAU >= 3) items.push({id:'gestion', icon:'⚙️', label:'Gestion', badge:'quota-badge'});
   }
 
   nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
@@ -1822,8 +1818,13 @@ async function loadVehicules() {
         <div class="veh-plaque">${v.plaque}</div>
         <div class="veh-emp">${emp.prenom ? `${emp.prenom} ${emp.nom}` : 'Non attribué'}</div>
         <div style="display:flex;gap:6px;margin-top:10px;">
-          <button class="btn btn-outline btn-sm" onclick="editerVehicule('${v.id}','${v.plaque}','${v.image_url||''}','${v.employe_discord_id||''}')">✏️ Modifier</button>
-          <button class="btn btn-danger btn-sm" onclick="supprimerVehicule('${v.id}')">🗑️</button>
+          ${ROLE === 'direction' || USER_NIVEAU >= 2
+            ? `<button class="btn btn-outline btn-sm" onclick="editerVehicule('${v.id}','${v.plaque}','${v.image_url||''}','${v.employe_discord_id||''}')">✏️ Modifier</button>
+               <button class="btn btn-danger btn-sm" onclick="supprimerVehicule('${v.id}')">🗑️</button>`
+            : USER_NIVEAU >= 1
+              ? `<button class="btn btn-outline btn-sm" onclick="editerVehicule('${v.id}','${v.plaque}','${v.image_url||''}','${v.employe_discord_id||''}')">👤 Assigner</button>`
+              : ''
+          }
         </div>
       </div>
     </div>`;
