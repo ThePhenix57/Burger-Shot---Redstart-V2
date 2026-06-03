@@ -536,7 +536,34 @@ let quotaConfig={cdd_quota_viande:100,cdd_quota_patates:50,cdi_quota_viande:200,
 let pendingQuotaCount=0;
 let allClients=[];
 let currentFactureHTML='';
+let allGouv = [];
 
+function renderGouvList(list) {
+  if (!list.length) return '<p style="color:var(--muted)">Aucun compte gouvernement.</p>';
+  return list.map(g => `
+    <div class="gouv-card">
+      <div class="gouv-avatar">
+        ${g.avatar_url
+          ? `<img src="${g.avatar_url}" onerror="this.style.display='none'">`
+          : (g.prenom || g.username || '?').charAt(0).toUpperCase()}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;">${g.prenom || ''} ${g.nom || ''}</div>
+        <div style="font-size:12px;color:var(--muted);">${g.username || '—'}</div>
+        <div style="font-size:11px;margin-top:4px;">
+          <span class="badge badge-blue">${g.fonction || 'Gouvernement'}</span>
+          <span class="badge ${g.statut === 'actif' ? 'badge-green' : 'badge-red'}" style="margin-left:4px;">${g.statut || '—'}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function supprimerVehicule(id) {
+  if (!confirm('Supprimer ce véhicule ?')) return;
+  await sb(`vehicules?id=eq.${id}`, { method: 'DELETE' });
+  loadVehicules();
+}
+  
 /* ══════════════════════════════════════════════
    SUPABASE
 ══════════════════════════════════════════════ */
@@ -2519,6 +2546,39 @@ async function cloturerSemaine(){
   for(const emp of(employes||[]))await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({quota_viande_validee:0,quota_patates_validee:0})});
   alert('✅ Semaine clôturée !');loadGestion();
 }
+function showPage(id) {
+  // Masquer toutes les pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Afficher la page cible
+  const page = document.getElementById(`page-${id}`);
+  if (page) page.classList.add('active');
+
+  const navItem = document.getElementById(`nav-${id}`);
+  if (navItem) navItem.classList.add('active');
+
+  // Charger le contenu selon la page
+  const loaders = {
+    'accueil':       loadAccueil,
+    'caisse':        loadCaisse,
+    'clients':       loadClients,
+    'quota':         loadQuotaPage,
+    'stock':         loadStock,
+    'calendrier':    loadCalendrier,
+    'stats':         loadStats,
+    'employes':      loadEmployes,
+    'menu':          loadMenu,
+    'vehicules':     loadVehicules,
+    'contrats':      loadContrats,
+    'gestion':       loadGestion,
+    'gouvernement':  loadGouvernement,
+    'employes_gouv': loadEmployesGouv,
+  };
+
+  if (loaders[id]) loaders[id]();
+}
+  
 </script>
 </body>
 </html>
