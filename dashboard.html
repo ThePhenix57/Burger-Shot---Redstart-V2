@@ -521,6 +521,7 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 ══════════════════════════════════════════════ */
 const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
+const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
 const POSTES = ['Employé',"Chef d'équipe",'Responsable','Manager','Co-Patron','Patron'];
 const NIVEAU_POSTE = {'Employé':0,"Chef d'équipe":1,'Responsable':2,'Manager':3,'Co-Patron':4,'Patron':5};
 const TVX = 0.10; // TVX 10%
@@ -605,6 +606,12 @@ window.addEventListener('DOMContentLoaded',async()=>{
   catch(e){localStorage.removeItem('bs_user');location.href='/';return;}
   const{id,username,avatar,nom,prenom}=userData;
   if(!id){location.href='/';return;}
+
+  if(!DIR_IDS.includes(id)){
+    const gouvData=await sb(`gouvernement_comptes?discord_id=eq.${id}&statut=eq.actif`);
+    if(gouvData?.length)ROLE='gouvernement';
+  }
+  if(DIR_IDS.includes(id))ROLE='direction';
 
   if(ROLE==='employe'){
     const empData=await sb(`employes?discord_id=eq.${id}&select=poste,actif`);
@@ -725,7 +732,6 @@ function buildNav() {
     const badgeHtml = i.badge ? `<span class="nav-badge" id="${i.badge}"></span>` : '';
     return `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
   }).join('');
-}
 
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
