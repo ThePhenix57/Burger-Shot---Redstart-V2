@@ -1726,7 +1726,7 @@ async function loadStock(){
   const el=document.getElementById('stockContent');
   if(!Array.isArray(stockData)||!stockData.length){el.innerHTML='<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun produit en stock.</p></div>';return;}
   const cats=[...new Set(stockData.map(p=>p.categorie))];
-  const canMove=ROLE==='direction'||USER_NIVEAU>=2;
+  const canMove = ROLE === 'direction' || USER_NIVEAU >= 1;
   el.innerHTML=cats.map(cat=>{
     const items=stockData.filter(p=>p.categorie===cat);
     return`<div class="card" style="margin-bottom:16px;">
