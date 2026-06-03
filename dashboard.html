@@ -541,32 +541,39 @@ let currentFactureHTML='';
    SUPABASE
 ══════════════════════════════════════════════ */
 async function sb(endpoint, opts = {}) {
+  const method = opts.method || 'GET';
+  const isWrite = ['POST','PATCH','DELETE','PUT'].includes(method);
+  
+  const headers = {
+    apikey: SB_KEY,
+    Authorization: `Bearer ${SB_KEY}`,
+    'Content-Type': 'application/json',
+        Prefer: isWrite ? 'return=minimal' : 'return=representation',
+    ...(opts.headers || {})
+  };
+ 
   try {
     const r = await fetch(`${SB_URL}/rest/v1/${endpoint}`, {
-      headers: {
-        apikey: SB_KEY,
-        Authorization: `Bearer ${SB_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=representation',
-        ...(opts.headers || {})
-      },
-      method: opts.method || 'GET',
+      headers,
+      method,
       body: opts.body
     });
+ 
     if (!r.ok) {
-      console.warn(`Supabase ${opts.method || 'GET'} /${endpoint} → ${r.status}`);
-      return [];
+      const errText = await r.text();
+      console.error(`❌ Supabase ${method} /${endpoint} → ${r.status}:`, errText);
+      return null;
     }
+ 
     const text = await r.text();
-    if (!text) return [];
-    return JSON.parse(text);
+    if (!text || text.trim() === '') return true; // POST/PATCH/DELETE réussi sans body
+    try { return JSON.parse(text); } catch { return true; }
+ 
   } catch (e) {
-    console.error('sb() error:', endpoint, e.message);
-    return [];
+    console.error('❌ sb() fetch error:', endpoint, e.message);
+    return null;
   }
 }
- 
-console.log('✅ Patch dashboard chargé');
 
 /* ══════════════════════════════════════════════
    HORLOGE
@@ -1492,14 +1499,42 @@ async function voirCommandesClient(clientId,clientName){
     </div>`;
   }).join('');
 }
-async function saveNewClient(){
-  const nom=document.getElementById('ncNom').value.trim(),prenom=document.getElementById('ncPrenom').value.trim();
-  const alertEl=document.getElementById('alertNewClient');
-  if(!nom||!prenom){alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom et prénom obligatoires.</div>';return;}
-  await sb('clients',{method:'POST',body:JSON.stringify({nom,prenom,date_naissance:document.getElementById('ncNaissance').value||null,telephone:document.getElementById('ncTel').value.trim()||null,discord_id:document.getElementById('ncDiscord').value.trim()||null,points:0,blacklist:false})});
-  alertEl.innerHTML='<div class="alert alert-ok">✅ Client enregistré !</div>';
-  ['ncNom','ncPrenom','ncNaissance','ncTel','ncDiscord'].forEach(id=>document.getElementById(id).value='');
-  loadClients();setTimeout(()=>closeOverlay('ovNewClient'),1500);
+async function saveNewClient() {
+  const nom    = document.getElementById('ncNom')?.value.trim();
+  const prenom = document.getElementById('ncPrenom')?.value.trim();
+  const alertEl = document.getElementById('alertNewClient');
+ 
+  if (!nom || !prenom) {
+    alertEl.innerHTML = '<div class="alert alert-err">⚠️ Nom et prénom obligatoires.</div>';
+    return;
+  }
+ 
+  alertEl.innerHTML = '<div class="alert alert-warn">⏳ Enregistrement...</div>';
+ 
+  const result = await sb('clients', {
+    method: 'POST',
+    body: JSON.stringify({
+      nom,
+      prenom,
+      date_naissance: document.getElementById('ncNaissance')?.value || null,
+      telephone:      document.getElementById('ncTel')?.value.trim() || null,
+      discord_id:     document.getElementById('ncDiscord')?.value.trim() || null,
+      points: 0,
+      blacklist: false
+    })
+  });
+ 
+  if (result === null) {
+    alertEl.innerHTML = '<div class="alert alert-err">❌ Erreur. Lance fix_supabase.sql dans Supabase.</div>';
+    return;
+  }
+ 
+  alertEl.innerHTML = '<div class="alert alert-ok">✅ Client enregistré !</div>';
+  ['ncNom','ncPrenom','ncNaissance','ncTel','ncDiscord'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  await loadClients();
+  setTimeout(() => closeOverlay('ovNewClient'), 1500);
 }
 
 /* ══════════════════════════════════════════════
@@ -1608,24 +1643,25 @@ async function loadVehicules() {
   const el = document.getElementById('vehGrid');
   if (!el) return;
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
-  let data = [];
-  try {
-    const res = await sb('vehicules?select=*&order=created_at.desc');
-    data = Array.isArray(res) ? res : [];
-  } catch (e) {
-    el.innerHTML = '<div class="alert alert-err">❌ Table véhicules introuvable. Lance le SQL de setup.</div>';
+ 
+  const data = await sb('vehicules?select=*&order=created_at.desc');
+ 
+  if (data === null) {
+    el.innerHTML = '<div class="alert alert-err">❌ Impossible de charger les véhicules. Lance fix_supabase.sql dans Supabase SQL Editor.</div>';
     return;
   }
-  if (!data.length) {
-    el.innerHTML = '<p style="color:var(--muted);padding:20px;">Aucun véhicule enregistré.</p>';
+  if (!Array.isArray(data) || !data.length) {
+    el.innerHTML = '<p style="color:var(--muted);padding:20px;text-align:center;">Aucun véhicule enregistré.</p>';
     return;
   }
+ 
   const discordIds = [...new Set(data.map(v => v.employe_discord_id).filter(Boolean))];
   let empMap = {};
   if (discordIds.length) {
     const emps = await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);
-    (emps || []).forEach(e => empMap[e.discord_id] = e);
+    if (Array.isArray(emps)) emps.forEach(e => empMap[e.discord_id] = e);
   }
+ 
   el.innerHTML = data.map(v => {
     const emp = empMap[v.employe_discord_id] || {};
     return `<div class="veh-card">
@@ -1637,39 +1673,51 @@ async function loadVehicules() {
         <div class="veh-plaque">${v.plaque}</div>
         <div class="veh-emp">${emp.prenom ? `${emp.prenom} ${emp.nom}` : 'Non attribué'}</div>
         <div style="display:flex;gap:6px;margin-top:10px;">
-          <button class="btn btn-outline btn-sm" onclick="editerVehicule('${v.id}','${v.plaque}','${v.image_url || ''}','${v.employe_discord_id || ''}')">✏️ Modifier</button>
+          <button class="btn btn-outline btn-sm" onclick="editerVehicule('${v.id}','${v.plaque}','${v.image_url||''}','${v.employe_discord_id||''}')">✏️ Modifier</button>
           <button class="btn btn-danger btn-sm" onclick="supprimerVehicule('${v.id}')">🗑️</button>
         </div>
       </div>
     </div>`;
   }).join('');
 }
+  
 function editerVehicule(id,plaque,img,empDiscord){
   document.getElementById('vehId').value=id;document.getElementById('vehPlaque').value=plaque;
   document.getElementById('vehImg').value=img;document.getElementById('vehEmpDiscord').value=empDiscord;
   openOverlay('ovVehicule');
 }
 async function saveVehicule() {
-  const plaque = document.getElementById('vehPlaque').value.trim().toUpperCase();
-  const img = document.getElementById('vehImg').value.trim();
-  const empDiscord = document.getElementById('vehEmpDiscord').value.trim();
-  const alertEl = document.getElementById('alertVehicule');
-  if (!plaque) { alertEl.innerHTML = '<div class="alert alert-err">⚠️ Plaque obligatoire.</div>'; return; }
-  const id = document.getElementById('vehId').value;
-  let result;
-  if (id) {
-    result = await sb(`vehicules?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ plaque, image_url: img || null, employe_discord_id: empDiscord || null }) });
-  } else {
-    result = await sb('vehicules', { method: 'POST', body: JSON.stringify({ plaque, image_url: img || null, employe_discord_id: empDiscord || null }) });
+  const plaque     = document.getElementById('vehPlaque')?.value.trim().toUpperCase();
+  const img        = document.getElementById('vehImg')?.value.trim();
+  const empDiscord = document.getElementById('vehEmpDiscord')?.value.trim();
+  const alertEl    = document.getElementById('alertVehicule');
+ 
+  if (!plaque) {
+    alertEl.innerHTML = '<div class="alert alert-err">⚠️ Plaque obligatoire.</div>';
+    return;
   }
-  if (Array.isArray(result) && result.length || result?.id) {
-    alertEl.innerHTML = '<div class="alert alert-ok">✅ Véhicule enregistré !</div>';
-  } else {
-    alertEl.innerHTML = '<div class="alert alert-ok">✅ Enregistré !</div>';
+ 
+  alertEl.innerHTML = '<div class="alert alert-warn">⏳ Enregistrement...</div>';
+ 
+  const id = document.getElementById('vehId')?.value;
+  const payload = {
+    plaque,
+    image_url: img || null,
+    employe_discord_id: empDiscord || null
+  };
+ 
+  const result = id
+    ? await sb(`vehicules?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(payload) })
+    : await sb('vehicules', { method: 'POST', body: JSON.stringify(payload) });
+ 
+  if (result === null) {
+    alertEl.innerHTML = '<div class="alert alert-err">❌ Erreur. La table vehicules existe ? Lance fix_supabase.sql</div>';
+    return;
   }
+ 
+  alertEl.innerHTML = '<div class="alert alert-ok">✅ Véhicule enregistré !</div>';
   setTimeout(() => { closeOverlay('ovVehicule'); loadVehicules(); }, 900);
 }
-async function supprimerVehicule(id){if(!confirm('Supprimer ce véhicule ?'))return;await sb(`vehicules?id=eq.${id}`,{method:'DELETE'});loadVehicules();}
 
 /* ══════════════════════════════════════════════
    GOUVERNEMENT (panel direction)
@@ -1678,49 +1726,36 @@ async function loadGouvernement() {
   const el = document.getElementById('gouvernementContent');
   if (!el) return;
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+ 
   const data = await sb('gouvernement_comptes?select=*&order=created_at.desc');
   allGouv = Array.isArray(data) ? data : [];
+ 
   if (!allGouv.length) {
-    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun compte gouvernement.</p></div>';
+    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun compte gouvernement enregistré.</p></div>';
     return;
   }
+ 
   el.innerHTML = `<div class="card">
     <div class="card-title">🏛️ Registre du Gouvernement</div>
-    <div style="margin-bottom:14px;"><input class="form-input" id="gouvSearch" placeholder="🔍 Rechercher..." oninput="filtrerGouv(this.value)" style="max-width:300px;"></div>
+    <div style="margin-bottom:14px;">
+      <input class="form-input" id="gouvSearch" placeholder="🔍 Rechercher..." oninput="filtrerGouv(this.value)" style="max-width:300px;">
+    </div>
     <div id="gouvList">${renderGouvList(allGouv)}</div>
   </div>`;
 }
-let allGouv=[];
-function renderGouvList(list){
-  return list.map(g=>{
-    const av=g.avatar?`<img src="https://cdn.discordapp.com/avatars/${g.discord_id}/${g.avatar}.png" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:(g.prenom?.charAt(0)||'?').toUpperCase();
-    return`<div class="gouv-card" id="gouv-${g.id}">
-      <div class="gouv-avatar">${av}</div>
-      <div style="flex:1;">
-        <div style="font-weight:800;font-size:15px;">${g.prenom||''} ${g.nom||''}</div>
-        <div style="font-size:12px;color:var(--muted);">@${g.username||'—'} · ${g.discord_id||'—'}</div>
-        <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
-          <span class="badge badge-blue">${g.fonction||'—'}</span>
-          <span class="badge ${g.statut==='actif'?'badge-green':g.statut==='suspendu'?'badge-orange':'badge-red'}">${g.statut||'—'}</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-        ${g.statut==='actif'?`<button class="btn btn-warn btn-sm" onclick="updateGouvStatut('${g.id}','suspendu')">⏸️</button>`:''}
-        ${g.statut==='suspendu'?`<button class="btn btn-success btn-sm" onclick="updateGouvStatut('${g.id}','actif')">▶️</button>`:''}
-        ${g.statut!=='revoque'?`<button class="btn btn-danger btn-sm" onclick="updateGouvStatut('${g.id}','revoque')">🚫</button>`:''}
-        <button class="btn btn-outline btn-sm" onclick="deleteGouvCompte('${g.id}','${g.prenom} ${g.nom}')">🗑️</button>
-      </div>
-    </div>`;
-  }).join('');
+ 
+async function filtrerGouv(v) {
+  if (!allGouv.length) {
+    const data = await sb('gouvernement_comptes?select=*&order=created_at.desc');
+    allGouv = Array.isArray(data) ? data : [];
+  }
+  const f = v.toLowerCase();
+  const list = allGouv.filter(g =>
+    `${g.prenom || ''} ${g.nom || ''} ${g.username || ''} ${g.fonction || ''}`.toLowerCase().includes(f)
+  );
+  const el = document.getElementById('gouvList');
+  if (el) el.innerHTML = renderGouvList(list);
 }
-async function filtrerGouv(v){
-  if(!allGouv.length)allGouv=await sb('gouvernement_comptes?select=*&order=created_at.desc')||[];
-  const f=v.toLowerCase();
-  const list=allGouv.filter(g=>`${g.prenom} ${g.nom} ${g.username} ${g.fonction}`.toLowerCase().includes(f));
-  const el=document.getElementById('gouvList');if(el)el.innerHTML=renderGouvList(list);
-}
-async function updateGouvStatut(id,statut){await sb(`gouvernement_comptes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut})});loadGouvernement();}
-async function deleteGouvCompte(id,nom){if(!confirm(`Supprimer le compte de ${nom} ?`))return;await sb(`gouvernement_comptes?id=eq.${id}`,{method:'DELETE'});loadGouvernement();}
 
 /* ══════════════════════════════════════════════
    EMPLOYÉS VUE GOUVERNEMENT
@@ -1914,7 +1949,9 @@ function previewDoc(url, type) {
 function voirDocsEmploye(empId, nom, docs) {
   document.getElementById('ovDocsTitle').textContent = `📄 Documents — ${nom}`;
   const el = document.getElementById('ovDocsContent');
-  if (typeof docs === 'string') try { docs = JSON.parse(docs); } catch { docs = []; }
+  if (typeof docs === 'string') {
+    try { docs = JSON.parse(docs); } catch { docs = []; }
+  }
   if (!Array.isArray(docs) || !docs.length) {
     el.innerHTML = '<p style="color:var(--muted)">Aucun document enregistré.</p>';
     openOverlay('ovDocs');
@@ -1922,26 +1959,65 @@ function voirDocsEmploye(empId, nom, docs) {
   }
   el.innerHTML = docs.map(d => `
     <div style="margin-bottom:20px;padding:16px;background:var(--card2);border-radius:10px;border:1px solid var(--border);">
-      <div style="font-weight:700;margin-bottom:10px;font-size:14px;">📎 ${d.type || 'Document'}</div>
+      <div style="font-weight:700;margin-bottom:10px;">📎 ${d.type || 'Document'}</div>
       <img src="${d.url}" alt="${d.type || ''}"
-        style="max-width:100%;max-height:400px;border-radius:8px;border:1px solid var(--border);display:block;"
-        onerror="this.outerHTML='<div style=\'padding:12px;background:rgba(192,57,43,.1);border-radius:8px;color:var(--red);\'>❌ Image non disponible : ${d.url}</div>'">
+        style="max-width:100%;max-height:350px;border-radius:8px;border:1px solid var(--border);display:block;object-fit:contain;"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div style="display:none;padding:12px;background:rgba(192,57,43,.1);border-radius:8px;color:var(--red);font-size:13px;">
+        ❌ Image non disponible — <a href="${d.url}" target="_blank" style="color:var(--blue);">Ouvrir le lien</a>
+      </div>
       <div style="margin-top:8px;">
-        <a href="${d.url}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;">🔗 Ouvrir dans un onglet</a>
+        <a href="${d.url}" target="_blank" class="btn btn-blue btn-sm" style="display:inline-flex;text-decoration:none;">🔗 Ouvrir dans un onglet</a>
       </div>
     </div>`).join('');
   openOverlay('ovDocs');
 }
 
 function openAddEmploye(){const f=document.getElementById('addEmployeForm');f.style.display=f.style.display==='none'?'block':'none';}
-async function saveEmploye(){
-  const nom=document.getElementById('empNom').value.trim(),prenom=document.getElementById('empPrenom').value.trim(),discord=document.getElementById('empDiscord').value.trim();
-  const alertEl=document.getElementById('alertEmploye');
-  if(!nom||!prenom||!discord){alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom, prénom et Discord obligatoires.</div>';return;}
-  await sb('employes',{method:'POST',body:JSON.stringify({nom,prenom,date_naissance:document.getElementById('empNaissance').value||null,telephone:document.getElementById('empTel').value.trim()||null,discord_id:discord,photo_url:document.getElementById('empPhoto').value.trim()||null,poste:document.getElementById('empPoste').value,contrat:document.getElementById('empContrat').value,actif:document.getElementById('empActif').value==='true',date_embauche:document.getElementById('empEmbauche').value||null,quota_viande_validee:0,quota_patates_validee:0,statut_activite:'actif'})});
-  alertEl.innerHTML='<div class="alert alert-ok">✅ Employé ajouté !</div>';
-  document.getElementById('addEmployeForm').style.display='none';
-  loadEmployes();
+async function saveEmploye() {
+  const nom    = document.getElementById('empNom')?.value.trim();
+  const prenom = document.getElementById('empPrenom')?.value.trim();
+  const discord = document.getElementById('empDiscord')?.value.trim();
+  const alertEl = document.getElementById('alertEmploye');
+ 
+  if (!nom || !prenom || !discord) {
+    alertEl.innerHTML = '<div class="alert alert-err">⚠️ Nom, prénom et Discord obligatoires.</div>';
+    return;
+  }
+ 
+  alertEl.innerHTML = '<div class="alert alert-warn">⏳ Enregistrement...</div>';
+ 
+  const payload = {
+    nom,
+    prenom,
+    date_naissance: document.getElementById('empNaissance')?.value || null,
+    telephone:      document.getElementById('empTel')?.value.trim() || null,
+    discord_id:     discord,
+    photo_url:      document.getElementById('empPhoto')?.value.trim() || null,
+    poste:          document.getElementById('empPoste')?.value || 'Employé',
+    contrat:        document.getElementById('empContrat')?.value || 'CDD',
+    actif:          document.getElementById('empActif')?.value === 'true',
+    date_embauche:  document.getElementById('empEmbauche')?.value || null,
+    quota_viande_validee: 0,
+    quota_patates_validee: 0,
+    statut_activite: 'actif'
+  };
+ 
+  const result = await sb('employes', { method: 'POST', body: JSON.stringify(payload) });
+ 
+  if (result === null) {
+    alertEl.innerHTML = '<div class="alert alert-err">❌ Erreur Supabase. Vérifie la console (F12) et lance le SQL fix_supabase.sql</div>';
+    return;
+  }
+ 
+  alertEl.innerHTML = '<div class="alert alert-ok">✅ Employé ajouté !</div>';
+  document.getElementById('addEmployeForm').style.display = 'none';
+ 
+  // Reset champs
+  ['empNom','empPrenom','empNaissance','empTel','empDiscord','empPhoto','empEmbauche']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+ 
+  await loadEmployes();
 }
 
 async function voirPrimeEmploye(discordId,nom){
