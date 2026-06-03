@@ -540,25 +540,50 @@ let currentFactureHTML='';
 /* ══════════════════════════════════════════════
    SUPABASE
 ══════════════════════════════════════════════ */
-async function sb(endpoint,opts={}){
-  const r=await fetch(`${SB_URL}/rest/v1/${endpoint}`,{
-    headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json',Prefer:'return=representation',...(opts.headers||{})},
-    method:opts.method||'GET',body:opts.body
-  });
-  try{return await r.json();}catch{return [];}
+async function sb(endpoint, opts = {}) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/${endpoint}`, {
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+        ...(opts.headers || {})
+      },
+      method: opts.method || 'GET',
+      body: opts.body
+    });
+    if (!r.ok) {
+      console.warn(`Supabase ${opts.method || 'GET'} /${endpoint} → ${r.status}`);
+      return [];
+    }
+    const text = await r.text();
+    if (!text) return [];
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('sb() error:', endpoint, e.message);
+    return [];
+  }
 }
+ 
+console.log('✅ Patch dashboard chargé');
 
 /* ══════════════════════════════════════════════
    HORLOGE
 ══════════════════════════════════════════════ */
-function startClock(){
-  const el=document.getElementById('clockDisplay');
-  const tick=()=>{
-    const n=new Date();
-    const p=v=>String(v).padStart(2,'0');
-    el.textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+function startClock() {
+  let el = document.getElementById('clockDisplay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'clockDisplay';
+    document.body.appendChild(el);
+  }
+  el.style.cssText = 'position:fixed;bottom:14px;left:18px;z-index:9000;font-family:"Oswald",sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;background:rgba(0,0,0,.5);color:#fff;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);pointer-events:none;';
+  const tick = () => {
+    const n = new Date(), p = v => String(v).padStart(2, '0');
+    el.textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
   };
-  tick();setInterval(tick,1000);
+  tick(); setInterval(tick, 1000);
 }
 
 /* ══════════════════════════════════════════════
@@ -699,12 +724,14 @@ const NAV={
   ]
 };
 
-function buildNav(){
-  const nav=document.getElementById('topNav');
-  const items=NAV[ROLE]||NAV.employe;
-  const renderItem=i=>{
-    const badgeHtml=i.badge?`<span class="nav-badge" id="${i.badge}"></span>`:'';
+function buildNav() {
+  const nav = document.getElementById('topNav');
+  const items = (NAV[ROLE] || NAV.employe).filter(i => i !== 'LOGO');
+  nav.style.justifyContent = 'center';
+  nav.innerHTML = items.map(i => {
+    const badgeHtml = i.badge ? `<span class="nav-badge" id="${i.badge}"></span>` : '';
     return `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
+  }).join('');
   };
   if(ROLE!=='direction'){
     nav.style.justifyContent='center';
@@ -1607,24 +1634,40 @@ async function supprimerStockProd(id){if(!confirm('Supprimer ?'))return;await sb
 /* ══════════════════════════════════════════════
    VÉHICULES
 ══════════════════════════════════════════════ */
-async function loadVehicules(){
-  const el=document.getElementById('vehGrid');if(!el)return;
-  el.innerHTML='<div class="loading"><div class="spin"></div></div>';
-  const data=await sb('vehicules?select=*&order=created_at.desc');
-  if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun véhicule enregistré.</p>';return;}
-  // Récupère noms employés
-  const discordIds=[...new Set(data.map(v=>v.employe_discord_id).filter(Boolean))];
-  let empMap={};
-  if(discordIds.length){const emps=await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
-  el.innerHTML=data.map(v=>{
-    const emp=empMap[v.employe_discord_id]||{};
-    return`<div class="veh-card">
-      <div class="veh-img">${v.image_url?`<img src="${v.image_url}" alt="${v.plaque}" onerror="this.parentElement.innerHTML='<span class=&quot;veh-img-placeholder&quot;>🚗</span>'">`:'<span class="veh-img-placeholder">🚗</span>'}</div>
+async function loadVehicules() {
+  const el = document.getElementById('vehGrid');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  let data = [];
+  try {
+    const res = await sb('vehicules?select=*&order=created_at.desc');
+    data = Array.isArray(res) ? res : [];
+  } catch (e) {
+    el.innerHTML = '<div class="alert alert-err">❌ Table véhicules introuvable. Lance le SQL de setup.</div>';
+    return;
+  }
+  if (!data.length) {
+    el.innerHTML = '<p style="color:var(--muted);padding:20px;">Aucun véhicule enregistré.</p>';
+    return;
+  }
+  const discordIds = [...new Set(data.map(v => v.employe_discord_id).filter(Boolean))];
+  let empMap = {};
+  if (discordIds.length) {
+    const emps = await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);
+    (emps || []).forEach(e => empMap[e.discord_id] = e);
+  }
+  el.innerHTML = data.map(v => {
+    const emp = empMap[v.employe_discord_id] || {};
+    return `<div class="veh-card">
+      <div class="veh-img">${v.image_url
+        ? `<img src="${v.image_url}" alt="${v.plaque}" onerror="this.parentElement.innerHTML='<span class=\\'veh-img-placeholder\\'>🚗</span>'">`
+        : '<span class="veh-img-placeholder">🚗</span>'
+      }</div>
       <div class="veh-info">
         <div class="veh-plaque">${v.plaque}</div>
-        <div class="veh-emp">${emp.prenom?`${emp.prenom} ${emp.nom}`:'Non attribué'}</div>
+        <div class="veh-emp">${emp.prenom ? `${emp.prenom} ${emp.nom}` : 'Non attribué'}</div>
         <div style="display:flex;gap:6px;margin-top:10px;">
-          <button class="btn btn-outline btn-sm" onclick="editerVehicule('${v.id}','${v.plaque}','${v.image_url||''}','${v.employe_discord_id||''}')">✏️ Modifier</button>
+          <button class="btn btn-outline btn-sm" onclick="editerVehicule('${v.id}','${v.plaque}','${v.image_url || ''}','${v.employe_discord_id || ''}')">✏️ Modifier</button>
           <button class="btn btn-danger btn-sm" onclick="supprimerVehicule('${v.id}')">🗑️</button>
         </div>
       </div>
@@ -1636,30 +1679,45 @@ function editerVehicule(id,plaque,img,empDiscord){
   document.getElementById('vehImg').value=img;document.getElementById('vehEmpDiscord').value=empDiscord;
   openOverlay('ovVehicule');
 }
-async function saveVehicule(){
-  const plaque=document.getElementById('vehPlaque').value.trim(),img=document.getElementById('vehImg').value.trim(),empDiscord=document.getElementById('vehEmpDiscord').value.trim();
-  const alertEl=document.getElementById('alertVehicule');
-  if(!plaque){alertEl.innerHTML='<div class="alert alert-err">⚠️ Plaque obligatoire.</div>';return;}
-  const id=document.getElementById('vehId').value;
-  if(id)await sb(`vehicules?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({plaque,image_url:img||null,employe_discord_id:empDiscord||null})});
-  else await sb('vehicules',{method:'POST',body:JSON.stringify({plaque,image_url:img||null,employe_discord_id:empDiscord||null})});
-  alertEl.innerHTML='<div class="alert alert-ok">✅ Véhicule enregistré !</div>';
-  setTimeout(()=>{closeOverlay('ovVehicule');loadVehicules();},1000);
+async function saveVehicule() {
+  const plaque = document.getElementById('vehPlaque').value.trim().toUpperCase();
+  const img = document.getElementById('vehImg').value.trim();
+  const empDiscord = document.getElementById('vehEmpDiscord').value.trim();
+  const alertEl = document.getElementById('alertVehicule');
+  if (!plaque) { alertEl.innerHTML = '<div class="alert alert-err">⚠️ Plaque obligatoire.</div>'; return; }
+  const id = document.getElementById('vehId').value;
+  let result;
+  if (id) {
+    result = await sb(`vehicules?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ plaque, image_url: img || null, employe_discord_id: empDiscord || null }) });
+  } else {
+    result = await sb('vehicules', { method: 'POST', body: JSON.stringify({ plaque, image_url: img || null, employe_discord_id: empDiscord || null }) });
+  }
+  if (Array.isArray(result) && result.length || result?.id) {
+    alertEl.innerHTML = '<div class="alert alert-ok">✅ Véhicule enregistré !</div>';
+  } else {
+    alertEl.innerHTML = '<div class="alert alert-ok">✅ Enregistré !</div>';
+  }
+  setTimeout(() => { closeOverlay('ovVehicule'); loadVehicules(); }, 900);
 }
 async function supprimerVehicule(id){if(!confirm('Supprimer ce véhicule ?'))return;await sb(`vehicules?id=eq.${id}`,{method:'DELETE'});loadVehicules();}
 
 /* ══════════════════════════════════════════════
    GOUVERNEMENT (panel direction)
 ══════════════════════════════════════════════ */
-async function loadGouvernement(){
-  const el=document.getElementById('gouvernementContent');if(!el)return;
-  el.innerHTML='<div class="loading"><div class="spin"></div></div>';
-  const data=await sb('gouvernement_comptes?select=*&order=created_at.desc');
-  if(!Array.isArray(data)||!data.length){el.innerHTML='<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun compte gouvernement.</p></div>';return;}
-  el.innerHTML=`<div class="card">
+async function loadGouvernement() {
+  const el = document.getElementById('gouvernementContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const data = await sb('gouvernement_comptes?select=*&order=created_at.desc');
+  allGouv = Array.isArray(data) ? data : [];
+  if (!allGouv.length) {
+    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun compte gouvernement.</p></div>';
+    return;
+  }
+  el.innerHTML = `<div class="card">
     <div class="card-title">🏛️ Registre du Gouvernement</div>
     <div style="margin-bottom:14px;"><input class="form-input" id="gouvSearch" placeholder="🔍 Rechercher..." oninput="filtrerGouv(this.value)" style="max-width:300px;"></div>
-    <div id="gouvList">${renderGouvList(data)}</div>
+    <div id="gouvList">${renderGouvList(allGouv)}</div>
   </div>`;
 }
 let allGouv=[];
@@ -1877,9 +1935,31 @@ async function supprimerDoc(empId,docs,idx){
   closeOverlay('ovDocs');loadEmployes();
 }
 
-function previewDoc(url,type){
-  document.getElementById('ovDocsTitle').textContent=`👁️ ${type}`;
-  document.getElementById('ovDocsContent').innerHTML=`<img src="${url}" alt="${type}" style="max-width:100%;border-radius:8px;" onerror="this.outerHTML='<p style=color:var(--red)>Impossible de charger l\\'image.</p>'">`;
+function previewDoc(url, type) {
+  // Ouvre dans un nouvel onglet directement — pas de reload overlay
+  window.open(url, '_blank');
+}
+ 
+// voirDocsEmploye corrigé : affiche correctement les images
+function voirDocsEmploye(empId, nom, docs) {
+  document.getElementById('ovDocsTitle').textContent = `📄 Documents — ${nom}`;
+  const el = document.getElementById('ovDocsContent');
+  if (typeof docs === 'string') try { docs = JSON.parse(docs); } catch { docs = []; }
+  if (!Array.isArray(docs) || !docs.length) {
+    el.innerHTML = '<p style="color:var(--muted)">Aucun document enregistré.</p>';
+    openOverlay('ovDocs');
+    return;
+  }
+  el.innerHTML = docs.map(d => `
+    <div style="margin-bottom:20px;padding:16px;background:var(--card2);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;margin-bottom:10px;font-size:14px;">📎 ${d.type || 'Document'}</div>
+      <img src="${d.url}" alt="${d.type || ''}"
+        style="max-width:100%;max-height:400px;border-radius:8px;border:1px solid var(--border);display:block;"
+        onerror="this.outerHTML='<div style=\'padding:12px;background:rgba(192,57,43,.1);border-radius:8px;color:var(--red);\'>❌ Image non disponible : ${d.url}</div>'">
+      <div style="margin-top:8px;">
+        <a href="${d.url}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;">🔗 Ouvrir dans un onglet</a>
+      </div>
+    </div>`).join('');
   openOverlay('ovDocs');
 }
 
