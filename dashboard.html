@@ -578,13 +578,16 @@ function startClock() {
     el.id = 'clockDisplay';
     document.body.appendChild(el);
   }
-  el.style.cssText = 'position:fixed;bottom:14px;left:18px;z-index:9000;font-family:"Oswald",sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;background:rgba(0,0,0,.5);color:#fff;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);pointer-events:none;';
+  el.style.cssText = 'position:fixed;bottom:14px;left:18px;z-index:9999;font-family:"Oswald",sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;background:rgba(0,0,0,.55);color:#fff;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.12);pointer-events:none;';
   const tick = () => {
     const n = new Date(), p = v => String(v).padStart(2, '0');
     el.textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
   };
-  tick(); setInterval(tick, 1000);
+  tick();
+  setInterval(tick, 1000);
 }
+ 
+console.log('✅ Patch v2 chargé — inserts corrigés');
 
 /* ══════════════════════════════════════════════
    TRACKING ACTIVITÉ
