@@ -1597,7 +1597,7 @@ function filtrerClients(v){
 function renderClients(list){
   const el=document.getElementById('clientsTable');
   if(!list.length){el.innerHTML='<p style="color:var(--muted)">Aucun client.</p>';return;}
-  const canManage=ROLE==='direction'||USER_NIVEAU>=2;
+  const canManage=ROLE==='direction'||USER_NIVEAU>=3;
   el.innerHTML=`<table><thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Discord ID</th><th>Pass</th><th>Expiry</th><th>Points</th><th>Actions</th></tr></thead><tbody>`+
   list.map(c=>{
     const days=daysUntilExpiry(c.pass_expiry);
@@ -1731,7 +1731,7 @@ async function loadStock(){
   const el=document.getElementById('stockContent');
   if(!Array.isArray(stockData)||!stockData.length){el.innerHTML='<div class="card"><p style="color:var(--muted);text-align:center;padding:30px;">Aucun produit en stock.</p></div>';return;}
   const cats=[...new Set(stockData.map(p=>p.categorie))];
-  const canMove = ROLE === 'direction' || USER_NIVEAU >= 1;
+  const canMove = ROLE === 'direction' || USER_NIVEAU >= 3;
   el.innerHTML=cats.map(cat=>{
     const items=stockData.filter(p=>p.categorie===cat);
     return`<div class="card" style="margin-bottom:16px;">
