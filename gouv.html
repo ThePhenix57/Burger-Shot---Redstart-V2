@@ -451,9 +451,26 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Priorité 3 : callback OAuth Discord
   const params = new URLSearchParams(window.location.search);
+window.history.replaceState({}, document.title, window.location.pathname);
+
+// Gestion des erreurs venant du callback
+const error = params.get('error');
+if (error === 'est_employe') {
+  showAlert('❌ Vous êtes enregistré comme employé Burger Shot. Utilisez l\'espace employé.', 'err');
+  return;
+}
+if (error === 'no_code') {
+  showAlert('❌ Connexion annulée.', 'err');
+  return;
+}
+if (error === 'token_error' || error === 'user_error') {
+  showAlert('❌ Erreur de connexion Discord. Réessayez.', 'err');
+  return;
+}
+
+// Réception des infos utilisateur après OAuth réussi
 const uid = params.get('uid');
 if (uid) {
-  window.history.replaceState({}, document.title, window.location.pathname);
   currentUser = {
     id: uid,
     username: params.get('username'),
