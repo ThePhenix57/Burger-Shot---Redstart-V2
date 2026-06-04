@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Échanger le code contre un token
+    // 1. Échanger le code contre un token
     const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -30,16 +30,16 @@ export default async function handler(req, res) {
     const token = await tokenRes.json();
     if (!token.access_token) return res.redirect('/gouv.html?error=token_error');
 
-    // Récupérer les infos Discord
+    // 2. Récupérer les infos Discord
     const userRes = await fetch('https://discord.com/api/users/@me', {
       headers: { Authorization: `Bearer ${token.access_token}` },
     });
     const user = await userRes.json();
     if (!user.id) return res.redirect('/gouv.html?error=user_error');
 
-    // Vérifier si c'est un employé Burger Shot
+    // 3. Vérifier si c'est un employé Burger Shot → bloquer
     const empRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/employes?discord_id=eq.${user.id}&select=*`,
+      `${SUPABASE_URL}/rest/v1/employes?discord_id=eq.${user.id}&select=id`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     const employes = await empRes.json();
@@ -47,7 +47,45 @@ export default async function handler(req, res) {
       return res.redirect('/gouv.html?error=est_employe');
     }
 
-    // OK → passer les infos via page intermédiaire (même méthode que callback.js)
+    // 4. Vérifier si un compte gouvernement existe déjà
+    const gouvRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/gouvernement_comptes?discord_id=eq.${user.id}&select=*`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    const gouvArr = await gouvRes.json();
+
+    if (Array.isArray(gouvArr) && gouvArr.length) {
+      const compte = gouvArr[0];
+
+      // Compte révoqué ou suspendu → bloquer
+      if (compte.statut === 'revoque')  return res.redirect('/gouv.html?error=revoque');
+      if (compte.statut === 'suspendu') return res.redirect('/gouv.html?error=suspendu');
+
+      // ✅ Compte existant et actif → session complète + redirect dashboard
+      const payload = JSON.stringify({
+        id:       user.id,
+        username: user.username,
+        avatar:   user.avatar || '',
+        nom:      compte.nom,
+        prenom:   compte.prenom,
+        fonction: compte.fonction,
+        role:     'gouvernement'
+      });
+
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.status(200).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
+<script>
+try {
+  localStorage.setItem('bs_gouv_user', ${JSON.stringify(payload)});
+  window.location.replace('/');
+} catch(e) {
+  window.location.replace('/gouv.html?error=storage_error');
+}
+</script>
+</body></html>`);
+    }
+
+    // 5. Aucun compte gouvernement → formulaire d'inscription
     const payload = JSON.stringify({
       id:       user.id,
       username: user.username,
@@ -70,40 +108,4 @@ try {
     console.error('CALLBACK-GOUV ERROR:', err.message);
     return res.redirect('/gouv.html?error=server_error');
   }
-  // Vérifier si un compte gouvernement existe déjà
-const gouvRes = await fetch(
-  `${SUPABASE_URL}/rest/v1/gouvernement_comptes?discord_id=eq.${user.id}&select=*`,
-  { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-);
-  const gouvArr = await gouvRes.json();
-  
-  if (Array.isArray(gouvArr) && gouvArr.length) {
-    const compte = gouvArr[0];
-    if (compte.statut === 'revoque') return res.redirect('/gouv.html?error=revoque');
-    if (compte.statut === 'suspendu') return res.redirect('/gouv.html?error=suspendu');
-  
-    // Compte existant → écrire la session et rediriger au dashboard
-    const payload = JSON.stringify({
-      id: user.id,
-      username: user.username,
-      avatar: user.avatar || '',
-      nom: compte.nom,
-      prenom: compte.prenom,
-      fonction: compte.fonction,
-      role: 'gouvernement'
-    });
-  
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.status(200).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
-  <script>
-  try {
-    localStorage.setItem('bs_gouv_user', ${JSON.stringify(payload)});
-    window.location.replace('/');
-  } catch(e) {
-    window.location.replace('/gouv.html?error=storage_error');
-  }
-  </script>
-  </body></html>`);
-  }
 }
-
