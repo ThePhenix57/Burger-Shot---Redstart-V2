@@ -2084,7 +2084,7 @@ async function loadEmployes(){
         <div style="flex:1;z-index:1;">
           <div style="display:flex;align-items:center;gap:8px;">
             <div class="emp-name">${e.prenom} ${e.nom}</div>
-            <button class="btn-info-docs" onclick="voirDocsEmploye('${e.id}','${e.prenom} ${e.nom}',${JSON.stringify(docs).replace(/'/g,'&#39;')})" title="Documents">ℹ</button>
+            <button class="btn-info-docs" onclick="voirDocsEmploye('${e.id}','${e.prenom} ${e.nom}')" title="Documents">ℹ</button>
           </div>
           <div class="emp-discord">${e.discord_id||'—'}</div>
           <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
@@ -2179,6 +2179,122 @@ async function supprimerDoc(empId,docs,idx){
   closeOverlay('ovDocs');loadEmployes();
 }
 
+async function voirDocsEmploye(empId, nom) {
+  document.getElementById('ovDocsTitle').textContent = `👤 Fiche — ${nom}`;
+  const el = document.getElementById('ovDocsContent');
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  openOverlay('ovDocs');
+
+  const data = await sb(`employes?id=eq.${empId}&select=*`);
+  const e = data?.[0];
+  if (!e) { el.innerHTML = '<p style="color:var(--muted)">Données introuvables.</p>'; return; }
+
+  // Calcul âge
+  let age = '—';
+  if (e.date_naissance) {
+    const diff = Date.now() - new Date(e.date_naissance).getTime();
+    age = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)) + ' ans';
+  }
+
+  // Calcul ancienneté
+  let anciennete = '—';
+  if (e.date_embauche) {
+    const diff = Date.now() - new Date(e.date_embauche).getTime();
+    const jours = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (jours < 30) anciennete = `${jours} jour(s)`;
+    else if (jours < 365) anciennete = `${Math.floor(jours/30)} mois`;
+    else anciennete = `${Math.floor(jours/365)} an(s) et ${Math.floor((jours%365)/30)} mois`;
+  }
+
+  let docs = [];
+  try {
+    const raw = e.documents;
+    docs = typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+  } catch { docs = []; }
+
+  const initials = `${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
+
+  el.innerHTML = `
+    <!-- CARTE IDENTITÉ -->
+    <div style="background:linear-gradient(135deg,rgba(192,57,43,.12),rgba(230,126,34,.08));border:1px solid rgba(192,57,43,.25);border-radius:12px;padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:18px;">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;flex-shrink:0;border:3px solid rgba(192,57,43,.4);overflow:hidden;">
+        ${e.photo_url ? `<img src="${e.photo_url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">` : initials}
+      </div>
+      <div style="flex:1;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;">${e.prenom} ${e.nom}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+          <span class="badge badge-orange">${e.poste||'—'}</span>
+          <span class="badge badge-blue">${e.contrat||'—'}</span>
+          <span class="badge ${e.actif?'badge-green':'badge-red'}">${e.actif?'Actif':'Inactif'}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFOS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div style="background:var(--card2);border-radius:10px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;">🎂 Âge</div>
+        <div style="font-weight:700;">${age}</div>
+        <div style="font-size:11px;color:var(--muted);">${e.date_naissance ? new Date(e.date_naissance).toLocaleDateString('fr-FR') : '—'}</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;">📞 Téléphone</div>
+        <div style="font-weight:700;">${e.telephone ? fmtPhoneDisplay(e.telephone) : '—'}</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;">📅 Embauché le</div>
+        <div style="font-weight:700;">${e.date_embauche ? new Date(e.date_embauche).toLocaleDateString('fr-FR') : '—'}</div>
+        <div style="font-size:11px;color:var(--muted);">${anciennete}</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;">🎮 Discord</div>
+        <div style="font-weight:700;font-size:12px;">${e.discord_id||'—'}</div>
+      </div>
+    </div>
+
+    <!-- RÈGLEMENT SIGNÉ -->
+    <div style="background:${e.reglement_signe?'rgba(39,174,96,.08)':'rgba(243,156,18,.08)'};border:1px solid ${e.reglement_signe?'rgba(39,174,96,.25)':'rgba(243,156,18,.25)'};border-radius:10px;padding:12px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">${e.reglement_signe?'✅':'⚠️'}</span>
+      <div>
+        <div style="font-weight:700;font-size:13px;">${e.reglement_signe?'Règlement signé':'Règlement non signé'}</div>
+        ${e.reglement_signe_le?`<div style="font-size:11px;color:var(--muted);">Le ${new Date(e.reglement_signe_le).toLocaleString('fr-FR')}</div>`:''}
+      </div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--red);margin-bottom:12px;">📎 Documents (${docs.length})</div>
+    ${!docs.length ? '<p style="color:var(--muted);font-size:13px;">Aucun document enregistré.</p>' : docs.map(d => `
+      <div style="margin-bottom:16px;padding:14px;background:var(--card2);border-radius:10px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-weight:800;">📄 ${d.type||'Document'}</div>
+          <a href="${d.url}" target="_blank" class="btn btn-blue btn-sm" style="text-decoration:none;">🔗 Ouvrir</a>
+        </div>
+        <img src="${d.url}" alt="${d.type}"
+          style="width:100%;max-height:350px;object-fit:contain;border-radius:8px;border:1px solid var(--border);background:#111;cursor:pointer;"
+          onclick="window.open('${d.url}','_blank')"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;padding:12px;background:rgba(192,57,43,.08);border-radius:8px;align-items:center;gap:8px;color:var(--red);font-size:13px;">
+          ❌ Image non disponible — <a href="${d.url}" target="_blank" style="color:var(--blue);">Ouvrir le lien</a>
+        </div>
+      </div>`).join('')}`;
+}
+
+  el.innerHTML = docs.map((d, i) => `
+    <div style="margin-bottom:20px;padding:16px;background:var(--card2);border-radius:10px;border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-weight:800;font-size:15px;">📎 ${d.type || 'Document'}</div>
+        <a href="${d.url}" target="_blank" class="btn btn-blue btn-sm" style="text-decoration:none;">🔗 Ouvrir</a>
+      </div>
+      <img src="${d.url}" alt="${d.type}"
+        style="width:100%;max-height:400px;object-fit:contain;border-radius:8px;border:1px solid var(--border);background:#111;cursor:pointer;"
+        onclick="window.open('${d.url}','_blank')"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div style="display:none;padding:16px;background:rgba(192,57,43,.08);border-radius:8px;align-items:center;gap:10px;color:var(--red);">
+        ❌ Image non disponible — <a href="${d.url}" target="_blank" style="color:var(--blue);">Ouvrir le lien direct</a>
+      </div>
+    </div>`).join('');
+}
+  
 function previewDoc(url, type) {
   // Ouvre dans un nouvel onglet directement — pas de reload overlay
   window.open(url, '_blank');
