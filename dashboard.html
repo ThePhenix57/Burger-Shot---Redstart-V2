@@ -1271,8 +1271,6 @@ function statutActiviteHtml(statut){
 async function loadAccueil(){
   const el=document.getElementById('accueilContent');
   el.innerHTML='<div class="loading"><div class="spin"></div> Chargement...</div>';
-  const NIVEAU_POSTE = {'Patron':5,'Co-Patron':4,'Manager':3,'Responsable':2,"Chef d'équipe":1,'Employé':0};
-  data.sort((a, b) => (NIVEAU_POSTE[b.poste] || 0) - (NIVEAU_POSTE[a.poste] || 0));
   const semaine=getSemaine(),today=new Date().toISOString().split('T')[0];
   const[clients,employes,cmdSemaine,cmdJour,empPerf]=await Promise.all([
     sb('clients?select=id'),
@@ -2062,6 +2060,8 @@ async function loadEmployes(){
     sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
   ]);
   if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>';return;}
+  const NIVEAU_POSTE_SORT = {'Patron':5,'Co-Patron':4,'Manager':3,'Responsable':2,"Chef d'équipe":1,'Employé':0};
+  data.sort((a, b) => (NIVEAU_POSTE_SORT[b.poste] || 0) - (NIVEAU_POSTE_SORT[a.poste] || 0));
   const caWeek={},caTotal={},cmdWeek={},primesMap={};
   (cmds||[]).forEach(c=>{caWeek[c.employe_discord_id]=(caWeek[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);cmdWeek[c.employe_discord_id]=(cmdWeek[c.employe_discord_id]||0)+1;});
   (allCmds||[]).forEach(c=>{caTotal[c.employe_discord_id]=(caTotal[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);});
