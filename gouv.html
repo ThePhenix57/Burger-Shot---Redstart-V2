@@ -391,28 +391,24 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
       const user = JSON.parse(storedGouv);
       if (user?.id) {
-        currentUser = user;
-        renderUserCard(user);
-
         const existing = await sb(`gouvernement_comptes?discord_id=eq.${user.id}`);
         if (existing?.length) {
           const ex = existing[0];
           if (ex.statut === 'revoque') {
-            setStep(0);
             showAlert('❌ Votre accès gouvernement a été révoqué. Contactez la direction.', 'err');
             return;
           }
           if (ex.statut === 'suspendu') {
-            setStep(0);
             showAlert('⏸️ Votre accès est suspendu. Contactez la direction.', 'warn');
             return;
           }
-          showAlert(`✅ Déjà enregistré en tant que ${ex.fonction}. <a href="/" style="color:var(--success);text-decoration:underline;">Accéder au dashboard</a>.`, 'ok');
-          setStep(1);
-          renderStep1Content(false);
+          // ✅ Compte actif → dashboard direct sans rien afficher
+          window.location.replace('/');
           return;
         }
-        // Compte gouv pas encore finalisé → formulaire
+        // Compte pas encore finalisé → formulaire
+        currentUser = user;
+        renderUserCard(user);
         setStep(1);
         renderStep1Content(false);
         return;
