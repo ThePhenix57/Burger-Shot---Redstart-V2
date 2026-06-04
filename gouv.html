@@ -154,7 +154,7 @@ button,input,select{font-family:'Barlow',sans-serif;}
 const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
 const DISCORD_CLIENT_ID = '1508986297660870806';
-const REDIRECT_URI = encodeURIComponent(window.location.origin + '/gouv.html');
+const REDIRECT_URI = encodeURIComponent('https://burgershot-redstart.vercel.app/api/callback-gouv');
 
 const FONCTIONS = [
   {id:'gouverneur', icon:'🏛️', label:'Gouverneur'},
@@ -451,12 +451,20 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Priorité 3 : callback OAuth Discord
   const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  if (code) {
-    window.history.replaceState({}, document.title, window.location.pathname);
-    showAlert("⚠️ OAuth Discord non configuré côté serveur. Connectez-vous d'abord via la page principale, puis revenez ici.", 'warn');
-    return;
-  }
+const uid = params.get('uid');
+if (uid) {
+  window.history.replaceState({}, document.title, window.location.pathname);
+  currentUser = {
+    id: uid,
+    username: params.get('username'),
+    avatar: params.get('avatar'),
+  };
+  localStorage.setItem('bs_gouv_user', JSON.stringify(currentUser));
+  renderUserCard(currentUser);
+  setStep(1);
+  renderStep1Content(false);
+  return;
+}
 
   // Sinon → étape 0 (connexion Discord)
 });
