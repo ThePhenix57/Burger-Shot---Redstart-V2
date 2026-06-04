@@ -1271,6 +1271,8 @@ function statutActiviteHtml(statut){
 async function loadAccueil(){
   const el=document.getElementById('accueilContent');
   el.innerHTML='<div class="loading"><div class="spin"></div> Chargement...</div>';
+  const NIVEAU_POSTE = {'Patron':5,'Co-Patron':4,'Manager':3,'Responsable':2,"Chef d'équipe":1,'Employé':0};
+  data.sort((a, b) => (NIVEAU_POSTE[b.poste] || 0) - (NIVEAU_POSTE[a.poste] || 0));
   const semaine=getSemaine(),today=new Date().toISOString().split('T')[0];
   const[clients,employes,cmdSemaine,cmdJour,empPerf]=await Promise.all([
     sb('clients?select=id'),
@@ -2636,7 +2638,8 @@ async function loadMenu(){
     <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">${cat}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;">
       ${data.filter(p=>p.categorie===cat).map(p=>`<div class="menu-prod-card" style="opacity:${p.actif?1:.5}">
-        <div class="menu-prod-actions"><button onclick="toggleProd('${p.id}',${p.actif})">${p.actif?'✅':'❌'}</button><button onclick="deleteProd('${p.id}')">🗑️</button></div>
+        <div class="menu-prod-actions"><button onclick="toggleProd('${p.id}',${p.actif})">${p.actif?'✅':'❌'}</button><button onclick="editerProduit(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
+        <button onclick="deleteProd('${p.id}')">🗑️</button></div>
         ${p.image_url?`<img src="${p.image_url}" alt="${p.nom}">`:`<div style="font-size:32px;margin-bottom:6px;">${getEmoji(p.categorie)}</div>`}
         <div style="font-size:12px;font-weight:700;margin-bottom:3px;">${p.nom}</div>
         <div style="font-size:12px;color:var(--red);">${p.prix}$</div>
@@ -2677,6 +2680,55 @@ async function saveProduit(){
 }
 async function toggleProd(id,actif){await sb(`produits?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadMenu();}
 async function deleteProd(id){if(!confirm('Supprimer ?'))return;await sb(`produits?id=eq.${id}`,{method:'DELETE'});loadMenu();}
+
+// EDITER LES PRODUITS 
+function editerProduit(p) {
+  if (typeof p === 'string') try { p = JSON.parse(p); } catch { return; }
+  document.getElementById('mNom').value = p.nom || '';
+  document.getElementById('mPrix').value = p.prix || '';
+  document.getElementById('mCoutAchat').value = p.cout_achat || '';
+  document.getElementById('mPoints').value = p.points || '';
+  document.getElementById('mCat').value = p.categorie || 'Burger';
+  document.getElementById('mImg').value = p.image_url || '';
+  updateMenuImgPreview(p.image_url || '');
+
+  // Changer le bouton Ajouter en Modifier
+  const btn = document.querySelector('#page-menu .btn-primary');
+  btn.textContent = '💾 Modifier le produit';
+  btn.onclick = () => sauvegarderModifProduit(p.id);
+
+  // Scroll vers le formulaire
+  document.querySelector('#page-menu .card').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function sauvegarderModifProduit(id) {
+  const nom = document.getElementById('mNom').value.trim();
+  const prix = document.getElementById('mPrix').value;
+  const alertEl = document.getElementById('alertMenu');
+  if (!nom || !prix) { alertEl.innerHTML = '<div class="alert alert-err">⚠️ Nom et prix obligatoires.</div>'; return; }
+
+  await sb(`produits?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      nom,
+      prix: parseFloat(prix),
+      cout_achat: parseFloat(document.getElementById('mCoutAchat').value) || 0,
+      points: parseInt(document.getElementById('mPoints').value) || 0,
+      categorie: document.getElementById('mCat').value,
+      image_url: document.getElementById('mImg').value.trim() || null,
+    })
+  });
+
+  alertEl.innerHTML = '<div class="alert alert-ok">✅ Produit modifié !</div>';
+
+  // Remettre le bouton en mode Ajouter
+  const btn = document.querySelector('#page-menu .btn-primary');
+  btn.textContent = '✅ Ajouter au menu';
+  btn.onclick = saveProduit;
+
+  ['mNom','mPrix','mCoutAchat','mPoints','mImg'].forEach(id => document.getElementById(id).value = '');
+  loadMenu();
+}
 
 /* ══════════════════════════════════════════════
    CONTRATS
