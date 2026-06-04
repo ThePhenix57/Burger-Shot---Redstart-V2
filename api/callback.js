@@ -31,9 +31,9 @@ export default async function handler(req, res) {
     });
     const du = await userRes.json();
 
-    const DIR_IDS  = ['280415204477501451','1157333780898529333','370510144766738432'];
-    const GOUV_IDS = [];
-    const isPriv   = DIR_IDS.includes(du.id) || GOUV_IDS.includes(du.id);
+    const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
+    const isPriv  = DIR_IDS.includes(du.id);
+
     let empRow = null;
 
     if (!isPriv) {
@@ -42,19 +42,31 @@ export default async function handler(req, res) {
         { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
       );
       const empArr = await empRes.json();
-      if (!Array.isArray(empArr) || !empArr.length) return res.redirect('/?error=not_registered');
+
+      if (!Array.isArray(empArr) || !empArr.length) {
+        // Pas un employé → vérifier si c'est un compte gouvernement
+        const gouvRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/gouvernement_comptes?discord_id=eq.${du.id}&statut=eq.actif&select=id`,
+          { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+        );
+        const gouvArr = await gouvRes.json();
+        if (Array.isArray(gouvArr) && gouvArr.length) {
+          return res.redirect('/gouv.html');
+        }
+        return res.redirect('/?error=not_registered');
+      }
+
       empRow = empArr[0];
     }
 
     const payload = JSON.stringify({
-      id:       du.id,
+      id:     du.id,
       username: du.username,
-      avatar:   du.avatar || '',
-      nom:      empRow?.nom    || '',
-      prenom:   empRow?.prenom || '',
+      avatar: du.avatar || '',
+      nom:    empRow?.nom    || '',
+      prenom: empRow?.prenom || '',
     });
 
-    // On passe les données via localStorage depuis une page HTML intermédiaire
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(200).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
 <script>
