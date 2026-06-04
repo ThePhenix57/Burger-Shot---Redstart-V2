@@ -33,7 +33,6 @@ export default async function handler(req, res) {
 
     const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
     const isPriv  = DIR_IDS.includes(du.id);
-
     let empRow = null;
 
     if (!isPriv) {
@@ -44,9 +43,8 @@ export default async function handler(req, res) {
       const empArr = await empRes.json();
 
       if (!Array.isArray(empArr) || !empArr.length) {
-        // Pas un employé → vérifier si c'est un compte gouvernement
         const gouvRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/gouvernement_comptes?discord_id=eq.${du.id}&statut=eq.actif&select=id`,
+          `${SUPABASE_URL}/rest/v1/gouvernement_comptes?select=id&discord_id=eq.${du.id}`,
           { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
         );
         const gouvArr = await gouvRes.json();
@@ -60,11 +58,11 @@ export default async function handler(req, res) {
     }
 
     const payload = JSON.stringify({
-      id:     du.id,
+      id:       du.id,
       username: du.username,
-      avatar: du.avatar || '',
-      nom:    empRow?.nom    || '',
-      prenom: empRow?.prenom || '',
+      avatar:   du.avatar || '',
+      nom:      empRow?.nom    || '',
+      prenom:   empRow?.prenom || '',
     });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
