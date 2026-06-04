@@ -466,6 +466,15 @@ if (error === 'token_error' || error === 'user_error') {
   showAlert('❌ Erreur de connexion Discord. Réessayez.', 'err');
   return;
 }
+// ← Ajoute ici
+if (error === 'revoque') {
+  showAlert('❌ Votre accès gouvernement a été révoqué. Contactez la direction.', 'err');
+  return;
+}
+if (error === 'suspendu') {
+  showAlert('⏸️ Votre accès est suspendu. Contactez la direction.', 'warn');
+  return;
+}
 
 // Réception des infos utilisateur après OAuth réussi
 const uid = params.get('uid');
