@@ -516,6 +516,7 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
   </div>
 </div>
 
+  
 <script>
 /* ══════════════════════════════════════════════
    CONFIG
@@ -606,6 +607,15 @@ async function supprimerVehicule(id) {
   if (!confirm('Supprimer ce véhicule ?')) return;
   await sb(`vehicules?id=eq.${id}`, { method: 'DELETE' });
   loadVehicules();
+}
+
+/* ══════════════════════════════════════════════
+   REGELEMENT
+══════════════════════════════════════════════ */
+  function loadReglement() {
+  const el = document.getElementById('reglementContent');
+  if (!el) return;
+  el.innerHTML = `<iframe src="/reglement.html" style="width:100%;height:calc(100vh - 160px);border:none;border-radius:12px;"></iframe>`;
 }
   
 /* ══════════════════════════════════════════════
@@ -984,7 +994,8 @@ function buildPages(){
   </div>
   ${ROLE!=='gouvernement'?`<div class="card" style="margin-bottom:24px;"><div class="card-title">🌡️ Activité par jour / heure</div><div id="statsHeatmap"></div></div>`:''}
   <div class="card"><div class="card-title">🏛️ Paliers d'imposition</div><div id="statsImpots"></div></div></div>`;
-
+  // REGLEMENT
+  html += `<div class="page" id="page-reglement"><div class="red-line"></div><div id="reglementContent"><div class="loading"><div class="spin"></div></div></div></div>`;
   if(dir){
     // EMPLOYÉS
     html+=`<div class="page" id="page-employes"><div class="red-line"></div>
@@ -2825,6 +2836,7 @@ function showPage(id) {
     'contrats':             loadContrats,
     'gestion':              loadGestion,
     'gouvernement':         loadGouvernement,
+    'reglement':            loadReglement,
   };
 
   if (loaders[id]) loaders[id]();
