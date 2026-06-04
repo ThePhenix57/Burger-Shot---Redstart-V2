@@ -130,23 +130,11 @@ button,input,select{font-family:'Barlow',sans-serif;}
       <div id="step1Content"></div>
     </div>
 
-    <!-- STEP 2 : Preuve -->
+    <!-- STEP 2 : Confirmation -->
     <div class="step" id="step2">
-      <div class="step-title">📸 Preuve de fonction</div>
-      <div class="step-desc">Fournissez une capture d'écran ou un lien prouvant votre appartenance au gouvernement.</div>
-      <div class="form-group">
-        <label class="form-label">Upload image</label>
-        <div class="upload-zone">
-          <input type="file" accept="image/*" onchange="handleUpload(event)">
-          <div class="upload-icon">📁</div>
-          <div class="upload-text">Cliquez ou glissez une image ici</div>
-          <img class="upload-preview" id="uploadPreview" alt="">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Ou URL de preuve</label>
-        <input class="form-input" id="gPreuveUrl" placeholder="https://imgur.com/...">
-      </div>
+      <div class="step-title">✔️ Confirmation</div>
+      <div class="step-desc">Vérifiez vos informations avant de valider votre inscription au gouvernement.</div>
+      <div id="recapStep2"></div>
       <button class="btn btn-primary" id="btnStep2" onclick="soumettre()">✅ Enregistrer mon compte</button>
       <div class="back-link" onclick="setStep(1)">← Retour</div>
     </div>
@@ -314,6 +302,12 @@ function goStep2() {
   if (!nom || !prenom) { showAlert('⚠️ Nom et prénom obligatoires.'); return; }
   if (!selectedFonction) { showAlert('⚠️ Sélectionnez votre fonction.'); return; }
   setStep(2);
+  document.getElementById('recapStep2').innerHTML = `
+    <div class="recap-box" style="margin-bottom:16px;">
+      <div class="recap-row"><span class="recap-key">Nom</span><span class="recap-val">${prenom} ${nom}</span></div>
+      <div class="recap-row"><span class="recap-key">Fonction</span><span class="recap-val">${selectedFonction}</span></div>
+      <div class="recap-row"><span class="recap-key">Discord</span><span class="recap-val">${currentUser?.username || ''} (${currentUser?.id || ''})</span></div>
+    </div>`;
 }
 
 function deconnecterEtRevenir() {
@@ -326,12 +320,9 @@ function deconnecterEtRevenir() {
 async function soumettre() {
   const nom = document.getElementById('gNom').value.trim();
   const prenom = document.getElementById('gPrenom').value.trim();
-  const preuveUrl = document.getElementById('gPreuveUrl').value.trim() || preuveBase64 || null;
   const fonctionFinale = selectedFonction === 'Autre'
     ? (document.getElementById('gAutreFonction')?.value.trim() || 'Autre')
     : selectedFonction;
-
-  if (!preuveUrl) { showAlert('⚠️ Fournissez une preuve (image ou URL).'); return; }
 
   const btn = document.getElementById('btnStep2');
   btn.innerHTML = '<span class="spin"></span> Enregistrement...';
@@ -347,7 +338,7 @@ async function soumettre() {
       }
       await sb(`gouvernement_comptes?id=eq.${ex.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ nom, prenom, fonction: fonctionFinale, preuve_url: preuveUrl, statut: ex.statut || 'actif', username: currentUser.username, avatar: currentUser.avatar || null })
+        body: JSON.stringify({ nom, prenom, fonction: fonctionFinale, statut: ex.statut || 'actif', username: currentUser.username, avatar: currentUser.avatar || null })
       });
     } else {
       await sb('gouvernement_comptes', {
@@ -358,7 +349,6 @@ async function soumettre() {
           avatar: currentUser.avatar || null,
           nom, prenom,
           fonction: fonctionFinale,
-          preuve_url: preuveUrl,
           statut: 'actif'
         })
       });
