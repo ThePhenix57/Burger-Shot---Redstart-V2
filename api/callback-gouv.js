@@ -70,4 +70,40 @@ try {
     console.error('CALLBACK-GOUV ERROR:', err.message);
     return res.redirect('/gouv.html?error=server_error');
   }
+  // Vérifier si un compte gouvernement existe déjà
+const gouvRes = await fetch(
+  `${SUPABASE_URL}/rest/v1/gouvernement_comptes?discord_id=eq.${user.id}&select=*`,
+  { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+);
+  const gouvArr = await gouvRes.json();
+  
+  if (Array.isArray(gouvArr) && gouvArr.length) {
+    const compte = gouvArr[0];
+    if (compte.statut === 'revoque') return res.redirect('/gouv.html?error=revoque');
+    if (compte.statut === 'suspendu') return res.redirect('/gouv.html?error=suspendu');
+  
+    // Compte existant → écrire la session et rediriger au dashboard
+    const payload = JSON.stringify({
+      id: user.id,
+      username: user.username,
+      avatar: user.avatar || '',
+      nom: compte.nom,
+      prenom: compte.prenom,
+      fonction: compte.fonction,
+      role: 'gouvernement'
+    });
+  
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(200).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
+  <script>
+  try {
+    localStorage.setItem('bs_gouv_user', ${JSON.stringify(payload)});
+    window.location.replace('/');
+  } catch(e) {
+    window.location.replace('/gouv.html?error=storage_error');
+  }
+  </script>
+  </body></html>`);
+  }
 }
+
