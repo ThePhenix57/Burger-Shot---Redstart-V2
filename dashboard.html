@@ -2118,7 +2118,7 @@ async function loadEmployes(){
           <select onchange="updateEmpContrat('${e.id}',this.value)"><option${e.contrat==='CDD'?' selected':''}>CDD</option><option${e.contrat==='CDI'?' selected':''}>CDI</option></select>
         </div>
         <div class="emp-card-actions">
-          <button class="btn btn-outline btn-sm" onclick="ouvrirDocsAjout('${e.id}','${e.prenom} ${e.nom}',${JSON.stringify(docs).replace(/'/g,'&#39;')})">📎 Docs</button>
+          <button class="btn btn-outline btn-sm" onclick="ouvrirDocsAjout('${e.id}','${e.prenom} ${e.nom}')">📎 Docs</button>
           <button class="btn btn-outline btn-sm" onclick="toggleEmploye('${e.id}',${e.actif})">${e.actif?'🔴 Désactiver':'🟢 Activer'}</button>
           <button class="btn btn-danger btn-sm" onclick="virer('${e.id}','${e.prenom} ${e.nom}','${e.discord_id}')">🚪 Virer</button>
         </div>
@@ -2136,39 +2136,79 @@ async function virer(id,nom,discordId){
   loadEmployes();
 }
 
-function ouvrirDocsAjout(empId,nom,docs){
-  if(typeof docs==='string')try{docs=JSON.parse(docs);}catch{docs=[];}
-  document.getElementById('ovDocsTitle').textContent=`📎 Documents — ${nom}`;
-  const el=document.getElementById('ovDocsContent');
-  el.innerHTML=`
+async function ouvrirDocsAjout(empId, nom) {
+  document.getElementById('ovDocsTitle').textContent = `📎 Ajouter un document — ${nom}`;
+  const el = document.getElementById('ovDocsContent');
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  openOverlay('ovDocs');
+
+  const data = await sb(`employes?id=eq.${empId}&select=documents`);
+  let docs = [];
+  try {
+    const raw = data?.[0]?.documents;
+    docs = typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+  } catch { docs = []; }
+
+  el.innerHTML = `
     <div style="margin-bottom:20px;">
       <div class="form-group"><label class="form-label">Type de document</label>
         <select class="form-select" id="docType">
-          <option>Visite médicale</option><option>Permis de conduire</option><option>Contrat de travail</option><option>Autre</option>
+          <option>Visite médicale</option>
+          <option>Permis de conduire</option>
+          <option>Contrat de travail</option>
+          <option>Autre</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">URL de l'image</label><input class="form-input" id="docUrl" placeholder="https://..."></div>
-      <button class="btn btn-primary btn-sm" onclick="ajouterDoc('${empId}',${JSON.stringify(docs).replace(/'/g,"&#39;")})">➕ Ajouter</button>
+      <div class="form-group"><label class="form-label">URL de l'image</label>
+        <input class="form-input" id="docUrl" placeholder="https://...">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="ajouterDoc('${empId}')">➕ Ajouter</button>
     </div>
     <div id="docsListEl">
-      ${docs.length?docs.map((d,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--card2);border-radius:8px;margin-bottom:8px;">
-        <div>
-          <strong>${d.type}</strong>
-          <button class="btn btn-outline btn-sm" style="margin-left:8px;" onclick="previewDoc('${d.url}','${d.type}')">👁️ Aperçu</button>
-        </div>
-        <button class="btn btn-danger btn-sm" onclick="supprimerDoc('${empId}',${JSON.stringify(docs).replace(/'/g,"&#39;")},${i})">🗑️</button>
-      </div>`).join(''):'<p style="color:var(--muted)">Aucun document.</p>'}
+      ${docs.length ? docs.map((d, i) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--card2);border-radius:8px;margin-bottom:8px;">
+          <div>
+            <strong>${d.type}</strong>
+            <button class="btn btn-outline btn-sm" style="margin-left:8px;" onclick="window.open('${d.url}','_blank')">👁️ Aperçu</button>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="supprimerDocById('${empId}',${i})">🗑️</button>
+        </div>`).join('') : '<p style="color:var(--muted)">Aucun document.</p>'}
     </div>`;
-  openOverlay('ovDocs');
 }
 
-async function ajouterDoc(empId,docs){
-  if(typeof docs==='string')try{docs=JSON.parse(docs);}catch{docs=[];}
-  const type=document.getElementById('docType').value,url=document.getElementById('docUrl').value.trim();
-  if(!url){alert('URL obligatoire.');return;}
-  const newDocs=[...docs,{type,url}];
-  await sb(`employes?id=eq.${empId}`,{method:'PATCH',body:JSON.stringify({documents:JSON.stringify(newDocs)})});
-  closeOverlay('ovDocs');loadEmployes();alert('✅ Document ajouté !');
+async function ajouterDoc(empId) {
+  const type = document.getElementById('docType').value;
+  const url = document.getElementById('docUrl').value.trim();
+  if (!url) { alert('URL obligatoire.'); return; }
+
+  const data = await sb(`employes?id=eq.${empId}&select=documents`);
+  let docs = [];
+  try {
+    const raw = data?.[0]?.documents;
+    docs = typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+  } catch { docs = []; }
+
+  const newDocs = [...docs, { type, url }];
+  await sb(`employes?id=eq.${empId}`, { method: 'PATCH', body: JSON.stringify({ documents: JSON.stringify(newDocs) }) });
+  closeOverlay('ovDocs');
+  loadEmployes();
+  alert('✅ Document ajouté !');
+}
+
+async function supprimerDocById(empId, idx) {
+  if (!confirm('Supprimer ce document ?')) return;
+
+  const data = await sb(`employes?id=eq.${empId}&select=documents`);
+  let docs = [];
+  try {
+    const raw = data?.[0]?.documents;
+    docs = typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+  } catch { docs = []; }
+
+  const newDocs = docs.filter((_, i) => i !== idx);
+  await sb(`employes?id=eq.${empId}`, { method: 'PATCH', body: JSON.stringify({ documents: JSON.stringify(newDocs) }) });
+  closeOverlay('ovDocs');
+  loadEmployes();
 }
 
 async function supprimerDoc(empId,docs,idx){
