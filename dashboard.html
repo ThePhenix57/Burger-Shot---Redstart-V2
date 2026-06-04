@@ -837,7 +837,7 @@ const NAV={
     {id:'stats',icon:'📊',label:'Statistiques'},
     {id:'stock',icon:'📦',label:'Stock'},
     {id:'employes_gouv',icon:'👤',label:'Employés'},
-    {id:'reglement', icon:'📜', label:'Règlement', href:'/reglement.html'},,
+    {id:'reglement', icon:'📜', label:'Règlement', href:'/reglement.html'},
   ]
 };
 
@@ -864,6 +864,7 @@ function buildNav() {
 
     items.push({id:'employes_readonly', icon:'👤', label:'Équipe'});
     items.push({id:'quota',             icon:'🚚', label:'Mon Quota'});
+    items.push({id:'reglement', icon:'📜', label:'Règlement', href:'/reglement.html'});
 
     if (perms.stock === 'write')      items.push({id:'stock',          icon:'📦', label:'Stock'});
     else if (perms.stock === 'read')  items.push({id:'stock_readonly', icon:'📦', label:'Stock'});
