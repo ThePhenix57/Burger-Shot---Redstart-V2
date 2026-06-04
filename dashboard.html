@@ -811,10 +811,11 @@ const NAV={
     {id:'caisse',icon:'🧾',label:'Caisse'},
     {id:'clients',icon:'👥',label:'Clients'},
     {id:'quota',icon:'🚚',label:'Mon Quota'},
+    {id:'reglement', icon:'📜', label:'Règlement', href:'/reglement.html'},
     {id:'stock',icon:'📦',label:'Stock'},
     {id:'calendrier',icon:'📅',label:'Calendrier'},
     {id:'stats',icon:'📊',label:'Stats'},
-    {id:'reglement', icon:'📜', label:'Règlement'},
+    
   ],
   direction:[
     {id:'accueil',icon:'🏠',label:'Accueil'},
@@ -822,7 +823,7 @@ const NAV={
     {id:'clients',icon:'👥',label:'Clients'},
     {id:'quota',icon:'🚚',label:'Mon Quota'},
     {id:'employes',icon:'👤',label:'Employés'},
-    {id:'reglement', icon:'📜', label:'Règlement'},
+    {id:'reglement', icon:'📜', label:'Règlement', href:'/reglement.html'},
     {id:'menu',icon:'🍔',label:'Menu'},
     {id:'stock',icon:'📦',label:'Stock'},
     {id:'vehicules',icon:'🚗',label:'Véhicules'},
@@ -836,7 +837,7 @@ const NAV={
     {id:'stats',icon:'📊',label:'Statistiques'},
     {id:'stock',icon:'📦',label:'Stock'},
     {id:'employes_gouv',icon:'👤',label:'Employés'},
-    {id:'reglement', icon:'📜', label:'Règlement'},
+    {id:'reglement', icon:'📜', label:'Règlement', href:'/reglement.html'},,
   ]
 };
 
@@ -882,7 +883,9 @@ function buildNav() {
   nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
   nav.innerHTML = items.filter(i => i !== 'LOGO').map(i => {
     const badgeHtml = i.badge ? `<span class="nav-badge" id="${i.badge}"></span>` : '';
-    return `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
+    return i.href
+    ? `<a href="${i.href}" target="_blank" class="nav-item" id="nav-${i.id}">${i.icon} ${i.label}</a>`
+    : `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
   }).join('');
 }
 
