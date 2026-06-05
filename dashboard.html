@@ -798,7 +798,7 @@ function refreshCurrentPage() {
   const soldeDepart = parseFloat(coffreData?.[0]?.solde || 500000);
   const caVentes = parseFloat(caData?.[0]?.valeur || 0);
   const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0), 0);
-  const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0), 0);
+  const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0),0);
   const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0), 0);
   const impots = Math.round(calcImpot(caVentes));
   const soldeFinal = Math.round(soldeDepart + caVentes + caLiv - totalPrimes - totalDep - impots);
@@ -3514,7 +3514,7 @@ async function loadCoffreComplet() {
     sb('coffre_solde?limit=1'),
     sb('parametres?cle=eq.ca_semaine'),
     sb(`livraisons?select=montant&semaine=eq.${semaine}`),
-    sb(`primes?select=montant,verse&semaine=eq.${semaine}`),
+    sb(`primes?select=montant&semaine=eq.${semaine}&verse=eq.false`),
     sb(`depenses?select=montant&semaine=eq.${semaine}`),
     sb(`commandes?select=total_apres_reduction,total,items,created_at&semaine=eq.${semaine}`)
   ]);
@@ -3575,7 +3575,7 @@ async function loadCoffreComplet() {
     const nonVersees = (primesData||[]).filter(p => !p.verse).reduce((a,p)=>a+(p.montant||0),0);
     primesEl.innerHTML = `<div class="alert alert-warn" style="margin-top:16px;">
       💳 <strong>Virement prime entreprise vers employés</strong><br>
-      Montant total primes : <strong>${totalPrimes.toLocaleString('fr-FR')}$</strong> dont <strong>${nonVersees.toLocaleString('fr-FR')}$</strong> non versées.<br>
+      Montant total primes : <strong>${totalPrimes.toLocaleString('fr-FR')}$</strong> dont <strong>${${totalPrimes.toLocaleString('fr-FR')}$</strong> non versées.<br>
       ⏰ Virement prévu le <strong>${fmt(sam)}</strong> ou <strong>${fmt(dim)}</strong>
     </div>`;
   }
