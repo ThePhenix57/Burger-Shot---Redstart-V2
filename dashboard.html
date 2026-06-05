@@ -22,9 +22,6 @@
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s;}
 a{text-decoration:none;color:inherit;}
 button,input,select,textarea{font-family:'Barlow',sans-serif;}
-/* CLOCK */
-#clockDisplay{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:2px;position:fixed;bottom:14px;left:18px;z-index:300;background:rgba(0,0,0,.4);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.08);}
-[data-theme="light"] #clockDisplay{color:#222;background:rgba(255,255,255,.7);border-color:rgba(0,0,0,.1);}
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:200;overflow:visible;}
 .checker-bar{height:12px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:12px 12px;}
@@ -705,7 +702,25 @@ function startClock() {
     el.id = 'clockDisplay';
     document.body.appendChild(el);
   }
-  el.style.cssText = 'position:fixed;bottom:14px;left:18px;z-index:9999;font-family:"Oswald",sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;background:rgba(0,0,0,.55);color:#fff;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.12);pointer-events:none;';
+  el.style.cssText = [
+    'position:fixed',
+    'top:0',
+    'left:0',
+    'height:90px',               // même hauteur que topbar-main
+    'display:flex',
+    'align-items:center',
+    'padding:0 20px',
+    'z-index:9999',
+    'font-family:"Oswald",sans-serif',
+    'font-size:20px',
+    'font-weight:700',
+    'letter-spacing:3px',
+    'color:rgba(255,255,255,.9)',
+    'background:transparent',
+    'pointer-events:none',
+    'margin-top:12px',           // décale sous checker-bar (12px)
+  ].join(';');
+ 
   const tick = () => {
     const n = new Date(), p = v => String(v).padStart(2, '0');
     el.textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
@@ -864,18 +879,6 @@ async function loadQuotaConfig(){
   });
 }
 
-function refreshCurrentPage() {
-  const activePage = document.querySelector('.page.active');
-  if (!activePage) return;
-  const id = activePage.id.replace('page-', '');
-  const loaders = {
-    'accueil': loadAccueil, 'stats': loadStats, 'stats_readonly': loadStatsReadonly,
-    'gestion': loadGestion, 'quota': loadQuotaPage,
-  };
-  if (loaders[id]) loaders[id]();
-  autoRefresh();
-}
-
   async function updateTopCoffre() {
   if (ROLE !== 'direction') return;
   const el = document.getElementById('topCoffre');
@@ -909,24 +912,36 @@ function refreshCurrentPage() {
   el.textContent = `💰 ${soldeFinal.toLocaleString('fr-FR')}$`;
 }
 
-async function autoRefresh(){
-  if(ROLE==='direction'||USER_NIVEAU>=1){
-    const tickets=await sb('quotas_tickets?select=id&statut=eq.en_attente');
-    pendingQuotaCount=Array.isArray(tickets)?tickets.length:0;
-    const badge=document.getElementById('quota-badge');
-    if(badge)badge.textContent=pendingQuotaCount||'';
+async function autoRefresh() {
+  // Stats quota (silencieux)
+  if (ROLE === 'direction' || USER_NIVEAU >= 1) {
+    const tickets = await sb('quotas_tickets?select=id&statut=eq.en_attente');
+    pendingQuotaCount = Array.isArray(tickets) ? tickets.length : 0;
+    const badge = document.getElementById('quota-badge');
+    if (badge) badge.textContent = pendingQuotaCount || '';
   }
-  const activePage=document.querySelector('.page.active');
-  if(activePage?.id==='page-stats')loadStats();
-  if(activePage?.id==='page-accueil')loadAccueil();
-  if(activePage?.id==='page-gestion'){loadQuotaTickets();loadCoffre();}
-  if(ROLE==='direction')updateStatutsActivite();
-  if(pendingQuotaCount > 0){
-    document.title=`(${pendingQuotaCount}) Burger Shot — Dashboard`;
-  } else {
-    document.title='Burger Shot — Dashboard';
-  }
+ 
+  // Rafraîchit la page active EN SILENCE (sans spinner)
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+  const id = activePage.id.replace('page-', '');
+ 
+  // On ne recharge que si la page a déjà du contenu (évite le flash)
+  const silentLoaders = {
+    'accueil':  loadAccueil,
+    'stats':    loadStats,
+    'gestion':  () => { loadQuotaTickets(); loadCoffreComplet(); },
+  };
+  if (silentLoaders[id]) silentLoaders[id]();
+ 
+  if (ROLE === 'direction') updateStatutsActivite();
+  document.title = pendingQuotaCount > 0 ? `(${pendingQuotaCount}) Burger Shot — Dashboard` : 'Burger Shot — Dashboard';
   updateTopCoffre();
+}
+ 
+function refreshCurrentPage() {
+  // Appelé par setInterval — identique à autoRefresh maintenant
+  autoRefresh();
 }
 
 async function updateStatutsActivite(){
@@ -1055,7 +1070,7 @@ function buildNav() {
   items.push({ id: 'employes_readonly', icon: '👤', label: 'Équipe' });
   items.push({ id: 'quota',             icon: '🚚', label: 'Mon Quota' });
   items.push({ id: 'reglement',         icon: '📜', label: 'Règlement', href: '/reglement.html' });
- 
+  
   if (perms.stock === 'write')     items.push({ id: 'stock',          icon: '📦', label: 'Stock' });
   else if (perms.stock === 'read') items.push({ id: 'stock_readonly', icon: '📦', label: 'Stock' });
  
@@ -1065,7 +1080,7 @@ function buildNav() {
     items.push({ id: 'vehicules_readonly', icon: '🚗', label: 'Véhicules' });
   }
  
-  items.push({ id: 'calendrier_readonly', icon: '📅', label: 'Calendrier' });
+  items.push({ id: 'calendrier', icon: '📅', label: 'Calendrier' });
   items.push({ id: 'stats_readonly',      icon: '📊', label: 'Stats' });
  
   if (USER_NIVEAU >= 3) items.push({ id: 'gestion', icon: '⚙️', label: 'Gestion', badge: 'quota-badge' });
@@ -1607,7 +1622,7 @@ function statutActiviteHtml(statut){
 ══════════════════════════════════════════════ */
 async function loadAccueil(){
   const el=document.getElementById('accueilContent');
-  el.innerHTML='<div class="loading"><div class="spin"></div> Chargement...</div>';
+  if (!el.innerHTML.trim()) el.innerHTML='<div class="loading"><div class="spin"></div> Chargement...</div>';
   const semaine=getSemaine(),today=new Date().toISOString().split('T')[0];
   const[clients,employes,cmdSemaine,cmdJour,empPerf]=await Promise.all([
     sb('clients?select=id'),
@@ -2381,55 +2396,77 @@ function renderGouvEmps(list){
 /* ══════════════════════════════════════════════
    EMPLOYÉS (direction)
 ══════════════════════════════════════════════ */
-async function loadEmployes(){
-  const el=document.getElementById('empGrid');if(!el)return;
-  el.innerHTML='<div class="loading"><div class="spin"></div> Chargement...</div>';
-  const semaine=getSemaine();
-  const filter=document.getElementById('empFilter')?.value||'';
-  let query='comptes_dashboard?select=*&order=created_at.desc';
-  if(filter==='actif')query='comptes_dashboard?select=*&statut_activite=eq.actif&actif=eq.true&order=created_at.desc';
-  else if(filter==='absent')query='comptes_dashboard?select=*&statut_activite=eq.absent&actif=eq.true&order=created_at.desc';
-  else if(filter==='inactif')query='comptes_dashboard?select=*&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
-  const[data,cmds,allCmds,primes]=await Promise.all([
-    sb(query),
+async function loadEmployes() {
+  const el = document.getElementById('empGrid');
+  if (!el) return;
+  // Pas de spinner si déjà du contenu (refresh silencieux)
+  if (!el.innerHTML.trim()) el.innerHTML = '<div class="loading"><div class="spin"></div> Chargement...</div>';
+ 
+  const semaine = getSemaine();
+  const filter  = document.getElementById('empFilter')?.value || '';
+ 
+  // ▼ AJOUT : role=neq.gouvernement pour exclure le gouvernement
+  let base = 'comptes_dashboard?select=*&role=neq.gouvernement&order=created_at.desc';
+  if (filter === 'actif')    base = 'comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.actif&actif=eq.true&order=created_at.desc';
+  else if (filter === 'absent')  base = 'comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.absent&actif=eq.true&order=created_at.desc';
+  else if (filter === 'inactif') base = 'comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
+ 
+  const [data, cmds, allCmds, primes] = await Promise.all([
+    sb(base),
     sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
     sb('commandes?select=employe_discord_id,total_apres_reduction,total'),
     sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
   ]);
-  if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>';return;}
-  const NIVEAU_POSTE_SORT = {'Patron':5,'Co-Patron':4,'Manager':3,'Responsable':2,"Chef d'équipe":1,'Employé':0};
+ 
+  if (!Array.isArray(data) || !data.length) {
+    el.innerHTML = '<p style="color:var(--muted)">Aucun employé.</p>';
+    return;
+  }
+ 
+  const NIVEAU_POSTE_SORT = { 'Patron': 5, 'Co-Patron': 4, 'Manager': 3, 'Responsable': 2, "Chef d'équipe": 1, 'Employé': 0 };
   data.sort((a, b) => (NIVEAU_POSTE_SORT[b.poste] || 0) - (NIVEAU_POSTE_SORT[a.poste] || 0));
-  const caWeek={},caTotal={},cmdWeek={},primesMap={};
-  (cmds||[]).forEach(c=>{caWeek[c.employe_discord_id]=(caWeek[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);cmdWeek[c.employe_discord_id]=(cmdWeek[c.employe_discord_id]||0)+1;});
-  (allCmds||[]).forEach(c=>{caTotal[c.employe_discord_id]=(caTotal[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);});
-  (primes||[]).forEach(p=>{primesMap[p.employe_discord]=(primesMap[p.employe_discord]||0)+p.montant;});
-  const tauxPoste={'Patron':.4,'Co-Patron':.35,'Manager':.25,'Responsable':.20,"Chef d'équipe":.15,'Employé':.10};
-  el.innerHTML=data.map(e=>{
-    const initials=`${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
-    const primeActuelle=primesMap[e.discord_id]||0;
-    const qMaxV=e.contrat==='CDI'?quotaConfig.cdi_quota_viande:quotaConfig.cdd_quota_viande;
-    const qMaxP=e.contrat==='CDI'?quotaConfig.cdi_quota_patates:quotaConfig.cdd_quota_patates;
-    const qV=parseInt(e.quota_viande_validee||0),qP=parseInt(e.quota_patates_validee||0);
-    const pctV=qMaxV>0?Math.min(100,Math.round((qV/qMaxV)*100)):0;
-    const pctP=qMaxP>0?Math.min(100,Math.round((qP/qMaxP)*100)):0;
-    const taux=tauxPoste[e.poste]??.10;
-    const statut=e.statut_activite||'actif';
-    const avatarContent=e.photo_url?`<img src="${e.photo_url}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="width:100%;height:100%;object-fit:cover;"><span style="display:none;font-size:18px;font-weight:800;">${initials}</span>`:`<span style="font-size:18px;font-weight:800;">${initials}</span>`;
-    const docs=e.documents||[];
-    return`<div class="emp-card">
+ 
+  const caWeek = {}, caTotal = {}, cmdWeek = {}, primesMap = {};
+  (cmds   || []).forEach(c => { caWeek[c.employe_discord_id] = (caWeek[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0); cmdWeek[c.employe_discord_id] = (cmdWeek[c.employe_discord_id]||0)+1; });
+  (allCmds|| []).forEach(c => { caTotal[c.employe_discord_id] = (caTotal[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0); });
+  (primes || []).forEach(p => { primesMap[p.employe_discord] = (primesMap[p.employe_discord]||0)+p.montant; });
+ 
+  const tauxPoste = { 'Patron':.4,'Co-Patron':.35,'Manager':.25,'Responsable':.20,"Chef d'équipe":.15,'Employé':.10 };
+ 
+  el.innerHTML = data.map(e => {
+    const initials = `${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
+    const primeActuelle = primesMap[e.discord_id] || 0;
+    const qMaxV = e.contrat==='CDI' ? quotaConfig.cdi_quota_viande  : quotaConfig.cdd_quota_viande;
+    const qMaxP = e.contrat==='CDI' ? quotaConfig.cdi_quota_patates : quotaConfig.cdd_quota_patates;
+    const qV = parseInt(e.quota_viande_validee||0), qP = parseInt(e.quota_patates_validee||0);
+    const pctV = qMaxV>0 ? Math.min(100,Math.round((qV/qMaxV)*100)) : 0;
+    const pctP = qMaxP>0 ? Math.min(100,Math.round((qP/qMaxP)*100)) : 0;
+    const taux = tauxPoste[e.poste] ?? .10;
+    const statut = e.statut_activite || 'actif';
+    const avatarContent = e.photo_url
+      ? `<img src="${e.photo_url}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="width:100%;height:100%;object-fit:cover;"><span style="display:none;font-size:18px;font-weight:800;">${initials}</span>`
+      : `<span style="font-size:18px;font-weight:800;">${initials}</span>`;
+ 
+    // Badge règlement signé
+    const reglBadge = e.reglement_signe
+      ? `<span class="badge badge-green" title="Signé le ${e.reglement_signe_le?new Date(e.reglement_signe_le).toLocaleDateString('fr-FR'):'—'}">📝 Signé</span>`
+      : `<span class="badge badge-red">📝 Non signé</span>`;
+ 
+    return `<div class="emp-card">
       <div class="emp-card-header">
         <div class="emp-card-header-bg"></div>
         <div class="emp-avatar">${avatarContent}</div>
         <div style="flex:1;z-index:1;">
           <div style="display:flex;align-items:center;gap:8px;">
             <div class="emp-name">${e.prenom} ${e.nom}</div>
-            <button class="btn-info-docs" onclick="voirDocsEmploye('${e.id}','${e.prenom} ${e.nom}')" title="Documents">ℹ</button>
+            <button class="btn-info-docs" onclick="voirDocsEmploye('${e.id}','${e.prenom} ${e.nom}')" title="Fiche complète">ℹ</button>
           </div>
           <div class="emp-discord">${e.discord_id||'—'}</div>
           <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
             <span class="badge ${e.actif?statut==='actif'?'badge-green':statut==='absent'?'badge-orange':'badge-grey':'badge-red'}">${e.actif?statutActiviteHtml(statut):'Inactif'}</span>
             <span class="badge badge-orange">${e.poste||'—'}</span>
             <span class="badge badge-blue">${e.contrat||'—'}</span>
+            ${reglBadge}
           </div>
         </div>
       </div>
@@ -3090,32 +3127,124 @@ async function toggleContrat(id,actif){await sb(`contrats_reduction?id=eq.${id}`
    CALENDRIER
 ══════════════════════════════════════════════ */
 async function loadCalendrier(){const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();await renderCal();}
-async function renderCal(){
-  const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  document.getElementById('calTitle').textContent=`${MONTHS[calMonth]} ${calYear}`;
-  const firstDay=new Date(calYear,calMonth,1).getDay(),start=firstDay===0?6:firstDay-1,daysInMonth=new Date(calYear,calMonth+1,0).getDate(),daysInPrev=new Date(calYear,calMonth,0).getDate();
-  const from=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`,to=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
-  const events=await sb(`reservations?select=*&date_debut=gte.${from}T00:00:00&date_debut=lte.${to}T23:59:59&order=date_debut.asc`)||[];
-  const today=new Date(),canAdd=ROLE==='direction'||USER_NIVEAU>=2;
-  let html=`<table class="cal-table"><thead><tr>${DAYS.map(d=>`<th class="cal-th">${d}</th>`).join('')}</tr></thead><tbody>`;
-  const rows=Math.ceil((start+daysInMonth)/7);
-  for(let row=0;row<rows;row++){
-    html+='<tr>';
-    for(let col=0;col<7;col++){
-      const idx=row*7+col;let day,isCurrentMonth=true;
-      if(idx<start){day=daysInPrev-(start-1-idx);isCurrentMonth=false;}
-      else if(idx>=start+daysInMonth){day=idx-(start+daysInMonth)+1;isCurrentMonth=false;}
-      else day=idx-start+1;
-      const isToday=isCurrentMonth&&today.getDate()===day&&today.getMonth()===calMonth&&today.getFullYear()===calYear;
-      const dayEvents=isCurrentMonth?events.filter(e=>new Date(e.date_debut).getDate()===day):[];
-      const clickAttr=canAdd&&isCurrentMonth?`onclick="prefillResa(${calYear},${calMonth+1},${day})"`:'';
-      html+=`<td class="cal-td"><div class="cal-cell${isToday?' today':''}${!isCurrentMonth?' other-month':''}" ${clickAttr}><div class="cal-cell-num">${day}</div>${dayEvents.slice(0,3).map(e=>`<span class="cal-event-pill ${e.type||''}">${e.titre||e.type}</span>`).join('')}${dayEvents.length>3?`<span style="font-size:9px;color:var(--muted);">+${dayEvents.length-3}</span>`:''}${canAdd&&isCurrentMonth?`<div class="cal-cell-add">+</div>`:''}</div></td>`;
+async function renderCal() {
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const DAYS   = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+ 
+  const titleEl = document.getElementById('calTitle') || document.getElementById('calTitleRo');
+  if (titleEl) titleEl.textContent = `${MONTHS[calMonth]} ${calYear}`;
+ 
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
+  const start       = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+ 
+  const from = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const to   = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
+  const events = await sb(`reservations?select=*&date_debut=gte.${from}T00:00:00&date_debut=lte.${to}T23:59:59&order=date_debut.asc`) || [];
+ 
+  const today    = new Date();
+  const canAdd   = ROLE === 'direction' || USER_NIVEAU >= 2;
+ 
+  // Stocke les events pour popup
+  window._calEvents = events;
+ 
+  let html = `<table class="cal-table"><thead><tr>${DAYS.map(d => `<th class="cal-th">${d}</th>`).join('')}</tr></thead><tbody>`;
+  const rows = Math.ceil((start + daysInMonth) / 7);
+ 
+  for (let row = 0; row < rows; row++) {
+    html += '<tr>';
+    for (let col = 0; col < 7; col++) {
+      const idx = row * 7 + col;
+      let day, isCurrentMonth = true;
+      if (idx < start)                    { day = daysInPrev - (start - 1 - idx); isCurrentMonth = false; }
+      else if (idx >= start + daysInMonth){ day = idx - (start + daysInMonth) + 1; isCurrentMonth = false; }
+      else                                 { day = idx - start + 1; }
+ 
+      const isToday = isCurrentMonth && today.getDate()===day && today.getMonth()===calMonth && today.getFullYear()===calYear;
+      const dayEvents = isCurrentMonth ? events.filter(e => new Date(e.date_debut).getDate() === day) : [];
+ 
+      // Cellule cliquable pour TOUS (affiche détail) ; si direction → permet ajout
+      const clickFn = isCurrentMonth
+        ? (canAdd
+            ? `oncontextmenu="event.preventDefault();prefillResa(${calYear},${calMonth+1},${day})" onclick="afficherDetailJour(${calYear},${calMonth+1},${day})"`
+            : `onclick="afficherDetailJour(${calYear},${calMonth+1},${day})"`)
+        : '';
+ 
+      const pillsHtml = dayEvents.slice(0, 3).map(e => {
+        const colorClass = e.type === 'reservation' ? '' : e.type === 'reunion' ? 'reunion' : 'resa';
+        const heure = e.date_debut ? new Date(e.date_debut).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+        return `<span class="cal-event-pill ${colorClass}" title="${e.notes||''}" onclick="event.stopPropagation();afficherDetailEvenement('${e.id}')">${heure ? heure+' ' : ''}${e.titre||e.type}</span>`;
+      }).join('');
+ 
+      html += `<td class="cal-td"><div class="cal-cell${isToday?' today':''}${!isCurrentMonth?' other-month':''}" ${clickFn}>
+        <div class="cal-cell-num">${day}</div>
+        ${pillsHtml}
+        ${dayEvents.length > 3 ? `<span style="font-size:9px;color:var(--muted);">+${dayEvents.length-3}</span>` : ''}
+        ${canAdd && isCurrentMonth ? `<div class="cal-cell-add" title="Clic droit pour ajouter">+</div>` : ''}
+      </div></td>`;
     }
-    html+='</tr>';
+    html += '</tr>';
   }
-  html+='</tbody></table>';
-  document.getElementById('calContainer').innerHTML=html;
+  html += '</tbody></table>';
+ 
+  const container = document.getElementById('calContainer') || document.getElementById('calContainerRo');
+  if (container) container.innerHTML = html;
+}
+ 
+// Affiche le détail des événements d'un jour (tous les rôles)
+function afficherDetailJour(y, m, d) {
+  const events = (window._calEvents || []).filter(e => {
+    const dd = new Date(e.date_debut);
+    return dd.getFullYear()===y && (dd.getMonth()+1)===m && dd.getDate()===d;
+  });
+  if (!events.length) {
+    if (ROLE === 'direction' || USER_NIVEAU >= 2) prefillResa(y, m, d);
+    return;
+  }
+  // Affiche dans un popup simple
+  const canAdd = ROLE === 'direction' || USER_NIVEAU >= 2;
+  const pad = n => String(n).padStart(2,'0');
+  const html = events.map(e => {
+    const typeIcon = e.type==='reservation'?'🍽️':e.type==='reunion'?'📋':'🎉';
+    const debut = e.date_debut ? new Date(e.date_debut).toLocaleString('fr-FR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';
+    const fin   = e.date_fin   ? new Date(e.date_fin).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : null;
+    return `<div style="padding:14px;background:var(--card2);border-radius:10px;margin-bottom:10px;border-left:3px solid ${e.type==='reunion'?'#9b59b6':e.type==='reservation'?'var(--blue)':'var(--red)'};">
+      <div style="font-weight:800;font-size:15px;margin-bottom:4px;">${typeIcon} ${e.titre||e.type}</div>
+      <div style="font-size:12px;color:var(--muted);">🗓️ ${debut}${fin?' → '+fin:''}</div>
+      ${e.notes ? `<div style="font-size:13px;margin-top:8px;color:var(--text);">${e.notes}</div>` : ''}
+      ${(ROLE==='direction'||USER_NIVEAU>=2)?`<button class="btn btn-danger btn-sm" style="margin-top:10px;" onclick="supprimerEvenement('${e.id}')">🗑️ Supprimer</button>`:''}
+    </div>`;
+  }).join('');
+ 
+  // Popup générique (réutilise ovDocs)
+  document.getElementById('ovDocsTitle').textContent = `📅 ${pad(d)}/${pad(m)}/${y}`;
+  document.getElementById('ovDocsContent').innerHTML = html +
+    (canAdd ? `<button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="closeOverlay('ovDocs');prefillResa(${y},${m},${d})">➕ Ajouter un événement</button>` : '');
+  openOverlay('ovDocs');
+}
+ 
+async function afficherDetailEvenement(id) {
+  const e = (window._calEvents || []).find(x => x.id === id);
+  if (!e) return;
+  const typeIcon = e.type==='reservation'?'🍽️':e.type==='reunion'?'📋':'🎉';
+  const debut = new Date(e.date_debut).toLocaleString('fr-FR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('ovDocsTitle').textContent = `${typeIcon} ${e.titre||e.type}`;
+  document.getElementById('ovDocsContent').innerHTML = `
+    <div style="padding:16px;background:var(--card2);border-radius:10px;">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">🗓️ ${debut}</div>
+      ${e.date_fin?`<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">🏁 Fin : ${new Date(e.date_fin).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>`:''}
+      ${e.notes?`<div style="font-size:14px;margin-top:10px;">${e.notes}</div>`:''}
+    </div>
+    ${(ROLE==='direction'||USER_NIVEAU>=2)?`<button class="btn btn-danger btn-sm" style="margin-top:14px;" onclick="supprimerEvenement('${e.id}')">🗑️ Supprimer cet événement</button>`:''}`;
+  openOverlay('ovDocs');
+}
+ 
+async function supprimerEvenement(id) {
+  if (!confirm('Supprimer cet événement ?')) return;
+  await sb(`reservations?id=eq.${id}`, { method: 'DELETE' });
+  closeOverlay('ovDocs');
+  renderCal();
 }
 function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCal();}
 function prefillResa(y,m,d){const pad=n=>String(n).padStart(2,'0');document.getElementById('resaDebut').value=`${y}-${pad(m)}-${pad(d)}T12:00`;document.getElementById('resaFin').value=`${y}-${pad(m)}-${pad(d)}T14:00`;openOverlay('ovResa');}
@@ -3614,14 +3743,28 @@ async function envoyerCompteRenduDiscord(cr) {
    CLÔTURE CÔTÉ CLIENT (backup si cron pas dispo)
 ══════════════════════════════════════════════ */
 async function verifierEtCloturerSiVendredi() {
+  // Heure Paris (Europe/Paris) via Intl
   const now = new Date();
-  if (now.getDay() !== 5) return; // pas vendredi
-  if (now.getHours() < 23) return; // pas encore 23h
-
+  const parisFmt = new Intl.DateTimeFormat('fr-FR', {
+    timeZone: 'Europe/Paris',
+    weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false
+  }).formatToParts(now);
+ 
+  const partsMap = {};
+  parisFmt.forEach(p => { partsMap[p.type] = p.value; });
+ 
+  const isVendredi  = partsMap.weekday === 'ven.';
+  const heuresParis = parseInt(partsMap.hour);
+  const minsParis   = parseInt(partsMap.minute);
+ 
+  // Déclenche entre 23h55 et 23h59 le vendredi — fenêtre de 5 min
+  if (!isVendredi) return;
+  if (heuresParis < 23 || minsParis < 55) return;
+ 
   const semaine = getSemaine();
   const deja = await sb(`comptes_rendus?semaine=eq.${semaine}`);
-  if (deja?.length) return; // déjà clôturé
-
+  if (deja?.length) return; // déjà clôturé cette semaine
+ 
   await executerCloture();
 }
 
