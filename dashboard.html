@@ -45,6 +45,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 /* NAV */
 .topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;position:relative;}
 .topbar-nav::-webkit-scrollbar{display:none;}
+.topbar-coffre{font-size:11px;color:var(--success);font-weight:700;letter-spacing:1px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);border-radius:20px;padding:3px 10px;white-space:nowrap;}
 .nav-group{display:flex;align-items:center;}
 .nav-item{padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.75);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:.15s;flex-shrink:0;display:flex;align-items:center;gap:6px;}
 .nav-item:hover{color:#fff;background:rgba(0,0,0,.15);}
@@ -275,6 +276,7 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
     </div>
     <div class="topbar-right">
       <div class="topbar-user">
+        <div class="topbar-coffre" id="topCoffre" style="display:none;">💰 —</div>
         <div class="topbar-user-name" id="topName">—</div>
         <div class="topbar-user-role" id="topRole">—</div>
       </div>
@@ -732,7 +734,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadQuotaConfig();
   passTypes = await sb('pass_types?select=*') || [];
 
-  buildNav(); buildPages();
+  buildNav(); buildPages();updateTopCoffre();
   showPage(ROLE === 'gouvernement' ? 'stats' : 'accueil');
   if (ROLE === 'employe') trackActivity();
 
@@ -777,6 +779,16 @@ function refreshCurrentPage() {
   autoRefresh();
 }
 
+  async function updateTopCoffre() {
+  if (ROLE !== 'direction') return;
+  const el = document.getElementById('topCoffre');
+  if (!el) return;
+  el.style.display = 'block';
+  const data = await sb('coffre_solde?limit=1');
+  const solde = parseFloat(data?.[0]?.solde || 500000);
+  el.textContent = `💰 ${Math.round(solde).toLocaleString('fr-FR')}$`;
+}
+
 async function autoRefresh(){
   if(ROLE==='direction'||USER_NIVEAU>=1){
     const tickets=await sb('quotas_tickets?select=id&statut=eq.en_attente');
@@ -794,6 +806,7 @@ async function autoRefresh(){
   } else {
     document.title='Burger Shot — Dashboard';
   }
+  updateTopCoffre();
 }
 
 async function updateStatutsActivite(){
