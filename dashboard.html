@@ -723,7 +723,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (avatar) { const img = document.createElement('img'); img.src = `https://cdn.discordapp.com/avatars/${id}/${avatar}.png`; img.onerror = () => av.textContent = displayName.charAt(0).toUpperCase(); av.appendChild(img); }
   else av.textContent = displayName.charAt(0).toUpperCase();
   document.getElementById('topName').textContent = displayName;
-  document.getElementById('topRole').textContent = ROLE === 'direction' ? '⭐ Direction' : ROLE === 'gouvernement' ? '🏛️ Gouvernement' : '🧾 Employé';
+  const isHautGrade = ['Patron', 'Co-Patron'].includes(empData?.[0]?.poste);
+  document.getElementById('topRole').textContent = ROLE === 'direction' ? '⭐ Direction' : ROLE === 'gouvernement' ? '🏛️ Gouvernement' : isHautGrade ? '⭐ Direction' : '🧾 Employé';
 
   await loadQuotaConfig();
   passTypes = await sb('pass_types?select=*') || [];
