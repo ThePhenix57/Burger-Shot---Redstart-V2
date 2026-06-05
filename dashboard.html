@@ -3543,7 +3543,6 @@ async function loadCoffreComplet() {
     { label: '🏦 Solde départ', value: `${soldeDepart.toLocaleString('fr-FR')}$`, accent: 'var(--blue)' },
     { label: '🧾 CA Ventes', value: `+${caVentes.toLocaleString('fr-FR')}$`, accent: 'var(--success)' },
     { label: '🚚 Livraisons', value: `+${caLiv.toLocaleString('fr-FR')}$`, accent: 'var(--orange)' },
-    { label: '👥 Primes', value: `-${totalPrimes.toLocaleString('fr-FR')}$`, accent: 'var(--warning)' },
     { label: '💸 Dépenses', value: `-${totalDep.toLocaleString('fr-FR')}$`, accent: 'var(--red)' },
     { label: `🏛️ Impôts (${tauxLabel(caVentes)})`, value: `-${impots.toLocaleString('fr-FR')}$`, accent: 'var(--red-dark)' },
     { label: '📊 Bénéfice net', value: `${benefice >= 0 ? '+' : ''}${Math.round(benefice).toLocaleString('fr-FR')}$`, accent: benefice >= 0 ? 'var(--success)' : 'var(--red)' },
@@ -3567,16 +3566,6 @@ async function loadCoffreComplet() {
   const sam = new Date(ven); sam.setDate(ven.getDate() + 1);
   const dim = new Date(ven); dim.setDate(ven.getDate() + 2);
   const fmt = d => d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
-
-  const primesEl = document.getElementById('coffrePrimesInfo');
-  if (primesEl && totalPrimes > 0) {
-    const nonVersees = (primesData||[]).filter(p => !p.verse).reduce((a,p)=>a+(p.montant||0),0);
-    primesEl.innerHTML = `<div class="alert alert-warn" style="margin-top:16px;">
-      💳 <strong>Virement prime entreprise vers employés</strong><br>
-      Montant total primes : <strong>${totalPrimes.toLocaleString('fr-FR')}$</strong> non versées.<br>
-      ⏰ Virement prévu le <strong>${fmt(sam)}</strong> ou <strong>${fmt(dim)}</strong>
-    </div>`;
-  }
 
   // Évolution graphique
   await chargerGraphiqueEvolution(semaine);
