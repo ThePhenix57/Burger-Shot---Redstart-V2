@@ -696,11 +696,42 @@ async function trackActivity(){
 ══════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async () => {
   startClock();
-  const raw = localStorage.getItem('bs_user');
+
+  // Priorité 1 : session gouvernement
+  let raw = localStorage.getItem('bs_gouv_user');
+  let isGouv = false;
+  if (raw) {
+    try {
+      const g = JSON.parse(raw);
+      if (g?.id && g?.role === 'gouvernement') {
+        const gouvCheck = await sb(`gouvernement_comptes?discord_id=eq.${g.id}`);
+        if (!gouvCheck?.length || gouvCheck[0].statut === 'revoque') {
+          localStorage.removeItem('bs_gouv_user');
+          location.href = '/gouv.html?error=revoque';
+          return;
+        }
+        if (gouvCheck[0].statut === 'suspendu') {
+          localStorage.removeItem('bs_gouv_user');
+          location.href = '/gouv.html?error=suspendu';
+          return;
+        }
+        isGouv = true;
+      }
+    } catch { isGouv = false; }
+  }
+
+  // Priorité 2 : session employé
+  if (!isGouv) raw = localStorage.getItem('bs_user');
   if (!raw) { location.href = '/'; return; }
+
   let userData;
   try { userData = JSON.parse(raw); }
-  catch(e) { localStorage.removeItem('bs_user'); location.href = '/'; return; }
+  catch(e) {
+    localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
+    location.href = '/';
+    return;
+  }
+
   const { id, username, avatar, nom, prenom } = userData;
   if (!id) { location.href = '/'; return; }
 
@@ -713,7 +744,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   let _posteActuel = null;
   if (ROLE === 'employe') {
     const empData = await sb(`employes?discord_id=eq.${id}&select=poste,actif,contrat`);
-    if (!empData?.[0] || !empData[0].actif) { localStorage.removeItem('bs_user'); location.href = '/'; return; }
+    if (!empData?.[0] || !empData[0].actif) {
+      localStorage.removeItem('bs_user');
+      location.href = '/';
+      return;
+    }
     USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
     USER_CONTRAT = empData[0].contrat || 'CDD';
     _posteActuel = empData[0].poste;
@@ -725,16 +760,29 @@ window.addEventListener('DOMContentLoaded', async () => {
   USER = { id, username, displayName, avatar, role: ROLE };
 
   const av = document.getElementById('topAvatar');
-  if (avatar) { const img = document.createElement('img'); img.src = `https://cdn.discordapp.com/avatars/${id}/${avatar}.png`; img.onerror = () => av.textContent = displayName.charAt(0).toUpperCase(); av.appendChild(img); }
-  else av.textContent = displayName.charAt(0).toUpperCase();
+  if (avatar) {
+    const img = document.createElement('img');
+    img.src = `https://cdn.discordapp.com/avatars/${id}/${avatar}.png`;
+    img.onerror = () => av.textContent = displayName.charAt(0).toUpperCase();
+    av.appendChild(img);
+  } else {
+    av.textContent = displayName.charAt(0).toUpperCase();
+  }
+
   document.getElementById('topName').textContent = displayName;
   const isHautGrade = ['Patron', 'Co-Patron'].includes(_posteActuel);
-  document.getElementById('topRole').textContent = ROLE === 'direction' ? '⭐ Direction' : ROLE === 'gouvernement' ? '🏛️ Gouvernement' : isHautGrade ? '⭐ Direction' : '🧾 Employé';
+  document.getElementById('topRole').textContent =
+    ROLE === 'direction'    ? '⭐ Direction' :
+    ROLE === 'gouvernement' ? '🏛️ Gouvernement' :
+    isHautGrade             ? '⭐ Direction' :
+                              '🧾 Employé';
 
   await loadQuotaConfig();
   passTypes = await sb('pass_types?select=*') || [];
 
-  buildNav(); buildPages();updateTopCoffre();
+  buildNav();
+  buildPages();
+  updateTopCoffre();
   showPage(ROLE === 'gouvernement' ? 'stats' : 'accueil');
   if (ROLE === 'employe') trackActivity();
 
@@ -744,7 +792,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   verifierEtCloturerSiVendredi();
   enregistrerEvolutionJour();
 
-  // ✅ Garde le contenu original de ces listeners
   document.addEventListener('input', e => {
     if (e.target.id === 'mImg') updateMenuImgPreview(e.target.value);
     if (e.target.id === 'caisseClientSearch') searchCaisseClient(e.target.value);
