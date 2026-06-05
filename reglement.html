@@ -361,9 +361,10 @@ a{text-decoration:none;color:inherit;}
 
 <div class="toast" id="toast"></div>
 
+<script src="/config.js"></script>
 <script>
-const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
+const SB_URL = BS_CONFIG.SB_URL;
+const SB_KEY = BS_CONFIG.SB_ANON_KEY;
 const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
 
 let USER = null;
