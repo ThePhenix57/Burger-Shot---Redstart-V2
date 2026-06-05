@@ -559,6 +559,11 @@ const NIVEAU_POSTE = {'Employé':0,"Chef d'équipe":1,'Responsable':2,'Manager':
 const TVX = 0.10; // TVX 10%
 const STOCK_CATS = ['Viande','Patate','Wraps','Burger','Nugget','Boisson','Dessert','Autres'];
 
+function capitalizeFirst(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function getPermissions() {
   if (ROLE === 'direction') return { pages: 'ALL', all: true };
 
@@ -981,7 +986,7 @@ function buildNav() {
   const nav = document.getElementById('topNav');
  
   if (ROLE === 'direction') {
-    nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;flex-wrap:wrap;';
+    nav.style.cssText = 'display:flex;align-items:center;justify-content:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;flex-wrap:wrap;';
     nav.innerHTML = `
       <!-- Accueil -->
       <div class="nav-item" id="nav-accueil" onclick="showPage('accueil')">🏠 Accueil</div>
@@ -2058,7 +2063,7 @@ function openEditClient(c){
 }
 async function saveEditClient(){
   const id=document.getElementById('ecId').value;
-  await sb(`clients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({nom:document.getElementById('ecNom').value.trim(),prenom:document.getElementById('ecPrenom').value.trim(),telephone:document.getElementById('ecTel').value.trim()||null,discord_id:document.getElementById('ecDiscord').value.trim()||null})});
+  await sb(`clients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({nom:capitalizeFirst(document.getElementById('ecNom').value.trim()),prenom:capitalizeFirst(document.getElementById('ecPrenom').value.trim()),telephone:document.getElementById('ecTel').value.trim()||null,discord_id:document.getElementById('ecDiscord').value.trim()||null})});
   closeOverlay('ovEditClient');loadClients();
 }
 async function voirCommandesClient(clientId,clientName){
@@ -2079,8 +2084,8 @@ async function voirCommandesClient(clientId,clientName){
   }).join('');
 }
 async function saveNewClient() {
-  const nom    = document.getElementById('ncNom')?.value.trim();
-  const prenom = document.getElementById('ncPrenom')?.value.trim();
+  const nom    = capitalizeFirst(document.getElementById('ncNom')?.value.trim());
+  const prenom = capitalizeFirst(document.getElementById('ncPrenom')?.value.trim());
   const alertEl = document.getElementById('alertNewClient');
  
   if (!nom || !prenom) {
@@ -2669,8 +2674,8 @@ function openAddEmploye() {
   }
 }
  async function saveEmploye() {
-  const nom    = document.getElementById('empNom')?.value.trim();
-  const prenom = document.getElementById('empPrenom')?.value.trim();
+  const nom    = capitalizeFirst(document.getElementById('empNom')?.value.trim());
+  const prenom = capitalizeFirst(document.getElementById('empPrenom')?.value.trim());
   const discord = document.getElementById('empDiscord')?.value.trim();
   const alertEl = document.getElementById('alertEmploye');
 
@@ -4191,8 +4196,8 @@ async function editerCompte(id) {
 async function sauvegarderCompte() {
   const alertEl = document.getElementById('alertComptes');
   const discord = document.getElementById('fcDiscord')?.value.trim();
-  const nom     = document.getElementById('fcNom')?.value.trim();
-  const prenom  = document.getElementById('fcPrenom')?.value.trim();
+  const nom     = capitalizeFirst(document.getElementById('fcNom')?.value.trim());
+  const prenom  = capitalizeFirst(document.getElementById('fcPrenom')?.value.trim());
   const role    = document.getElementById('fcRole')?.value;
   const isGouv  = role === 'gouvernement';
  
