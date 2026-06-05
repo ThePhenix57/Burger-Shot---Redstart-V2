@@ -3575,7 +3575,7 @@ async function loadCoffreComplet() {
     const nonVersees = (primesData||[]).filter(p => !p.verse).reduce((a,p)=>a+(p.montant||0),0);
     primesEl.innerHTML = `<div class="alert alert-warn" style="margin-top:16px;">
       💳 <strong>Virement prime entreprise vers employés</strong><br>
-      Montant total primes : <strong>${totalPrimes.toLocaleString('fr-FR')}$</strong> dont <strong>${${totalPrimes.toLocaleString('fr-FR')}$</strong> non versées.<br>
+      Montant total primes : <strong>${totalPrimes.toLocaleString('fr-FR')}$</strong> non versées.<br>
       ⏰ Virement prévu le <strong>${fmt(sam)}</strong> ou <strong>${fmt(dim)}</strong>
     </div>`;
   }
