@@ -262,22 +262,30 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 .emp-perso-card::before{content:'BURGER SHOT';position:absolute;right:-10px;bottom:-14px;font-family:'Bebas Neue',sans-serif;font-size:64px;color:rgba(255,255,255,.04);letter-spacing:3px;pointer-events:none;}
 
 /* NAV DROPDOWNS */
-.nav-dropdown{position:relative;}
-.nav-dropdown-menu{
-  display:none;position:absolute;top:100%;left:0;
-  background:#a52d22;border:1px solid rgba(0,0,0,.3);
-  border-top:none;border-radius:0 0 10px 10px;
-  min-width:180px;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.5);
-  padding:4px 0;
+.nav-dropdown { position: relative; }
+.nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #a52d22;
+  border: 1px solid rgba(0,0,0,.3);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  min-width: 180px;
+  z-index: 500;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  padding: 4px 0;
 }
-.nav-dropdown:hover .nav-dropdown-menu,
-.nav-dropdown-menu:hover{display:block;}
-.nav-dropdown-menu .nav-item{
-  padding:9px 18px;border-bottom:1px solid rgba(0,0,0,.15);
-  border-bottom-width:0 0 1px 0;width:100%;
+.nav-dropdown-menu.open { display: block; }
+.nav-dropdown > .nav-item::after { content: ' ▾'; font-size: 9px; opacity: .7; }
+.nav-dropdown-menu .nav-item {
+  padding: 9px 18px;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  width: 100%;
+  display: block;
 }
-.nav-dropdown-menu .nav-item:last-child{border-bottom:none;}
-.nav-dropdown > .nav-item::after{content:' ▾';font-size:9px;opacity:.7;}
+.nav-dropdown-menu .nav-item:last-child { border-bottom: none; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -799,6 +807,23 @@ window.addEventListener('DOMContentLoaded', async () => {
   passTypes = await sb('pass_types?select=*') || [];
 
   buildNav();
+  // Gestion dropdowns nav
+document.addEventListener('click', e => {
+  const dropdown = e.target.closest('.nav-dropdown');
+  // Fermer tous les autres
+  document.querySelectorAll('.nav-dropdown-menu').forEach(m => {
+    if (!dropdown || !dropdown.contains(m)) {
+      m.classList.remove('open');
+    }
+  });
+  // Toggle le cliqué
+  if (dropdown) {
+    const menu = dropdown.querySelector('.nav-dropdown-menu');
+    if (menu && e.target.closest('.nav-dropdown > .nav-item')) {
+      menu.classList.toggle('open');
+    }
+  }
+});
   buildPages();
   updateTopCoffre();
   showPage(ROLE === 'gouvernement' ? 'stats' : 'accueil');
