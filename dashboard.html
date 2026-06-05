@@ -707,11 +707,13 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
   if (DIR_IDS.includes(id)) ROLE = 'direction';
 
+  let _posteActuel = null;
   if (ROLE === 'employe') {
     const empData = await sb(`employes?discord_id=eq.${id}&select=poste,actif,contrat`);
     if (!empData?.[0] || !empData[0].actif) { localStorage.removeItem('bs_user'); location.href = '/'; return; }
     USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
-    USER_CONTRAT = empData[0].contrat || 'CDD'; // ✅ variable globale, pas de let ici
+    USER_CONTRAT = empData[0].contrat || 'CDD';
+    _posteActuel = empData[0].poste;
   }
 
   const empRP = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
@@ -723,7 +725,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (avatar) { const img = document.createElement('img'); img.src = `https://cdn.discordapp.com/avatars/${id}/${avatar}.png`; img.onerror = () => av.textContent = displayName.charAt(0).toUpperCase(); av.appendChild(img); }
   else av.textContent = displayName.charAt(0).toUpperCase();
   document.getElementById('topName').textContent = displayName;
-  const isHautGrade = ['Patron', 'Co-Patron'].includes(empData?.[0]?.poste);
+  const isHautGrade = ['Patron', 'Co-Patron'].includes(_posteActuel);
   document.getElementById('topRole').textContent = ROLE === 'direction' ? '⭐ Direction' : ROLE === 'gouvernement' ? '🏛️ Gouvernement' : isHautGrade ? '⭐ Direction' : '🧾 Employé';
 
   await loadQuotaConfig();
