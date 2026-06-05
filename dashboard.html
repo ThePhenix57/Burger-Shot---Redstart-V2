@@ -662,6 +662,7 @@ async function sb(endpoint, opts = {}) {
 function initRealtime() {
   // Realtime Supabase non utilisé — stub pour éviter l'erreur
 }
+
 function startClock() {
   let el = document.getElementById('clockDisplay');
   if (!el) {
@@ -737,6 +738,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   initRealtime();
   autoRefreshInterval = setInterval(refreshCurrentPage, 60000);
+
+  verifierEtCloturerSiVendredi();
+  enregistrerEvolutionJour();
 
   // ✅ Garde le contenu original de ces listeners
   document.addEventListener('input', e => {
@@ -833,6 +837,7 @@ const NAV={
     {id:'contrats',icon:'📄',label:'Contrats'},
     {id:'calendrier',icon:'📅',label:'Calendrier'},
     {id:'gestion',icon:'⚙️',label:'Gestion',badge:'quota-badge'},
+    {id:'depenses',icon:'💸',label:'Dépenses'},
     {id:'gouvernement',icon:'🏛️',label:'Gouvernement'},
     {id:'stats',icon:'📊',label:'Stats'},
   ],
@@ -1148,13 +1153,33 @@ function buildPages(){
       </div>
       <div id="primesTable" style="margin-top:16px;"></div>
     </div>
-    <div class="card">
-      <div class="card-title">🏦 Coffre</div>
+    <div class="card" style="margin-bottom:24px;">
+      <div id="soldeInitialSection"></div>
+      <div class="card-title">🏦 Coffre — Semaine en cours</div>
       <div class="g4" id="coffreStats" style="margin-bottom:20px;"></div>
-      <div class="card-title">Historique</div>
-      <div id="coffreHisto"></div>
-    </div></div>`;
-
+      <div id="coffrePrimesInfo"></div>
+      <div class="card-title" style="margin-top:24px;">📊 CA par produit</div>
+      <div id="coffreCA" style="margin-bottom:20px;"></div>
+      <div class="card-title" style="margin-top:24px;">📈 Évolution du coffre</div>
+      <div id="graphiqueEvolution" style="margin-bottom:20px;"></div>
+      <div class="card-title" style="margin-top:24px;">📁 Historique comptes rendus</div>
+      <div id="historiqueCompteRendus"></div>
+    </div></div>\``;
+  html+=`<div class="page" id="page-depenses"><div class="red-line"></div>
+  <div class="g2" style="align-items:start;gap:24px;">
+    <div class="card" style="flex-shrink:0;">
+      <div class="card-title">💸 Nouvelle dépense</div>
+      <div id="alertDepense"></div>
+      <div class="form-group"><label class="form-label">Libellé</label><input class="form-input" id="depLibelle" placeholder="Ex: Matériel cuisine, Réparation..."></div>
+      <div class="form-group"><label class="form-label">Montant ($)</label><input class="form-input" id="depMontant" type="number" placeholder="Ex: 5000"></div>
+      <div class="form-group"><label class="form-label">Preuve (URL image)</label><input class="form-input" id="depPreuve" placeholder="https://... (facture screenshot)"></div>
+      <button class="btn btn-danger" onclick="sauvegarderDepense()">💸 Enregistrer</button>
+    </div>
+    <div class="card" style="flex:1;">
+      <div class="card-title">Dépenses de la semaine</div>
+      <div id="depensesContent"><div class="loading"><div class="spin"></div></div></div>
+    </div>
+  </div></div>`;
     // GOUVERNEMENT (panel direction)
     html+=`<div class="page" id="page-gouvernement"><div class="red-line"></div>
     <div id="gouvernementContent"><div class="loading"><div class="spin"></div></div></div></div>`;
@@ -2842,7 +2867,10 @@ async function loadGestion(){
     if(c.cle==='prime_quota_cdd')setVal('gPrimeCDD',c.valeur);
     if(c.cle==='prime_quota_cdi')setVal('gPrimeCDI',c.valeur);
   });
-  await loadQuotaTickets();await loadCoffre();await loadPrimesTable();await loadLivraisons();
+  await loadQuotaTickets();await loadCoffreComplet();await loadPrimesTable();await loadLivraisons();
+  await loadSoldeInitial();
+  await loadCoffreComplet();
+  await loadHistoriqueCompteRendus();
 }
 
 async function loadQuotaTickets(){
@@ -2995,6 +3023,7 @@ function showPage(id) {
     'gestion':              loadGestion,
     'gouvernement':         loadGouvernement,
     'reglement':            loadReglement,
+    'depenses':             loadDepenses,
   };
 
   if (loaders[id]) loaders[id]();
@@ -3187,6 +3216,539 @@ async function loadStatsReadonly() {
 
   const heatEl = document.getElementById('statsHeatmapRo');
   if (heatEl) renderHeatmap(cmds, 'statsHeatmapRo');
+}
+  /* ══════════════════════════════════════════════
+   CONSTANTES AJOUTÉES
+══════════════════════════════════════════════ */
+const WEBHOOK_DISCORD = 'https://discord.com/api/webhooks/1512253420772528219/wTzndZgEaMIByy_QQ_XNTy4VyrSF_oxAxFFkBV6_Q63GV0Lqu6RK0GNKvMgxkuUE3WX-';
+const PATRON_SEUL_ID = '280415204477501451';
+
+/* ══════════════════════════════════════════════
+   CALCUL SEMAINE SAMEDI→VENDREDI
+══════════════════════════════════════════════ */
+function getSemaineSV() {
+  // Retourne la clé de semaine ISO (lundi=début) — même format qu'avant pour compatibilité DB
+  return getSemaine();
+}
+
+function getLabelSemaine(date) {
+  // Trouve le samedi précédent et le vendredi suivant
+  const d = date ? new Date(date) : new Date();
+  const day = d.getDay(); // 0=dim, 6=sam
+  // Samedi précédent (ou aujourd'hui si samedi)
+  const diffSam = (day === 6) ? 0 : (day + 1);
+  const sam = new Date(d); sam.setDate(d.getDate() - diffSam);
+  const ven = new Date(sam); ven.setDate(sam.getDate() + 6);
+  const fmt = dt => dt.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'});
+  return `Semaine du ${fmt(sam)} au ${fmt(ven)}`;
+}
+
+function getDatesSemaine() {
+  const d = new Date();
+  const day = d.getDay();
+  const diffSam = (day === 6) ? 0 : (day + 1);
+  const sam = new Date(d); sam.setDate(d.getDate() - diffSam);
+  const ven = new Date(sam); ven.setDate(sam.getDate() + 6);
+  return { debut: sam, fin: ven };
+}
+
+/* ══════════════════════════════════════════════
+   DISCORD WEBHOOK
+══════════════════════════════════════════════ */
+async function envoyerWebhookDiscord(payload) {
+  try {
+    await fetch(WEBHOOK_DISCORD, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { console.error('Webhook Discord error:', e); }
+}
+
+async function envoyerCompteRenduDiscord(cr) {
+  const sign = cr.benefice_net >= 0 ? '+' : '';
+  const emoji = cr.benefice_net >= 0 ? '📈' : '📉';
+  const samediDim = cr.date_fin ? (() => {
+    const ven = new Date(cr.date_fin);
+    const sam = new Date(ven); sam.setDate(ven.getDate() + 1);
+    const dim = new Date(ven); dim.setDate(ven.getDate() + 2);
+    return `${sam.toLocaleDateString('fr-FR')} et ${dim.toLocaleDateString('fr-FR')}`;
+  })() : 'ce week-end';
+
+  const payload = {
+    username: 'Burger Shot — Comptabilité',
+    avatar_url: 'https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png',
+    embeds: [{
+      title: `🍔 Clôture Hebdomadaire — ${cr.semaine_label || cr.semaine}`,
+      color: cr.benefice_net >= 0 ? 0x27ae60 : 0xe74c3c,
+      fields: [
+        { name: '💰 Solde de départ', value: `**${Math.round(cr.solde_depart).toLocaleString('fr-FR')}$**`, inline: true },
+        { name: '🧾 CA Ventes', value: `+${Math.round(cr.ca_ventes).toLocaleString('fr-FR')}$`, inline: true },
+        { name: '🚚 Livraisons', value: `+${Math.round(cr.ca_livraisons).toLocaleString('fr-FR')}$`, inline: true },
+        { name: '👥 Primes employés', value: `-${Math.round(cr.total_primes).toLocaleString('fr-FR')}$`, inline: true },
+        { name: '📦 Dépenses', value: `-${Math.round(cr.total_depenses).toLocaleString('fr-FR')}$`, inline: true },
+        { name: '🏛️ Impôts', value: `-${Math.round(cr.total_impots).toLocaleString('fr-FR')}$`, inline: true },
+        { name: `${emoji} Bénéfice net`, value: `**${sign}${Math.round(cr.benefice_net).toLocaleString('fr-FR')}$**`, inline: true },
+        { name: '🏦 Nouveau solde coffre', value: `**${Math.round(cr.solde_final).toLocaleString('fr-FR')}$**`, inline: true },
+        { name: '📊 Commandes', value: `${cr.nb_commandes}`, inline: true },
+        { name: '💳 Virement primes', value: `Les primes employés seront virées le **${samediDim}**\nMontant total : **${Math.round(cr.total_primes).toLocaleString('fr-FR')}$**`, inline: false }
+      ],
+      footer: { text: 'Burger Shot • Los Santos • Hawick Avenue' },
+      timestamp: new Date().toISOString()
+    }]
+  };
+  await envoyerWebhookDiscord(payload);
+}
+
+/* ══════════════════════════════════════════════
+   CLÔTURE CÔTÉ CLIENT (backup si cron pas dispo)
+══════════════════════════════════════════════ */
+async function verifierEtCloturerSiVendredi() {
+  const now = new Date();
+  if (now.getDay() !== 5) return; // pas vendredi
+  if (now.getHours() < 23) return; // pas encore 23h
+
+  const semaine = getSemaine();
+  const deja = await sb(`comptes_rendus?semaine=eq.${semaine}`);
+  if (deja?.length) return; // déjà clôturé
+
+  await executerCloture();
+}
+
+async function executerCloture() {
+  const semaine = getSemaine();
+  const dates = getDatesSemaine();
+  const semLabel = getLabelSemaine();
+
+  const [coffreData, caData, livrData, primesData, depData, cmdsData, empsData] = await Promise.all([
+    sb('coffre_solde?limit=1'),
+    sb('parametres?cle=eq.ca_semaine'),
+    sb(`livraisons?select=montant&semaine=eq.${semaine}`),
+    sb(`primes?select=montant&semaine=eq.${semaine}`),
+    sb(`depenses?select=montant&semaine=eq.${semaine}`),
+    sb(`commandes?select=id&semaine=eq.${semaine}`),
+    sb('employes?select=id&actif=eq.true')
+  ]);
+
+  const soldeDepart = parseFloat(coffreData?.[0]?.solde || 500000);
+  const caVentes = parseFloat(caData?.[0]?.valeur || 0);
+  const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0),0);
+  const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0),0);
+  const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0),0);
+  const impots = Math.round(calcImpot(caVentes));
+  const benefice = caVentes + caLiv - totalPrimes - totalDep - impots;
+  const soldeFinal = soldeDepart + benefice;
+
+  // Sauvegarder compte rendu
+  const cr = {
+    semaine, semaine_label: semLabel,
+    date_debut: dates.debut.toISOString().split('T')[0],
+    date_fin: dates.fin.toISOString().split('T')[0],
+    solde_depart: soldeDepart, ca_ventes: caVentes, ca_livraisons: caLiv,
+    total_primes: totalPrimes, total_depenses: totalDep, total_impots: impots,
+    benefice_net: benefice, solde_final: soldeFinal,
+    nb_commandes: cmdsData?.length || 0, nb_employes: empsData?.length || 0
+  };
+
+  const existing = await sb(`comptes_rendus?semaine=eq.${semaine}`);
+  if (existing?.length) {
+    await sb(`comptes_rendus?semaine=eq.${semaine}`, { method: 'PATCH', body: JSON.stringify(cr) });
+  } else {
+    await sb('comptes_rendus', { method: 'POST', body: JSON.stringify(cr) });
+  }
+
+  // Mettre à jour le solde coffre
+  const coffreId = coffreData?.[0]?.id;
+  if (coffreId) {
+    await sb(`coffre_solde?id=eq.${coffreId}`, { method: 'PATCH', body: JSON.stringify({ solde: soldeFinal, updated_at: new Date().toISOString() }) });
+  } else {
+    await sb('coffre_solde', { method: 'POST', body: JSON.stringify({ solde: soldeFinal }) });
+  }
+
+  // Reset quotas
+  await sb('employes?actif=eq.true', { method: 'PATCH', body: JSON.stringify({ quota_viande_validee: 0, quota_patates_validee: 0 }) });
+  // Reset CA semaine
+  await sb('parametres?cle=eq.ca_semaine', { method: 'PATCH', body: JSON.stringify({ valeur: '0' }) });
+
+  // Envoyer Discord
+  await envoyerCompteRenduDiscord(cr);
+
+  return cr;
+}
+
+/* ══════════════════════════════════════════════
+   ENREGISTRER ÉVOLUTION COFFRE DU JOUR
+══════════════════════════════════════════════ */
+async function enregistrerEvolutionJour() {
+  const semaine = getSemaine();
+  const today = new Date().toISOString().split('T')[0];
+  const caData = await sb('parametres?cle=eq.ca_semaine');
+  const coffreData = await sb('coffre_solde?limit=1');
+  const solde = parseFloat(coffreData?.[0]?.solde || 500000);
+  const caJour = parseFloat(caData?.[0]?.valeur || 0);
+
+  const existing = await sb(`coffre_evolution?semaine=eq.${semaine}&jour=eq.${today}`);
+  if (existing?.length) {
+    await sb(`coffre_evolution?semaine=eq.${semaine}&jour=eq.${today}`, {
+      method: 'PATCH', body: JSON.stringify({ solde, ca_jour: caJour })
+    });
+  } else {
+    await sb('coffre_evolution', {
+      method: 'POST', body: JSON.stringify({ semaine, jour: today, solde, ca_jour: caJour })
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════
+   PAGE DÉPENSES
+══════════════════════════════════════════════ */
+async function loadDepenses() {
+  const semaine = getSemaine();
+  const el = document.getElementById('depensesContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+
+  const data = await sb(`depenses?semaine=eq.${semaine}&order=created_at.desc`);
+  const total = (data||[]).reduce((a,d)=>a+(d.montant||0),0);
+
+  el.innerHTML = `
+  <div class="stat-card" style="--accent:var(--red);margin-bottom:20px;max-width:300px;">
+    <div class="stat-icon">💸</div>
+    <div class="stat-label">Total dépenses semaine</div>
+    <div class="stat-value">${total.toLocaleString('fr-FR')}$</div>
+  </div>
+  ${!data?.length ? '<p style="color:var(--muted)">Aucune dépense cette semaine.</p>' :
+  `<table><thead><tr><th>Libellé</th><th>Montant</th><th>Preuve</th><th>Date</th>${ROLE==='direction'?'<th>Action</th>':''}</tr></thead><tbody>` +
+  (data||[]).map(d => `<tr>
+    <td><strong>${d.libelle}</strong></td>
+    <td style="color:var(--red);font-weight:700;">-${(d.montant||0).toLocaleString('fr-FR')}$</td>
+    <td>${d.preuve_url ? `<a href="${d.preuve_url}" target="_blank" class="btn btn-blue btn-sm">🖼️ Voir</a>` : '—'}</td>
+    <td>${new Date(d.created_at).toLocaleString('fr-FR')}</td>
+    ${ROLE==='direction' ? `<td><button class="btn btn-danger btn-sm" onclick="supprimerDepense('${d.id}')">🗑️</button></td>` : ''}
+  </tr>`).join('') + '</tbody></table>'}`;
+}
+
+async function sauvegarderDepense() {
+  const libelle = document.getElementById('depLibelle')?.value.trim();
+  const montant = parseFloat(document.getElementById('depMontant')?.value);
+  const preuve = document.getElementById('depPreuve')?.value.trim();
+  const alertEl = document.getElementById('alertDepense');
+  if (!libelle || !montant || montant <= 0) {
+    alertEl.innerHTML = '<div class="alert alert-err">⚠️ Libellé et montant obligatoires.</div>'; return;
+  }
+  alertEl.innerHTML = '<div class="alert alert-warn">⏳ Enregistrement...</div>';
+  await sb('depenses', { method: 'POST', body: JSON.stringify({
+    libelle, montant, preuve_url: preuve || null,
+    semaine: getSemaine(), employe_discord: USER.id
+  })});
+  alertEl.innerHTML = '<div class="alert alert-ok">✅ Dépense enregistrée !</div>';
+  document.getElementById('depLibelle').value = '';
+  document.getElementById('depMontant').value = '';
+  document.getElementById('depPreuve').value = '';
+  loadDepenses();
+
+  // Notif Discord
+  await envoyerWebhookDiscord({
+    username: 'Burger Shot — Dépenses',
+    embeds: [{
+      title: '💸 Nouvelle dépense enregistrée',
+      color: 0xe74c3c,
+      fields: [
+        { name: 'Libellé', value: libelle, inline: true },
+        { name: 'Montant', value: `-${montant.toLocaleString('fr-FR')}$`, inline: true },
+        { name: 'Preuve', value: preuve ? `[Voir la preuve](${preuve})` : 'Aucune', inline: true }
+      ],
+      timestamp: new Date().toISOString()
+    }]
+  });
+}
+
+async function supprimerDepense(id) {
+  if (!confirm('Supprimer cette dépense ?')) return;
+  await sb(`depenses?id=eq.${id}`, { method: 'DELETE' });
+  loadDepenses();
+}
+
+/* ══════════════════════════════════════════════
+   COFFRE COMPLET (remplace loadCoffre)
+══════════════════════════════════════════════ */
+async function loadCoffreComplet() {
+  const semaine = getSemaine();
+  const [coffreData, caData, livrData, primesData, depData, cmdsData] = await Promise.all([
+    sb('coffre_solde?limit=1'),
+    sb('parametres?cle=eq.ca_semaine'),
+    sb(`livraisons?select=montant&semaine=eq.${semaine}`),
+    sb(`primes?select=montant,verse&semaine=eq.${semaine}`),
+    sb(`depenses?select=montant&semaine=eq.${semaine}`),
+    sb(`commandes?select=total_apres_reduction,total,items,created_at&semaine=eq.${semaine}`)
+  ]);
+
+  const soldeDepart = parseFloat(coffreData?.[0]?.solde || 500000);
+  const caVentes = parseFloat(caData?.[0]?.valeur || 0);
+  const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0),0);
+  const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0),0);
+  const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0),0);
+  const impots = Math.round(calcImpot(caVentes));
+  const benefice = caVentes + caLiv - totalPrimes - totalDep - impots;
+  const soldeFinal = soldeDepart + benefice;
+
+  // CA par produit
+  const prodMap = {};
+  (cmdsData||[]).forEach(c => {
+    let items = [];
+    try { items = JSON.parse(c.items || '[]'); } catch {}
+    items.forEach(it => {
+      if (!prodMap[it.nom]) prodMap[it.nom] = { qte: 0, ca: 0, prix: it.prix };
+      prodMap[it.nom].qte += it.qte;
+      prodMap[it.nom].ca += it.prix * it.qte;
+    });
+  });
+
+  const statsEl = document.getElementById('coffreStats');
+  if (statsEl) statsEl.innerHTML = [
+    { label: '🏦 Solde départ', value: `${soldeDepart.toLocaleString('fr-FR')}$`, accent: 'var(--blue)' },
+    { label: '🧾 CA Ventes', value: `+${caVentes.toLocaleString('fr-FR')}$`, accent: 'var(--success)' },
+    { label: '🚚 Livraisons', value: `+${caLiv.toLocaleString('fr-FR')}$`, accent: 'var(--orange)' },
+    { label: '👥 Primes', value: `-${totalPrimes.toLocaleString('fr-FR')}$`, accent: 'var(--warning)' },
+    { label: '💸 Dépenses', value: `-${totalDep.toLocaleString('fr-FR')}$`, accent: 'var(--red)' },
+    { label: `🏛️ Impôts (${tauxLabel(caVentes)})`, value: `-${impots.toLocaleString('fr-FR')}$`, accent: 'var(--red-dark)' },
+    { label: '📊 Bénéfice net', value: `${benefice >= 0 ? '+' : ''}${Math.round(benefice).toLocaleString('fr-FR')}$`, accent: benefice >= 0 ? 'var(--success)' : 'var(--red)' },
+    { label: '💰 Solde final estimé', value: `${Math.round(soldeFinal).toLocaleString('fr-FR')}$`, accent: 'var(--blue)' }
+  ].map(s => `<div class="stat-card" style="--accent:${s.accent};"><div class="stat-label">${s.label}</div><div class="stat-value" style="font-size:22px;">${s.value}</div></div>`).join('');
+
+  // CA par produit
+  const caEl = document.getElementById('coffreCA');
+  if (caEl) {
+    const sorted = Object.entries(prodMap).sort((a,b) => b[1].ca - a[1].ca);
+    caEl.innerHTML = sorted.length ? `<table><thead><tr><th>Produit</th><th>Qté vendue</th><th>Prix unit.</th><th>CA</th></tr></thead><tbody>` +
+      sorted.map(([nom, d]) => `<tr><td><strong>${nom}</strong></td><td>${d.qte}</td><td>${d.prix}$</td><td><strong style="color:var(--success);">+${d.ca.toLocaleString('fr-FR')}$</strong></td></tr>`).join('') +
+      `<tr style="border-top:2px solid var(--border);"><td colspan="3"><strong>TOTAL</strong></td><td><strong style="color:var(--red);">${caVentes.toLocaleString('fr-FR')}$</strong></td></tr>` +
+      '</tbody></table>' : '<p style="color:var(--muted)">Aucune vente cette semaine.</p>';
+  }
+
+  // Virement primes info
+  const now = new Date();
+  const ven = new Date(now);
+  ven.setDate(now.getDate() + (5 - now.getDay() + 7) % 7);
+  const sam = new Date(ven); sam.setDate(ven.getDate() + 1);
+  const dim = new Date(ven); dim.setDate(ven.getDate() + 2);
+  const fmt = d => d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+
+  const primesEl = document.getElementById('coffrePrimesInfo');
+  if (primesEl && totalPrimes > 0) {
+    const nonVersees = (primesData||[]).filter(p => !p.verse).reduce((a,p)=>a+(p.montant||0),0);
+    primesEl.innerHTML = `<div class="alert alert-warn" style="margin-top:16px;">
+      💳 <strong>Virement prime entreprise vers employés</strong><br>
+      Montant total primes : <strong>${totalPrimes.toLocaleString('fr-FR')}$</strong> dont <strong>${nonVersees.toLocaleString('fr-FR')}$</strong> non versées.<br>
+      ⏰ Virement prévu le <strong>${fmt(sam)}</strong> ou <strong>${fmt(dim)}</strong>
+    </div>`;
+  }
+
+  // Évolution graphique
+  await chargerGraphiqueEvolution(semaine);
+}
+
+/* ══════════════════════════════════════════════
+   GRAPHIQUE ÉVOLUTION SEMAINE
+══════════════════════════════════════════════ */
+async function chargerGraphiqueEvolution(semaine) {
+  const data = await sb(`coffre_evolution?semaine=eq.${semaine}&order=jour.asc`);
+  const el = document.getElementById('graphiqueEvolution');
+  if (!el || !data?.length) return;
+
+  const labels = (data||[]).map(d => new Date(d.jour).toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'}));
+  const soldes = (data||[]).map(d => Math.round(d.solde));
+  const caJours = (data||[]).map(d => Math.round(d.ca_jour));
+
+  el.innerHTML = `<div style="position:relative;width:100%;height:280px;"><canvas id="chartEvol" role="img" aria-label="Évolution du solde coffre sur la semaine">Graphique d'évolution du coffre.</canvas></div>`;
+
+  // Charger Chart.js si pas encore là
+  if (!window.Chart) {
+    await new Promise(resolve => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+      s.onload = resolve;
+      document.head.appendChild(s);
+    });
+  }
+
+  new window.Chart(document.getElementById('chartEvol'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Solde coffre ($)',
+          data: soldes,
+          borderColor: '#27ae60',
+          backgroundColor: 'rgba(39,174,96,0.1)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 2,
+          pointBackgroundColor: '#27ae60'
+        },
+        {
+          label: 'CA du jour ($)',
+          data: caJours,
+          borderColor: '#3498db',
+          backgroundColor: 'rgba(52,152,219,0.08)',
+          fill: false,
+          tension: 0.3,
+          borderWidth: 2,
+          borderDash: [5,5],
+          pointBackgroundColor: '#3498db'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'top' },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('fr-FR')}$`
+          }
+        }
+      },
+      scales: {
+        y: {
+          ticks: { callback: v => v.toLocaleString('fr-FR') + '$' },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════
+   PDF COMPTE RENDU
+══════════════════════════════════════════════ */
+async function genererPDFCompteRendu(cr) {
+  const sign = cr.benefice_net >= 0 ? '+' : '';
+  const now = new Date();
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  <title>Compte rendu ${cr.semaine_label || cr.semaine}</title>
+  <style>
+    @page { size: A4; margin: 20mm; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', sans-serif; color: #111; padding: 20px; }
+    .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; border-bottom:3px solid #c0392b; padding-bottom:16px; }
+    .brand { font-size:28px; font-weight:900; color:#c0392b; letter-spacing:2px; }
+    .brand-sub { font-size:11px; color:#888; letter-spacing:2px; text-transform:uppercase; }
+    .title { font-size:20px; font-weight:700; text-align:center; margin:20px 0 10px; color:#c0392b; }
+    .subtitle { font-size:13px; color:#666; text-align:center; margin-bottom:24px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+    .box { background:#f5f5f5; border-radius:8px; padding:14px 16px; border-left:3px solid #c0392b; }
+    .box-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:4px; }
+    .box-val { font-size:18px; font-weight:900; }
+    .box-val.green { color:#27ae60; }
+    .box-val.red { color:#c0392b; }
+    .box-val.blue { color:#3498db; }
+    .sep { border:none; border-top:2px dashed #ddd; margin:20px 0; }
+    .total-box { background:#1a1a1a; color:#fff; border-radius:10px; padding:16px 20px; margin:16px 0; display:flex; justify-content:space-between; align-items:center; }
+    .total-box .val { font-size:28px; font-weight:900; color:${cr.benefice_net >= 0 ? '#27ae60' : '#e74c3c'}; }
+    .virement { background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px 16px; margin:16px 0; font-size:13px; }
+    .footer { text-align:center; font-size:11px; color:#aaa; margin-top:30px; border-top:1px solid #eee; padding-top:12px; }
+    table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+    th { background:#1a1a1a; color:#fff; padding:8px 12px; text-align:left; font-size:11px; }
+    td { padding:8px 12px; border-bottom:1px solid #eee; font-size:12px; }
+  </style></head><body>
+  <div class="header">
+    <div><div class="brand">🍔 BURGER SHOT</div><div class="brand-sub">Comptabilité • Los Santos</div></div>
+    <div style="text-align:right;font-size:12px;color:#888;">Généré le ${now.toLocaleString('fr-FR')}</div>
+  </div>
+  <div class="title">COMPTE RENDU HEBDOMADAIRE</div>
+  <div class="subtitle">${cr.semaine_label || cr.semaine} — ${cr.nb_commandes} commandes • ${cr.nb_employes} employés actifs</div>
+  <div class="grid">
+    <div class="box"><div class="box-label">🏦 Solde de départ</div><div class="box-val blue">${Math.round(cr.solde_depart).toLocaleString('fr-FR')}$</div></div>
+    <div class="box"><div class="box-label">🧾 CA Ventes</div><div class="box-val green">+${Math.round(cr.ca_ventes).toLocaleString('fr-FR')}$</div></div>
+    <div class="box"><div class="box-label">🚚 Livraisons</div><div class="box-val green">+${Math.round(cr.ca_livraisons).toLocaleString('fr-FR')}$</div></div>
+    <div class="box"><div class="box-label">👥 Primes employés</div><div class="box-val red">-${Math.round(cr.total_primes).toLocaleString('fr-FR')}$</div></div>
+    <div class="box"><div class="box-label">💸 Dépenses</div><div class="box-val red">-${Math.round(cr.total_depenses).toLocaleString('fr-FR')}$</div></div>
+    <div class="box"><div class="box-label">🏛️ Impôts</div><div class="box-val red">-${Math.round(cr.total_impots).toLocaleString('fr-FR')}$</div></div>
+  </div>
+  <div class="total-box">
+    <span style="font-size:16px;font-weight:700;">📊 Bénéfice net de la semaine</span>
+    <span class="val">${sign}${Math.round(cr.benefice_net).toLocaleString('fr-FR')}$</span>
+  </div>
+  <div class="total-box" style="background:#0d3b1e;">
+    <span style="font-size:16px;font-weight:700;">💰 Nouveau solde coffre</span>
+    <span style="font-size:28px;font-weight:900;color:#27ae60;">${Math.round(cr.solde_final).toLocaleString('fr-FR')}$</span>
+  </div>
+  ${cr.total_primes > 0 ? `<div class="virement">
+    💳 <strong>Virement prime entreprise → employés</strong><br>
+    Montant : <strong>${Math.round(cr.total_primes).toLocaleString('fr-FR')}$</strong><br>
+    Virement prévu le samedi ou dimanche suivant la clôture.
+  </div>` : ''}
+  <div class="footer">Burger Shot © ${now.getFullYear()} — Los Santos — Hawick Avenue — Document confidentiel</div>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
+}
+
+/* ══════════════════════════════════════════════
+   SECTION SOLDE INITIAL (Patron seul)
+══════════════════════════════════════════════ */
+async function loadSoldeInitial() {
+  const el = document.getElementById('soldeInitialSection');
+  if (!el || USER.id !== PATRON_SEUL_ID) return;
+
+  const data = await sb('coffre_solde?limit=1');
+  const solde = parseFloat(data?.[0]?.solde || 500000);
+  el.innerHTML = `
+  <div class="card" style="margin-bottom:24px;border:2px solid rgba(192,57,43,.4);">
+    <div class="card-title">🔐 Solde du coffre (Patron uniquement)</div>
+    <div class="alert alert-warn" style="margin-bottom:12px;">⚠️ Ce montant est le solde réel du coffre. Il évolue automatiquement à chaque clôture.</div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--success);">${solde.toLocaleString('fr-FR')}$</div>
+      <div>
+        <div class="form-group" style="margin-bottom:8px;">
+          <label class="form-label">Corriger le solde manuellement ($)</label>
+          <input class="form-input" id="soldeCorrection" type="number" placeholder="${solde}" style="max-width:200px;">
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="corrigerSolde()">⚠️ Corriger le solde</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function corrigerSolde() {
+  const val = parseFloat(document.getElementById('soldeCorrection')?.value);
+  if (!val || val <= 0) { alert('Montant invalide.'); return; }
+  if (!confirm(`Corriger le solde à ${val.toLocaleString('fr-FR')}$ ? Cette action est irréversible.`)) return;
+  const data = await sb('coffre_solde?limit=1');
+  if (data?.[0]?.id) {
+    await sb(`coffre_solde?id=eq.${data[0].id}`, { method: 'PATCH', body: JSON.stringify({ solde: val, updated_at: new Date().toISOString() }) });
+  } else {
+    await sb('coffre_solde', { method: 'POST', body: JSON.stringify({ solde: val }) });
+  }
+  alert('✅ Solde corrigé !');
+  loadSoldeInitial();
+  loadGestion();
+}
+
+/* ══════════════════════════════════════════════
+   COMPTE RENDU HISTORIQUE
+══════════════════════════════════════════════ */
+async function loadHistoriqueCompteRendus() {
+  const el = document.getElementById('historiqueCompteRendus');
+  if (!el) return;
+  const data = await sb('comptes_rendus?select=*&order=created_at.desc&limit=20');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--muted)">Aucun compte rendu archivé.</p>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Semaine</th><th>CA</th><th>Bénéfice</th><th>Solde final</th><th>PDF</th></tr></thead><tbody>` +
+  data.map(cr => `<tr>
+    <td><strong>${cr.semaine_label || cr.semaine}</strong></td>
+    <td>${Math.round(cr.ca_ventes||0).toLocaleString('fr-FR')}$</td>
+    <td style="color:${cr.benefice_net>=0?'var(--success)':'var(--red)'}"><strong>${cr.benefice_net>=0?'+':''}${Math.round(cr.benefice_net||0).toLocaleString('fr-FR')}$</strong></td>
+    <td><strong>${Math.round(cr.solde_final||0).toLocaleString('fr-FR')}$</strong></td>
+    <td><button class="btn btn-outline btn-sm" onclick='genererPDFCompteRendu(${JSON.stringify(cr).replace(/'/g,"&#39;")})'>📄 PDF</button></td>
+  </tr>`).join('') + '</tbody></table>';
 }
 </script>
 </body>
