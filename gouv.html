@@ -355,13 +355,14 @@ async function soumettre() {
 
     // Sauvegarder la session gouvernement
     localStorage.setItem('bs_gouv_user', JSON.stringify({
-      id: currentUser.id,
-      username: currentUser.username,
-      avatar: currentUser.avatar,
-      nom, prenom,
-      fonction: fonctionFinale,
-      role: 'gouvernement'
-    }));
+    id: currentUser.id,
+    username: currentUser.username,
+    avatar: currentUser.avatar,
+    nom, prenom,
+    fonction: fonctionFinale,
+    role: 'gouvernement',
+    statut: 'actif'           
+  }));
 
     document.getElementById('recapWrap').innerHTML = `
       <div class="recap-row"><span class="recap-key">Nom</span><span class="recap-val">${prenom} ${nom}</span></div>
