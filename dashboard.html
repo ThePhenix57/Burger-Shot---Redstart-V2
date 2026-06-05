@@ -3372,7 +3372,7 @@ async function executerCloture() {
   const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0),0);
   const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0),0);
   const impots = Math.round(calcImpot(caVentes));
-  const benefice = caVentes + caLiv - totalPrimes - totalDep - impots;
+  const benefice = caVentes + caLiv - totalDep - impots;
   const soldeFinal = soldeDepart + benefice;
 
   // Sauvegarder compte rendu
@@ -3510,11 +3510,10 @@ async function supprimerDepense(id) {
 ══════════════════════════════════════════════ */
 async function loadCoffreComplet() {
   const semaine = getSemaine();
-  const [coffreData, caData, livrData, primesData, depData, cmdsData] = await Promise.all([
+  const [coffreData, caData, livrData, depData, cmdsData] = await Promise.all([
     sb('coffre_solde?limit=1'),
     sb('parametres?cle=eq.ca_semaine'),
     sb(`livraisons?select=montant&semaine=eq.${semaine}`),
-    sb(`primes?select=montant&semaine=eq.${semaine}&verse=eq.false`),
     sb(`depenses?select=montant&semaine=eq.${semaine}`),
     sb(`commandes?select=total_apres_reduction,total,items,created_at&semaine=eq.${semaine}`)
   ]);
@@ -3522,10 +3521,9 @@ async function loadCoffreComplet() {
   const soldeDepart = parseFloat(coffreData?.[0]?.solde || 500000);
   const caVentes = parseFloat(caData?.[0]?.valeur || 0);
   const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0),0);
-  const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0),0);
   const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0),0);
   const impots = Math.round(calcImpot(caVentes));
-  const benefice = caVentes + caLiv - totalPrimes - totalDep - impots;
+  const benefice = caVentes + caLiv - totalDep - impots;
   const soldeFinal = soldeDepart + benefice;
 
   // CA par produit
