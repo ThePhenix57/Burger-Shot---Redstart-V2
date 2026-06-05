@@ -784,9 +784,32 @@ function refreshCurrentPage() {
   const el = document.getElementById('topCoffre');
   if (!el) return;
   el.style.display = 'block';
-  const data = await sb('coffre_solde?limit=1');
-  const solde = parseFloat(data?.[0]?.solde || 500000);
-  el.textContent = `💰 ${Math.round(solde).toLocaleString('fr-FR')}$`;
+  el.textContent = '💰 ...';
+
+  const semaine = getSemaine();
+  const [coffreData, caData, livrData, primesData, depData] = await Promise.all([
+    sb('coffre_solde?limit=1'),
+    sb('parametres?cle=eq.ca_semaine'),
+    sb(`livraisons?select=montant&semaine=eq.${semaine}`),
+    sb(`primes?select=montant&semaine=eq.${semaine}`),
+    sb(`depenses?select=montant&semaine=eq.${semaine}`)
+  ]);
+
+  const soldeDepart = parseFloat(coffreData?.[0]?.solde || 500000);
+  const caVentes = parseFloat(caData?.[0]?.valeur || 0);
+  const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0), 0);
+  const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0), 0);
+  const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0), 0);
+  const impots = Math.round(calcImpot(caVentes));
+  const soldeFinal = Math.round(soldeDepart + caVentes + caLiv - totalPrimes - totalDep - impots);
+
+  const color = soldeFinal >= soldeDepart ? 'rgba(39,174,96,.1)' : 'rgba(192,57,43,.1)';
+  const border = soldeFinal >= soldeDepart ? 'rgba(39,174,96,.25)' : 'rgba(192,57,43,.25)';
+  const textColor = soldeFinal >= soldeDepart ? 'var(--success)' : 'var(--red)';
+  el.style.background = color;
+  el.style.borderColor = border;
+  el.style.color = textColor;
+  el.textContent = `💰 ${soldeFinal.toLocaleString('fr-FR')}$`;
 }
 
 async function autoRefresh(){
