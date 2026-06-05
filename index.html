@@ -55,27 +55,76 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 <script>
 const CLIENT_ID    = '1508986297660870806';
 const REDIRECT_URI = 'https://burgershot-redstart.vercel.app/api/callback';
-
+const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
+ 
 function login() {
-  const url = `https://discord.com/oauth2/authorize`
-    + `?client_id=${CLIENT_ID}`
-    + `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
-    + `&response_type=code`
-    + `&scope=identify`;
+  const url = 'https://discord.com/oauth2/authorize'
+    + '?client_id=' + CLIENT_ID
+    + '&redirect_uri=' + encodeURIComponent(REDIRECT_URI)
+    + '&response_type=code'
+    + '&scope=identify';
   window.location.href = url;
 }
-
-const err = new URLSearchParams(location.search).get('error');
-if (err) {
-  const box = document.getElementById('errorBox');
-  const msgs = {
-    not_registered: '❌ Votre compte Discord n\'est pas enregistré. Contactez la direction.',
-    no_code:        '❌ Connexion annulée.',
-    server_error:   '❌ Erreur serveur. Réessayez.',
-  };
-  box.textContent = msgs[err] || '❌ Erreur inconnue.';
-  box.style.display = 'block';
-}
+ 
+// Vérifier si session existante → rediriger directement
+window.addEventListener('DOMContentLoaded', async () => {
+  // Session direction
+  const stored = localStorage.getItem('bs_user');
+  if (stored) {
+    try {
+      const u = JSON.parse(stored);
+      if (u?.id) {
+        // Vérifier dans comptes_dashboard
+        const r = await fetch(SB_URL + '/rest/v1/comptes_dashboard?discord_id=eq.' + u.id + '&select=role,statut,actif', {
+          headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY }
+        });
+        const data = await r.json();
+        if (data?.[0]?.actif && data[0].statut === 'actif') {
+          window.location.replace('/dashboard.html');
+          return;
+        }
+        // Compte inactif/révoqué
+        localStorage.removeItem('bs_user');
+      }
+    } catch {}
+  }
+  
+  // Session gouv
+  const storedGouv = localStorage.getItem('bs_gouv_user');
+  if (storedGouv) {
+    try {
+      const u = JSON.parse(storedGouv);
+      if (u?.id) {
+        const r = await fetch(SB_URL + '/rest/v1/comptes_dashboard?discord_id=eq.' + u.id + '&select=role,statut,actif', {
+          headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY }
+        });
+        const data = await r.json();
+        if (data?.[0]?.actif && data[0].statut === 'actif') {
+          window.location.replace('/dashboard.html');
+          return;
+        }
+        localStorage.removeItem('bs_gouv_user');
+      }
+    } catch {}
+  }
+ 
+  // Afficher erreurs URL
+  const err = new URLSearchParams(location.search).get('error');
+  if (err) {
+    const box = document.getElementById('errorBox');
+    const msgs = {
+      not_registered: '❌ Votre compte Discord n\'est pas enregistré. Contactez la direction.',
+      no_code:        '❌ Connexion annulée.',
+      server_error:   '❌ Erreur serveur. Réessayez.',
+      inactive:       '❌ Votre compte est désactivé. Contactez la direction.',
+      revoque:        '❌ Votre accès a été révoqué.',
+      suspendu:       '⏸️ Votre accès est suspendu.',
+    };
+    box.textContent = msgs[err] || '❌ Erreur inconnue.';
+    box.style.display = 'block';
+  }
+});
 </script>
 </body>
 </html>
