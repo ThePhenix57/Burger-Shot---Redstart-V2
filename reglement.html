@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Règlement Intérieur — Burger Shot</title>
+<link rel="icon" href="https://upload.redstartrp.fr/uploads/photo-1779965966-13fd724e49fb.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --red:#c0392b;--red-dark:#922b21;--red-light:#e74c3c;
+  --orange:#e67e22;--success:#27ae60;--warning:#f39c12;--blue:#3498db;
+  --bg:#0d0d0d;--card:#141414;--card2:#1c1c1c;--card3:#222;
+  --text:#f1f1f1;--muted:#777;--border:rgba(255,255,255,.07);
+  --shadow:0 4px 24px rgba(0,0,0,.4);--radius:12px;
+}
+[data-theme="light"]{
+  --bg:#ede9e3;--card:#fff;--card2:#f5f1eb;--card3:#eee;
+  --text:#111;--muted:#666;--border:rgba(0,0,0,.08);--shadow:0 4px 24px rgba(0,0,0,.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* TOPBAR */
+.checker-bar{height:12px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:12px 12px;}
+.topbar-main{display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:64px;gap:16px;}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--red);}
+.back-btn{padding:6px 14px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:20px;color:var(--red);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:.2s;}
+.back-btn:hover{background:var(--red);color:#fff;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.btn-theme{width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.btn-theme:hover{border-color:var(--red);}
+
+/* CONTENT */
+.content{max-width:900px;margin:0 auto;padding:32px 24px 60px;}
+
+/* HEADER DOC */
+.doc-header{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:24px;text-align:center;position:relative;overflow:hidden;}
+.doc-header::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red),var(--orange),var(--red));}
+.doc-header img{height:72px;margin-bottom:16px;filter:drop-shadow(0 0 16px rgba(192,57,43,.4));}
+.doc-title{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;color:var(--red);}
+.doc-subtitle{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+.doc-badge{display:inline-block;margin-top:14px;padding:5px 16px;background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.3);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--red);}
+
+/* STATUS BANNER */
+.status-banner{padding:14px 20px;border-radius:10px;margin-bottom:20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;}
+.status-signed{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);color:var(--success);}
+.status-unsigned{background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.25);color:var(--warning);}
+.status-readonly{background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.25);color:var(--blue);}
+
+/* ARTICLES */
+.reglement-body{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:24px;}
+.preambule{background:rgba(192,57,43,.05);border-left:4px solid var(--red);border-radius:0 8px 8px 0;padding:18px 20px;margin-bottom:28px;font-size:14px;line-height:1.7;color:var(--muted);}
+.preambule strong{color:var(--text);}
+.article{margin-bottom:28px;}
+.article-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--red);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.article-item{margin-bottom:8px;padding:10px 14px;background:var(--card2);border-radius:8px;font-size:13px;line-height:1.6;border-left:2px solid transparent;transition:.2s;}
+.article-item:hover{border-left-color:var(--red);background:var(--card3);}
+.article-item-num{font-weight:800;color:var(--red);margin-right:8px;font-size:12px;}
+.article-item strong{color:var(--red);}
+
+/* DEVISE */
+.devise{background:linear-gradient(135deg,rgba(192,57,43,.12),rgba(230,126,34,.08));border:1px solid rgba(192,57,43,.25);border-radius:12px;padding:24px;text-align:center;margin-bottom:28px;}
+.devise-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.devise-text{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--orange);line-height:1.4;}
+
+/* SIGNATURE SECTION */
+.signature-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:24px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--red);margin-bottom:20px;}
+
+.accept-box{display:flex;align-items:flex-start;gap:14px;padding:18px;background:var(--card2);border:2px solid var(--border);border-radius:10px;margin-bottom:20px;cursor:pointer;transition:.2s;}
+.accept-box:hover{border-color:rgba(192,57,43,.4);}
+.accept-box.checked{border-color:var(--success);background:rgba(39,174,96,.06);}
+.accept-checkbox{width:22px;height:22px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.2s;margin-top:1px;}
+.accept-box.checked .accept-checkbox{background:var(--success);border-color:var(--success);}
+.accept-text{font-size:13px;line-height:1.6;color:var(--muted);}
+.accept-text strong{color:var(--text);}
+
+.canvas-wrap{position:relative;margin-bottom:16px;}
+.canvas-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+#signatureCanvas{width:100%;height:180px;background:var(--card2);border:2px dashed var(--border);border-radius:10px;cursor:crosshair;display:block;touch-action:none;}
+#signatureCanvas.active{border-color:var(--red);border-style:solid;}
+#signatureCanvas.done{border-color:var(--success);border-style:solid;}
+.canvas-hint{font-size:11px;color:var(--muted);margin-top:6px;}
+.canvas-actions{display:flex;gap:8px;margin-top:10px;}
+
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:7px;}
+.btn-primary{background:var(--red);color:#fff;}
+.btn-primary:hover{background:var(--red-dark);transform:translateY(-1px);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-success:hover{opacity:.9;transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--red);color:var(--red);}
+.btn-sm{padding:6px 12px;font-size:11px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none !important;}
+
+.submit-area{margin-top:20px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+
+/* ALREADY SIGNED */
+.signed-info{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:10px;padding:20px;display:flex;align-items:center;gap:16px;}
+.signed-icon{font-size:40px;}
+.signed-date{font-size:12px;color:var(--muted);margin-top:3px;}
+
+/* READONLY NOTICE */
+.readonly-notice{background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);border-radius:10px;padding:20px;text-align:center;}
+.readonly-notice-icon{font-size:36px;margin-bottom:10px;}
+.readonly-notice-text{font-size:14px;color:var(--blue);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--success);color:#fff;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:700;transform:translateY(80px);opacity:0;transition:.3s;z-index:9999;display:flex;align-items:center;gap:8px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* PROGRESS NAV */
+.progress-nav{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.progress-nav-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--red);}
+.progress-bar-bg{flex:1;height:6px;background:var(--card3);border-radius:3px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:3px;transition:width .3s;}
+.progress-pct{font-size:12px;font-weight:700;color:var(--red);min-width:36px;text-align:right;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="checker-bar"></div>
+<div class="topbar-main">
+  <div class="topbar-logo">🍔 BURGER SHOT</div>
+  <button class="back-btn" onclick="history.back()">← Retour Dashboard</button>
+  <div class="topbar-right">
+    <button class="btn-theme" onclick="toggleTheme()" id="themeBtn">☀️</button>
+  </div>
+</div>
+
+<!-- PROGRESS NAV -->
+<div class="progress-nav">
+  <div class="progress-nav-title">📜 RÈGLEMENT</div>
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-pct" id="progressPct">0%</div>
+</div>
+
+<div class="content">
+
+  <!-- HEADER -->
+  <div class="doc-header">
+    <img src="https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png" alt="Burger Shot" onerror="this.style.display='none'">
+    <div class="doc-title">🍔 Règlement Intérieur 🍔</div>
+    <div class="doc-subtitle">Document officiel de l'entreprise — Burger Shot · RedStart RP</div>
+    <div class="doc-badge">📌 Document confidentiel interne</div>
+  </div>
+
+  <!-- STATUS BANNER -->
+  <div id="statusBanner"></div>
+
+  <!-- RÈGLEMENT BODY -->
+  <div class="reglement-body" id="reglementBody">
+
+    <!-- PRÉAMBULE -->
+    <div class="preambule">
+      <strong>📌 PRÉAMBULE —</strong> Le présent règlement intérieur définit l'ensemble des règles applicables au sein de Burger Shot. Chaque employé intégrant l'entreprise s'engage à respecter les dispositions présentes dans ce document afin d'assurer le bon fonctionnement du restaurant, la sécurité des employés, la qualité du service ainsi que l'image professionnelle de l'établissement.<br><br>
+      Burger Shot est une entreprise de restauration rapide opérant dans un cadre professionnel strict où le <strong>respect, l'organisation, la ponctualité, l'hygiène et la discipline</strong> sont considérés comme essentiels.<br><br>
+      Le présent règlement s'applique à <strong>l'ensemble du personnel de l'entreprise</strong> sans distinction de grade ou de fonction.
+    </div>
+
+    <!-- ARTICLE 1 -->
+    <div class="article">
+      <div class="article-title">🏢 Article 1 — Valeurs de l'Entreprise</div>
+      <div class="article-item"><span class="article-item-num">1.1</span>Burger Shot fonde son fonctionnement sur des principes de professionnalisme, de discipline et de respect mutuel entre les employés ainsi qu'envers la clientèle.</div>
+      <div class="article-item"><span class="article-item-num">1.2</span>Chaque employé est tenu de participer activement au bon fonctionnement du service en maintenant une attitude sérieuse, organisée et respectueuse.</div>
+      <div class="article-item"><span class="article-item-num">1.3</span>La rapidité d'exécution ne doit jamais compromettre la qualité des produits ni le respect des procédures internes.</div>
+      <div class="article-item"><span class="article-item-num">1.4</span>La propreté des locaux, des équipements et des espaces de travail constitue une obligation permanente.</div>
+      <div class="article-item"><span class="article-item-num">1.5</span>L'esprit d'équipe est considéré comme une valeur fondamentale de l'entreprise et chaque employé doit contribuer au maintien d'une ambiance de travail saine et efficace.</div>
+    </div>
+
+    <!-- ARTICLE 2 -->
+    <div class="article">
+      <div class="article-title">👔 Article 2 — Tenue Obligatoire</div>
+      <div class="article-item"><span class="article-item-num">2.1</span>Le port de l'uniforme officiel Burger Shot est obligatoire durant toute la durée du service. L'uniforme doit être propre, complet et porté correctement afin de représenter convenablement l'image de l'entreprise.</div>
+      <div class="article-item"><span class="article-item-num">2.2</span>Les employés doivent porter des chaussures de sécurité fermées adaptées au travail en restauration ainsi qu'un badge d'identification. <strong>Des gants en latex sont OBLIGATOIRES</strong> afin de manipuler la nourriture.</div>
+      <div class="article-item"><span class="article-item-num">2.3</span>Les vêtements dégradés, les tenues provocantes, les accessoires intimidants ainsi que toute tenue affiliée à une organisation criminelle ou à un gang sont <strong>strictement interdits</strong> durant le service.</div>
+      <div class="article-item"><span class="article-item-num">2.4</span>Chaque employé doit maintenir une hygiène corporelle irréprochable. Les mains doivent être lavées régulièrement et les cheveux longs doivent être attachés afin de respecter les normes sanitaires (HACCP).</div>
+    </div>
+
+    <!-- ARTICLE 3 -->
+    <div class="article">
+      <div class="article-title">🧼 Article 3 — Hygiène et Sécurité Alimentaire (HACCP)</div>
+      <div class="article-item"><span class="article-item-num">3.1</span>Les employés sont tenus de respecter l'ensemble des règles sanitaires imposées par l'entreprise afin de garantir la sécurité alimentaire des clients.</div>
+      <div class="article-item"><span class="article-item-num">3.2</span>Le lavage des mains est obligatoire avant chaque prise de poste, après chaque pause, après manipulation d'argent ainsi qu'après toute action susceptible de compromettre l'hygiène alimentaire.</div>
+      <div class="article-item"><span class="article-item-num">3.3</span>Les plans de travail, équipements de cuisine, surfaces de préparation et zones de stockage doivent être maintenus propres et désinfectés de manière régulière.</div>
+      <div class="article-item"><span class="article-item-num">3.4</span>Tout produit alimentaire doit être stocké, préparé et servi dans des conditions conformes aux procédures internes de Burger Shot.</div>
+      <div class="article-item"><span class="article-item-num">3.5</span><strong>Toute tentative volontaire</strong> de dégradation alimentaire, d'empoisonnement, de sabotage ou de non-respect grave des règles sanitaires pourra entraîner un licenciement immédiat et des poursuites en justice.</div>
+    </div>
+
+    <!-- ARTICLE 4 -->
+    <div class="article">
+      <div class="article-title">🤝 Article 4 — Comportement envers la Clientèle</div>
+      <div class="article-item"><span class="article-item-num">4.1</span>Chaque client doit être accueilli avec respect, courtoisie et professionnalisme indépendamment de son comportement ou de sa situation.</div>
+      <div class="article-item"><span class="article-item-num">4.2</span>Les employés sont tenus d'utiliser un langage correct et adapté à un environnement professionnel durant l'intégralité du service.</div>
+      <div class="article-item"><span class="article-item-num">4.3</span><strong>Toute insulte, menace, provocation ou comportement agressif</strong> envers un client est strictement interdit.</div>
+      <div class="article-item"><span class="article-item-num">4.4</span>En cas de conflit avec un client, l'employé doit prévenir immédiatement un supérieur hiérarchique afin de résoudre la situation de manière calme et professionnelle.</div>
+      <div class="article-item"><span class="article-item-num">4.5</span>L'image de Burger Shot reposant principalement sur la qualité de son accueil, chaque employé doit contribuer à offrir une expérience positive à la clientèle.</div>
+    </div>
+
+    <!-- ARTICLE 5 -->
+    <div class="article">
+      <div class="article-title">💵 Article 5 — Gestion de la Caisse et des Finances</div>
+      <div class="article-item"><span class="article-item-num">5.1</span>Chaque employé ayant accès à une caisse est responsable des montants enregistrés durant son service.</div>
+      <div class="article-item"><span class="article-item-num">5.2</span>Toute erreur de caisse doit être signalée immédiatement à un responsable afin qu'une vérification soit effectuée.</div>
+      <div class="article-item"><span class="article-item-num">5.3</span><strong>Le vol, le détournement d'argent, les fausses commandes</strong> ainsi que toute tentative de fraude constituent des fautes graves et peuvent engager des poursuites judiciaires et pénales.</div>
+      <div class="article-item"><span class="article-item-num">5.4</span>Les stocks alimentaires, les équipements ainsi que les biens appartenant à l'entreprise doivent être utilisés uniquement dans le cadre professionnel prévu.</div>
+    </div>
+
+    <!-- ARTICLE 6 -->
+    <div class="article">
+      <div class="article-title">🚬 Article 6 — Pauses et Temps de Repos</div>
+      <div class="article-item"><span class="article-item-num">6.1</span>Les pauses doivent être validées par un supérieur hiérarchique afin de garantir la continuité du service.</div>
+      <div class="article-item"><span class="article-item-num">6.2</span>Les employés doivent reprendre leur poste à l'heure prévue sans perturber l'organisation générale du restaurant.</div>
+      <div class="article-item"><span class="article-item-num">6.3</span>Il est interdit de fumer dans les cuisines, les réserves, les espaces alimentaires ou à proximité immédiate des clients. Un espace dédié est prévu à cet effet.</div>
+    </div>
+
+    <!-- ARTICLE 7 -->
+    <div class="article">
+      <div class="article-title">📱 Article 7 — Utilisation des Téléphones et Réseaux Sociaux</div>
+      <div class="article-item"><span class="article-item-num">7.1</span>L'utilisation du téléphone personnel doit rester limitée durant le service afin de ne pas nuire à la qualité du travail.</div>
+      <div class="article-item"><span class="article-item-num">7.2</span><strong>Toute publication portant atteinte à l'image de Burger Shot</strong> ou divulguant des informations internes de l'entreprise est interdite.</div>
+      <div class="article-item"><span class="article-item-num">7.3</span>Les employés doivent respecter la confidentialité des informations professionnelles auxquelles ils ont accès.</div>
+    </div>
+
+    <!-- ARTICLE 8 -->
+    <div class="article">
+      <div class="article-title">🚗 Article 8 — Véhicules et Livraisons</div>
+      <div class="article-item"><span class="article-item-num">8.1</span>Les véhicules appartenant à Burger Shot doivent être utilisés uniquement dans le cadre des activités professionnelles autorisées.</div>
+      <div class="article-item"><span class="article-item-num">8.2</span>Chaque conducteur est tenu de respecter le code de la route ainsi que les règles de sécurité imposées par la ville.</div>
+      <div class="article-item"><span class="article-item-num">8.3</span>Toute conduite dangereuse, utilisation illégale ou dégradation volontaire d'un véhicule de service pourra entraîner des sanctions disciplinaires.</div>
+    </div>
+
+    <!-- ARTICLE 9 -->
+    <div class="article">
+      <div class="article-title">🔫 Article 9 — Sécurité et Port d'Armes</div>
+      <div class="article-item"><span class="article-item-num">9.1</span>Le port d'armes au sein de Burger Shot doit respecter les lois en vigueur en ville. <strong>Vos armes restent CHEZ VOUS.</strong></div>
+      <div class="article-item"><span class="article-item-num">9.2</span>Il est strictement interdit d'utiliser une arme afin d'intimider des clients ou des employés.</div>
+      <div class="article-item"><span class="article-item-num">9.3</span>En cas de braquage ou d'incident majeur, la sécurité des employés et des clients doit rester prioritaire.</div>
+      <div class="article-item"><span class="article-item-num">9.4</span>En cas d'attaque sur l'enceinte du bâtiment, contactez les autorités compétentes au <strong>911</strong>.</div>
+    </div>
+
+    <!-- ARTICLE 10 -->
+    <div class="article">
+      <div class="article-title">🧠 Article 10 — Comportement</div>
+      <div class="article-item"><span class="article-item-num">10.1</span>Chaque employé de Burger Shot est tenu de maintenir son sérieux. Toutes activités illégales ne doivent pas engager le Burger Shot.</div>
+      <div class="article-item"><span class="article-item-num">10.2</span>Le non-respect des règles générales de la ville pourra entraîner des sanctions internes indépendamment des sanctions administratives du gouvernement.</div>
+      <div class="article-item"><span class="article-item-num">10.3</span>Le Burger Shot n'est en aucun cas responsable de vos activités illégales et n'est affilié à aucun groupe ou organisation criminel.</div>
+    </div>
+
+    <!-- ARTICLE 11 -->
+    <div class="article">
+      <div class="article-title">📈 Article 11 — Hiérarchie</div>
+      <div class="article-item"><span class="article-item-num">11.1</span>La direction dispose de l'autorité finale concernant les décisions administratives, disciplinaires et organisationnelles.</div>
+      <div class="article-item"><span class="article-item-num">11.2</span>Les managers sont chargés de superviser les équipes, d'assurer le bon déroulement du service et de faire respecter le règlement intérieur.</div>
+      <div class="article-item"><span class="article-item-num">11.3</span>Les employés sont tenus de respecter les consignes données par leurs supérieurs hiérarchiques.</div>
+    </div>
+
+    <!-- ARTICLE 12 -->
+    <div class="article">
+      <div class="article-title">📋 Article 12 — Recrutement</div>
+      <div class="article-item"><span class="article-item-num">12.1</span>Toute personne souhaitant intégrer Burger Shot doit faire preuve de sérieux, de motivation et d'un comportement compatible avec les valeurs de l'entreprise.</div>
+      <div class="article-item"><span class="article-item-num">12.2</span>La direction se réserve le droit de refuser ou d'interrompre une période d'essai en cas de comportement inadapté.</div>
+      <div class="article-item"><span class="article-item-num">12.3</span>Chaque nouvel(le) employé(e) peut être soumis à une période d'observation avant validation définitive de son recrutement.</div>
+    </div>
+
+    <!-- ARTICLE 13 -->
+    <div class="article">
+      <div class="article-title">⚠️ Article 13 — Sanctions Disciplinaires</div>
+      <div class="article-item"><span class="article-item-num">13.1</span>Tout manquement au présent règlement peut entraîner des sanctions disciplinaires proportionnelles à la gravité des faits.</div>
+      <div class="article-item"><span class="article-item-num">13.2</span>Les sanctions peuvent inclure un avertissement oral, un avertissement écrit, une suspension temporaire, une rétrogradation ou un licenciement définitif.</div>
+      <div class="article-item"><span class="article-item-num">13.3</span>Les actes de violence gratuite, de vol, de sabotage ou de non-respect répété des règles internes seront considérés comme des <strong>fautes graves</strong>.</div>
+    </div>
+
+    <!-- ARTICLE 14 -->
+    <div class="article">
+      <div class="article-title">🧹 Article 14 — Fermeture du Restaurant</div>
+      <div class="article-item"><span class="article-item-num">14.1</span>Avant chaque fermeture, les employés doivent procéder au nettoyage complet des cuisines, des équipements et des espaces de restauration.</div>
+      <div class="article-item"><span class="article-item-num">14.2</span>Les stocks doivent être vérifiés et correctement rangés afin de garantir la bonne reprise du service.</div>
+      <div class="article-item"><span class="article-item-num">14.3</span>Le manager de service est responsable de la validation finale de la fermeture du restaurant.</div>
+    </div>
+
+    <!-- ARTICLE 15 -->
+    <div class="article">
+      <div class="article-title">📦 Article 15 — Gestion des Stocks</div>
+      <div class="article-item"><span class="article-item-num">15.1</span>Les employés doivent surveiller l'état des stocks alimentaires ainsi que du matériel professionnel.</div>
+      <div class="article-item"><span class="article-item-num">15.2</span>Tout manque important, dégradation ou problème logistique doit être signalé rapidement à la hiérarchie.</div>
+      <div class="article-item"><span class="article-item-num">15.3</span>Le gaspillage volontaire de nourriture ou de matériel est interdit.</div>
+    </div>
+
+    <!-- ARTICLE 16 -->
+    <div class="article">
+      <div class="article-title">🧾 Article 16 — Image de Marque</div>
+      <div class="article-item"><span class="article-item-num">16.1</span>Burger Shot représente une entreprise reconnue dont l'image doit être préservée en permanence.</div>
+      <div class="article-item"><span class="article-item-num">16.2</span>Chaque employé participe directement à la réputation de l'établissement par son comportement, sa présentation et la qualité de son travail.</div>
+      <div class="article-item"><span class="article-item-num">16.3</span>Tout comportement susceptible de nuire à la réputation de Burger Shot pourra entraîner des mesures disciplinaires.</div>
+    </div>
+
+    <!-- ARTICLE 17 -->
+    <div class="article">
+      <div class="article-title">🎯 Article 17 — Obligations des Employés</div>
+      <div class="article-item"><span class="article-item-num">17.1</span>Les employés sont tenus d'être ponctuels, actifs et investis durant leurs horaires de travail.</div>
+      <div class="article-item"><span class="article-item-num">17.2</span>Chaque membre du personnel doit participer à la bonne ambiance de travail ainsi qu'au développement de l'entreprise.</div>
+      <div class="article-item"><span class="article-item-num">17.3</span>Les employés expérimentés sont encouragés à accompagner les nouvelles recrues afin de faciliter leur intégration.</div>
+    </div>
+
+    <!-- ARTICLE 18 -->
+    <div class="article">
+      <div class="article-title">🏆 Article 18 — Promotions et Évolutions</div>
+      <div class="article-item"><span class="article-item-num">18.1</span>Les promotions internes sont attribuées selon le sérieux, l'activité, le comportement et l'investissement de chaque employé.</div>
+      <div class="article-item"><span class="article-item-num">18.2</span>La direction reste seule décisionnaire concernant les évolutions hiérarchiques.</div>
+      <div class="article-item"><span class="article-item-num">18.3</span>Tout abus de pouvoir ou utilisation inappropriée d'un grade pourra entraîner une rétrogradation.</div>
+    </div>
+
+    <!-- ARTICLE 19 -->
+    <div class="article">
+      <div class="article-title">🚫 Article 19 — Absences</div>
+      <div class="article-item"><span class="article-item-num">19.1</span>Toute absence doit être signalée à un supérieur hiérarchique dans les meilleurs délais.</div>
+      <div class="article-item"><span class="article-item-num">19.2</span>Les absences répétées ou injustifiées peuvent entraîner des sanctions disciplinaires.</div>
+      <div class="article-item"><span class="article-item-num">19.3</span>Un manque d'activité prolongé peut conduire à une suspension temporaire ou à un licenciement.</div>
+    </div>
+
+    <!-- ARTICLE 20 -->
+    <div class="article">
+      <div class="article-title">🍟 Article 20 — Qualité du Service</div>
+      <div class="article-item"><span class="article-item-num">20.1</span>Les employés doivent garantir un service rapide, professionnel et efficace.</div>
+      <div class="article-item"><span class="article-item-num">20.2</span>La satisfaction du client constitue une priorité permanente pour Burger Shot.</div>
+      <div class="article-item"><span class="article-item-num">20.3</span>Chaque commande doit être préparée avec sérieux et conformément aux standards de qualité de l'entreprise.</div>
+    </div>
+
+    <!-- ARTICLE 21 -->
+    <div class="article">
+      <div class="article-title">📜 Article 21 — Confidentialité</div>
+      <div class="article-item"><span class="article-item-num">21.1</span>Les informations internes de Burger Shot ne doivent pas être diffusées sans autorisation préalable de la direction.</div>
+      <div class="article-item"><span class="article-item-num">21.2</span>Les employés sont tenus de respecter la confidentialité des procédures internes, des informations financières et des décisions administratives.</div>
+    </div>
+
+    <!-- ARTICLE 22 -->
+    <div class="article">
+      <div class="article-title">🔥 Article 22 — Code d'Honneur Burger Shot</div>
+      <div class="article-item"><span class="article-item-num">22.1</span>Tout employé Burger Shot représente l'entreprise aussi bien à l'intérieur qu'à l'extérieur du restaurant et doit adopter un comportement respectueux, professionnel et cohérent avec l'image de marque de l'établissement.</div>
+      <div class="article-item"><span class="article-item-num">22.2</span>Le respect des collègues, des supérieurs hiérarchiques, des clients ainsi que des lois constitue une obligation permanente.</div>
+      <div class="article-item"><span class="article-item-num">22.3</span>Tout comportement nuisant volontairement à l'image de Burger Shot pourra faire l'objet de sanctions disciplinaires.</div>
+    </div>
+
+    <!-- DEVISE -->
+    <div class="devise">
+      <div class="devise-label">🦅 Devise Officielle</div>
+      <div class="devise-text">"Chez Burger Shot, nos vaches américaines sont élevées au grain…<br>et finies au Winchester. Le goût du vrai bœuf US.<br>Direct du ranch à la lunette de visée."</div>
+    </div>
+
+  </div><!-- /reglement-body -->
+
+  <!-- ZONE SIGNATURE (dynamique selon rôle) -->
+  <div id="signatureZone"></div>
+
+</div><!-- /content -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
+const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
+
+let USER = null;
+let ROLE = 'employe';
+let isAccepted = false;
+let hasSignature = false;
+let isDrawing = false;
+let canvas, ctx;
+let signatureData = null;
+
+async function sb(endpoint, opts = {}) {
+  const method = opts.method || 'GET';
+  const headers = {
+    apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+    'Content-Type': 'application/json',
+    Prefer: ['POST','PATCH','DELETE'].includes(method) ? 'return=minimal' : 'return=representation',
+    ...(opts.headers || {})
+  };
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/${endpoint}`, { headers, method, body: opts.body });
+    const text = await r.text();
+    if (!text || text.trim() === '') return true;
+    try { return JSON.parse(text); } catch { return true; }
+  } catch(e) { console.error('sb error:', e); return null; }
+}
+
+function showToast(msg, color = '#27ae60') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function toggleTheme() {
+  const h = document.documentElement, b = document.getElementById('themeBtn');
+  h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
+  b.textContent = h.dataset.theme === 'dark' ? '☀️' : '🌙';
+}
+
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrolled = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+  const pct = Math.round(Math.min(100, scrolled * 100));
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+});
+
+// CANVAS SIGNATURE
+function initCanvas() {
+  canvas = document.getElementById('signatureCanvas');
+  if (!canvas) return;
+  ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 180;
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Mouse
+  canvas.addEventListener('mousedown', e => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); canvas.classList.add('active'); });
+  canvas.addEventListener('mousemove', e => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+  canvas.addEventListener('mouseup', () => { isDrawing = false; onSignatureEnd(); });
+  canvas.addEventListener('mouseleave', () => { if (isDrawing) { isDrawing = false; onSignatureEnd(); } });
+
+  // Touch
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing = true; const p = getPos(e.touches[0]); ctx.beginPath(); ctx.moveTo(p.x, p.y); canvas.classList.add('active'); }, { passive: false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!isDrawing) return; const p = getPos(e.touches[0]); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+  canvas.addEventListener('touchend', () => { isDrawing = false; onSignatureEnd(); });
+}
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: (e.clientX - rect.left) * (canvas.width / rect.width), y: (e.clientY - rect.top) * (canvas.height / rect.height) };
+}
+
+function onSignatureEnd() {
+  hasSignature = true;
+  canvas.classList.remove('active');
+  canvas.classList.add('done');
+  signatureData = canvas.toDataURL('image/png');
+  updateSubmitBtn();
+}
+
+function clearCanvas() {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSignature = false;
+  signatureData = null;
+  canvas.classList.remove('done', 'active');
+  updateSubmitBtn();
+}
+
+function toggleAccept() {
+  if (ROLE === 'gouvernement') return;
+  const box = document.getElementById('acceptBox');
+  isAccepted = !isAccepted;
+  box.classList.toggle('checked', isAccepted);
+  document.getElementById('acceptCheckmark').textContent = isAccepted ? '✓' : '';
+  updateSubmitBtn();
+}
+
+function updateSubmitBtn() {
+  const btn = document.getElementById('btnSubmit');
+  if (!btn) return;
+  btn.disabled = !(isAccepted && hasSignature);
+}
+
+async function soumettre() {
+  if (!isAccepted || !hasSignature) return;
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;"></span> Enregistrement...';
+
+  try {
+    const now = new Date().toISOString();
+    await sb(`employes?discord_id=eq.${USER.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        reglement_signe: true,
+        reglement_signe_le: now,
+        reglement_signature: signatureData
+      })
+    });
+    localStorage.setItem('bs_reglement_signe', JSON.stringify({ signe: true, date: now, discord_id: USER.id }));
+    showToast('✅ Règlement signé avec succès !');
+    setTimeout(() => renderSignatureZone(true, now), 1200);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Signer et Télécharger le PDF';
+    showToast('❌ Erreur lors de la signature.', '#c0392b');
+  }
+}
+
+function telechargerPDF(nom, date, sigData) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  let y = 20;
+
+  // Header rouge
+  doc.setFillColor(192, 57, 43);
+  doc.rect(0, 0, W, 16, 'F');
+  doc.setFillColor(230, 126, 34);
+  doc.rect(0, 14, W, 2, 'F');
+
+  // Titre
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(192, 57, 43);
+  doc.text('BURGER SHOT', W/2, 28, { align: 'center' });
+  doc.setFontSize(14);
+  doc.setTextColor(50, 50, 50);
+  doc.text('Règlement Intérieur — Document Officiel', W/2, 36, { align: 'center' });
+  doc.setFontSize(10);
+  doc.setTextColor(120, 120, 120);
+  doc.text('RedStart RP · Los Santos', W/2, 42, { align: 'center' });
+
+  // Ligne
+  doc.setDrawColor(192, 57, 43);
+  doc.setLineWidth(0.5);
+  doc.line(15, 46, W-15, 46);
+  y = 54;
+
+  const articles = [
+    ['Art. 1 — Valeurs', 'Professionnalisme, discipline, respect mutuel, qualité du service et esprit d\'équipe.'],
+    ['Art. 2 — Tenue', 'Uniforme obligatoire, gants en latex requis, chaussures de sécurité, hygiène irréprochable.'],
+    ['Art. 3 — HACCP', 'Lavage des mains obligatoire, surfaces désinfectées, respect total des normes sanitaires.'],
+    ['Art. 4 — Clientèle', 'Accueil respectueux, langage professionnel, aucune agressivité tolérée.'],
+    ['Art. 5 — Caisse', 'Responsabilité des montants, tout vol ou fraude entraîne des poursuites judiciaires.'],
+    ['Art. 6 — Pauses', 'Pauses validées par un supérieur, retour ponctuel au poste, zone fumeur dédiée.'],
+    ['Art. 7 — Téléphone', 'Usage limité en service, aucune publication portant atteinte à l\'image de l\'entreprise.'],
+    ['Art. 8 — Véhicules', 'Usage professionnel uniquement, code de la route respecté.'],
+    ['Art. 9 — Armes', 'Les armes restent chez vous. En cas d\'incident, appeler le 911.'],
+    ['Art. 10 — Comportement', 'Sérieux exigé. Le Burger Shot n\'est pas responsable des activités personnelles illégales.'],
+    ['Art. 11 — Hiérarchie', 'Respect des consignes des supérieurs. La direction a l\'autorité finale.'],
+    ['Art. 12 — Recrutement', 'Période d\'observation possible. La direction peut refuser ou interrompre un essai.'],
+    ['Art. 13 — Sanctions', 'Avertissement, suspension, rétrogradation ou licenciement selon la gravité.'],
+    ['Art. 14 — Fermeture', 'Nettoyage complet obligatoire, stocks vérifiés, manager valide la fermeture.'],
+    ['Art. 15 — Stocks', 'Surveillance des stocks, signalement des manques, aucun gaspillage volontaire.'],
+    ['Art. 16 — Image', 'Chaque employé représente l\'entreprise. Comportement exemplaire requis.'],
+    ['Art. 17 — Obligations', 'Ponctualité, investissement, accompagnement des nouvelles recrues.'],
+    ['Art. 18 — Promotions', 'Basées sur le mérite. Tout abus de grade peut entraîner une rétrogradation.'],
+    ['Art. 19 — Absences', 'Signalement obligatoire. Les absences répétées sont sanctionnées.'],
+    ['Art. 20 — Qualité', 'Service rapide, professionnel, satisfaction client prioritaire.'],
+    ['Art. 21 — Confidentialité', 'Aucune information interne ne doit être divulguée sans autorisation.'],
+    ['Art. 22 — Code d\'Honneur', 'Comportement exemplaire à l\'intérieur comme à l\'extérieur du restaurant.'],
+  ];
+
+  doc.setFontSize(9);
+  for (const [titre, texte] of articles) {
+    if (y > H - 40) { doc.addPage(); y = 20; }
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(192, 57, 43);
+    doc.text(titre, 15, y);
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    const lines = doc.splitTextToSize(texte, W - 30);
+    doc.text(lines, 15, y);
+    y += lines.length * 4.5 + 3;
+  }
+
+  // Page signature
+  doc.addPage();
+  y = 20;
+  doc.setFillColor(192, 57, 43);
+  doc.rect(0, 0, W, 3, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(192, 57, 43);
+  doc.text('✅ Acceptation du Règlement', W/2, 24, { align: 'center' });
+
+  doc.setFontSize(11);
+  doc.setTextColor(50, 50, 50);
+  doc.setFont('helvetica', 'normal');
+  const acceptText = 'La personne ci-dessous déclare avoir pris connaissance de l\'intégralité du règlement intérieur de Burger Shot et s\'engage à respecter l\'ensemble des dispositions mentionnées dans ce document.';
+  const lines = doc.splitTextToSize(acceptText, W - 30);
+  doc.text(lines, 15, 34);
+  y = 34 + lines.length * 6 + 6;
+
+  // Infos signataire
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(15, y, W-30, 28, 3, 3, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(192, 57, 43);
+  doc.text('Informations du signataire', 20, y+8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(50, 50, 50);
+  doc.text(`Nom : ${nom || '—'}`, 20, y+15);
+  doc.text(`Date de signature : ${date ? new Date(date).toLocaleString('fr-FR') : '—'}`, 20, y+21);
+  doc.text(`Discord ID : ${USER?.id || '—'}`, 20, y+27);
+  y += 36;
+
+  // Signature image
+  if (sigData) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text('Signature électronique :', 15, y+6);
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.rect(15, y+10, W-30, 50);
+    try {
+      doc.addImage(sigData, 'PNG', 16, y+11, W-32, 48);
+    } catch(e) {}
+    y += 68;
+  }
+
+  // Footer
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Burger Shot © RedStart RP — Document généré automatiquement — Confidentiel', W/2, H-10, { align: 'center' });
+
+  doc.save(`Reglement_BurgerShot_${(nom || 'employe').replace(/\s+/g,'-')}.pdf`);
+}
+
+function renderStatusBanner(role, signed, signedDate) {
+  const el = document.getElementById('statusBanner');
+  if (role === 'gouvernement') {
+    el.innerHTML = `<div class="status-banner status-readonly">👁️ Mode lecture seule — Le gouvernement consulte le règlement sans pouvoir le signer.</div>`;
+  } else if (signed) {
+    el.innerHTML = `<div class="status-banner status-signed">✅ Vous avez signé ce règlement le ${new Date(signedDate).toLocaleString('fr-FR')}.</div>`;
+  } else {
+    el.innerHTML = `<div class="status-banner status-unsigned">⚠️ Vous n'avez pas encore signé ce règlement. Lisez-le entièrement puis signez en bas de page.</div>`;
+  }
+}
+
+function renderSignatureZone(signed, signedDate) {
+  const el = document.getElementById('signatureZone');
+  if (ROLE === 'gouvernement') {
+    el.innerHTML = `
+      <div class="signature-section">
+        <div class="section-title">👁️ Consultation uniquement</div>
+        <div class="readonly-notice">
+          <div class="readonly-notice-icon">🏛️</div>
+          <div class="readonly-notice-text">En tant que membre du gouvernement, vous avez accès au règlement intérieur en consultation uniquement.<br>La signature est réservée aux employés de Burger Shot.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (signed) {
+    el.innerHTML = `
+      <div class="signature-section">
+        <div class="section-title">✅ Règlement Signé</div>
+        <div class="signed-info">
+          <div class="signed-icon">✅</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;">Vous avez signé ce règlement</div>
+            <div class="signed-date">Le ${new Date(signedDate).toLocaleString('fr-FR')}</div>
+            <div style="margin-top:10px;">
+              <button class="btn btn-outline btn-sm" onclick="redownloadPDF()">📄 Re-télécharger le PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    renderStatusBanner(ROLE, true, signedDate);
+    return;
+  }
+
+  // Formulaire de signature
+  el.innerHTML = `
+    <div class="signature-section">
+      <div class="section-title">✍️ Signature du Règlement</div>
+
+      <div class="accept-box" id="acceptBox" onclick="toggleAccept()">
+        <div class="accept-checkbox" id="acceptCheckmark"></div>
+        <div class="accept-text">
+          <strong>J'accepte le règlement intérieur de Burger Shot</strong><br>
+          Je reconnais avoir lu et compris l'intégralité du présent règlement et m'engage à respecter toutes les dispositions mentionnées. Je comprends que le non-respect de ces règles peut entraîner des sanctions disciplinaires pouvant aller jusqu'au licenciement définitif.
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <div class="canvas-label">Votre signature</div>
+        <canvas id="signatureCanvas"></canvas>
+        <div class="canvas-hint">✏️ Signez dans la zone ci-dessus avec votre souris ou votre doigt</div>
+        <div class="canvas-actions">
+          <button class="btn btn-outline btn-sm" onclick="clearCanvas()">🗑️ Effacer la signature</button>
+        </div>
+      </div>
+
+      <div class="submit-area">
+        <button class="btn btn-success" id="btnSubmit" onclick="soumettre()" disabled>
+          ✅ Signer et Télécharger le PDF
+        </button>
+        <span style="font-size:12px;color:var(--muted);">Le PDF sera téléchargé avec votre signature.</span>
+      </div>
+    </div>`;
+
+  renderStatusBanner(ROLE, false, null);
+  setTimeout(initCanvas, 50);
+}
+
+async function redownloadPDF() {
+  const empData = await sb(`employes?discord_id=eq.${USER.id}&select=nom,prenom,reglement_signe_le,reglement_signature`);
+  const emp = empData?.[0];
+  if (!emp) { showToast('❌ Données introuvables.', '#c0392b'); return; }
+  const nom = `${emp.prenom || ''} ${emp.nom || ''}`.trim();
+  telechargerPDF(nom, emp.reglement_signe_le, emp.reglement_signature);
+}
+
+// INIT
+window.addEventListener('DOMContentLoaded', async () => {
+  // Récupérer session
+  const rawGouv = localStorage.getItem('bs_gouv_user');
+  const rawEmp = localStorage.getItem('bs_user');
+  const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432'];
+
+  let userData = null;
+  if (rawGouv) {
+    try { userData = JSON.parse(rawGouv); ROLE = 'gouvernement'; } catch {}
+  }
+  if (!userData && rawEmp) {
+    try { userData = JSON.parse(rawEmp); ROLE = 'employe'; } catch {}
+  }
+  if (!userData) { location.href = '/'; return; }
+
+  USER = userData;
+  if (DIR_IDS.includes(userData.id)) ROLE = 'direction';
+
+  // Vérifier si gouvernement
+  if (ROLE === 'employe') {
+    const gouvCheck = await sb(`gouvernement_comptes?discord_id=eq.${userData.id}&statut=eq.actif`);
+    if (gouvCheck?.length) ROLE = 'gouvernement';
+  }
+
+  // Vérifier si déjà signé
+  if (ROLE !== 'gouvernement') {
+    const empData = await sb(`employes?discord_id=eq.${USER.id}&select=nom,prenom,reglement_signe,reglement_signe_le,reglement_signature`);
+    const emp = empData?.[0];
+    const signed = emp?.reglement_signe || false;
+    const signedDate = emp?.reglement_signe_le || null;
+
+    renderSignatureZone(signed, signedDate);
+    renderStatusBanner(ROLE, signed, signedDate);
+
+    // Override soumettre pour inclure le PDF
+    if (!signed) {
+      window.soumettre = async function() {
+        if (!isAccepted || !hasSignature) return;
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:8px;"></span> Enregistrement...';
+        const now = new Date().toISOString();
+        const nomComplet = (emp?.prenom && emp?.nom)
+        ? `${emp.prenom} ${emp.nom}`
+        : (userData.nom && userData.prenom)
+          ? `${userData.prenom} ${userData.nom}`
+          : userData.username || 'Inconnu';
+        try {
+          await sb(`employes?discord_id=eq.${USER.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ reglement_signe: true, reglement_signe_le: now, reglement_signature: signatureData })
+          });
+          showToast('✅ Règlement signé !');
+          telechargerPDF(nomComplet, now, signatureData);
+          setTimeout(() => renderSignatureZone(true, now), 1500);
+        } catch(e) {
+          btn.disabled = false;
+          btn.innerHTML = '✅ Signer et Télécharger le PDF';
+          showToast('❌ Erreur.', '#c0392b');
+        }
+      };
+    }
+  } else {
+    renderSignatureZone(false, null);
+    renderStatusBanner('gouvernement', false, null);
+  }
+});
+
+// CSS spin
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>

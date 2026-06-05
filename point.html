@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vérification Points — Burger Shot</title>
+<link rel="icon" href="https://upload.redstartrp.fr/uploads/photo-1779965966-13fd724e49fb.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#c0392b; --red-dark:#922b21; --red-light:#e74c3c;
+  --orange:#e67e22; --success:#27ae60; --warning:#f39c12; --blue:#3498db;
+  --gold:#f1c40f; --purple:#9b59b6;
+  --bg:#0d0d0d; --card:#141414; --card2:#1c1c1c; --card3:#222;
+  --text:#f1f1f1; --muted:#888; --border:rgba(255,255,255,.07);
+  --shadow:0 8px 40px rgba(0,0,0,.6); --radius:14px;
+}
+[data-theme="light"] {
+  --bg:#f0ece4; --card:#fff; --card2:#f5f1eb; --card3:#ece8e0;
+  --text:#111; --muted:#666; --border:rgba(0,0,0,.09); --shadow:0 8px 40px rgba(0,0,0,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+button,input{font-family:'Barlow',sans-serif;}
+
+.checker{height:10px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:10px 10px;position:fixed;top:0;left:0;right:0;z-index:100;}
+
+.wrap{width:100%;max-width:480px;margin-top:16px;}
+
+.logo-wrap{text-align:center;margin-bottom:28px;}
+.logo-wrap img{height:72px;filter:drop-shadow(0 0 18px rgba(192,57,43,.45));}
+.logo-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;color:var(--red);margin-top:10px;line-height:1;}
+.logo-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--orange),var(--red));}
+
+.screen{display:none;animation:fadeIn .3s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOGIN SCREEN */
+.login-icon{font-size:52px;text-align:center;margin-bottom:16px;}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--red);letter-spacing:2px;text-align:center;margin-bottom:8px;}
+.login-desc{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.6;}
+.btn-discord{width:100%;padding:13px 20px;background:#5865F2;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:.5px;transition:.2s;}
+.btn-discord:hover{background:#4752C4;transform:translateY(-1px);}
+.btn-discord svg{width:20px;height:20px;flex-shrink:0;}
+
+/* LOADING SCREEN */
+.loading-wrap{text-align:center;padding:30px 0;}
+.spin-big{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--muted);}
+
+/* NO ACCOUNT SCREEN */
+.no-acc-icon{font-size:48px;text-align:center;margin-bottom:14px;}
+.no-acc-title{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--warning);letter-spacing:2px;text-align:center;margin-bottom:8px;}
+.no-acc-desc{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;line-height:1.65;}
+.user-mini{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 14px;background:var(--card2);border-radius:8px;font-size:13px;margin-bottom:16px;}
+.user-mini-av{width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;overflow:hidden;flex-shrink:0;}
+.user-mini-av img{width:100%;height:100%;object-fit:cover;}
+
+/* BLACKLISTED */
+.blacklisted-icon{font-size:52px;text-align:center;margin-bottom:14px;}
+.blacklisted-title{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--red);letter-spacing:2px;text-align:center;margin-bottom:8px;}
+
+/* ACCOUNT SCREEN */
+.profile-header{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
+.profile-av{width:60px;height:60px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;overflow:hidden;flex-shrink:0;border:2px solid rgba(192,57,43,.4);box-shadow:0 0 20px rgba(192,57,43,.25);}
+.profile-av img{width:100%;height:100%;object-fit:cover;}
+.profile-name{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;line-height:1.1;}
+.profile-discord{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-top:3px;}
+
+/* POINTS DISPLAY */
+.pts-card{background:linear-gradient(135deg,rgba(192,57,43,.15),rgba(230,126,34,.08));border:1px solid rgba(192,57,43,.3);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;}
+.pts-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;}
+.pts-value{font-family:'Bebas Neue',sans-serif;font-size:68px;color:var(--red);line-height:1;letter-spacing:2px;}
+.pts-unit{font-size:14px;color:var(--muted);margin-top:4px;}
+
+/* PASS CARD */
+.pass-card{border-radius:12px;padding:18px;margin-bottom:16px;border:1px solid;}
+.pass-card.active-pass{background:rgba(241,196,15,.06);border-color:rgba(241,196,15,.3);}
+.pass-card.no-pass{background:var(--card2);border-color:var(--border);}
+.pass-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.pass-badge{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);}
+.pass-badge.no{color:var(--muted);}
+.pass-status{font-size:11px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;}
+.pass-status.actif{background:rgba(39,174,96,.15);color:var(--success);}
+.pass-status.expire{background:rgba(192,57,43,.15);color:var(--red);}
+.pass-status.aucun{background:rgba(136,136,136,.1);color:var(--muted);}
+
+.pass-details{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pass-detail{background:var(--card3);border-radius:8px;padding:8px 10px;}
+.pass-detail-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.pass-detail-val{font-size:14px;font-weight:700;}
+
+.expiry-bar-bg{height:6px;background:var(--card3);border-radius:3px;overflow:hidden;margin-top:10px;}
+.expiry-bar-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+
+.renew-card{background:rgba(39,174,96,.07);border:1px solid rgba(39,174,96,.25);border-radius:12px;padding:16px;margin-bottom:16px;}
+.renew-title{font-size:14px;font-weight:800;color:var(--success);margin-bottom:6px;}
+.renew-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.55;}
+.renew-price{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--success);margin-bottom:10px;}
+.renew-original{font-size:12px;color:var(--muted);text-decoration:line-through;margin-left:8px;}
+.btn-renew{width:100%;padding:11px;background:var(--success);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.5px;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-renew:hover{opacity:.9;}
+
+.btn-logout{width:100%;padding:10px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;margin-top:8px;transition:.2s;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
+
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;}
+.alert-ok{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);color:var(--success);}
+.alert-err{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.25);color:var(--red);}
+.alert-warn{background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.25);color:var(--warning);}
+
+.theme-btn{position:fixed;top:18px;right:18px;width:32px;height:32px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:200;}
+.theme-btn:hover{border-color:var(--red);}
+
+.back-link{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;cursor:pointer;transition:.2s;}
+.back-link:hover{color:var(--red);}
+.back-link a{color:inherit;}
+
+.info-id{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-top:14px;text-align:center;line-height:1.6;}
+.info-id strong{color:var(--text);}
+.info-id code{font-family:monospace;background:var(--card3);padding:2px 6px;border-radius:4px;color:var(--orange);font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="checker"></div>
+<button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+
+<div class="wrap">
+  <div class="logo-wrap">
+    <img src="https://upload.redstartrp.fr/uploads/photo-1779920811-a57e8bd11bf7.png" alt="Burger Shot" onerror="this.style.display='none'">
+    <div class="logo-title">Mes Points Fidélité</div>
+    <div class="logo-sub">Burger Shot · Los Santos</div>
+  </div>
+
+  <div class="card">
+    <div id="alertPts"></div>
+
+    <!-- LOGIN -->
+    <div class="screen active" id="scr-login">
+      <div class="login-icon">🎯</div>
+      <div class="login-title">Vérifiez vos points</div>
+      <div class="login-desc">Connectez-vous avec Discord pour consulter votre solde de points fidélité et vos informations de pass.</div>
+      <button class="btn-discord" onclick="loginDiscord()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.101 18.079.11 18.1.127 18.113a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Se connecter avec Discord
+      </button>
+      <div class="info-id">
+        <strong>Votre ID Discord</strong> est votre <strong>N° de sécurité social intranet</strong>.<br>
+        Un employé peut en avoir besoin pour créer votre compte client.
+      </div>
+      <div class="back-link"><a href="/">← Retour au dashboard</a></div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="screen" id="scr-loading">
+      <div class="loading-wrap">
+        <div class="spin-big"></div>
+        <div class="loading-text" id="loadingText">Vérification en cours...</div>
+      </div>
+    </div>
+
+    <!-- PAS DE COMPTE CLIENT -->
+    <div class="screen" id="scr-no-account">
+      <div id="userMiniWrap" style="margin-bottom:16px;"></div>
+      <div class="no-acc-icon">🔍</div>
+      <div class="no-acc-title">Compte introuvable</div>
+      <div class="no-acc-desc">
+        Votre Discord ID n'est associé à aucun compte client Burger Shot.<br><br>
+        Rendez-vous au restaurant et demandez à un employé de créer votre compte client en lui communiquant votre <strong>Discord ID</strong>.
+      </div>
+      <div class="info-id">
+        Votre Discord ID : <code id="discordIdDisplay">—</code>
+      </div>
+      <button class="btn-logout" onclick="deconnecter()">🔓 Se déconnecter</button>
+    </div>
+
+    <!-- BLACKLISTÉ -->
+    <div class="screen" id="scr-blacklisted">
+      <div id="userMiniBlWrap" style="margin-bottom:16px;"></div>
+      <div class="blacklisted-icon">⛔</div>
+      <div class="blacklisted-title">Accès Refusé</div>
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px;line-height:1.65;">
+        Votre compte client a été <strong>blacklisté</strong>.<br>Vous ne pouvez plus passer de commandes.<br><br>
+        Pour contester cette décision, contactez la direction du Burger Shot.
+      </div>
+      <button class="btn-logout" onclick="deconnecter()">🔓 Se déconnecter</button>
+    </div>
+
+    <!-- COMPTE TROUVÉ -->
+    <div class="screen" id="scr-account">
+      <div id="profileHeader"></div>
+      <div id="alertRenew"></div>
+      <div id="ptsCard"></div>
+      <div id="passCard"></div>
+      <div id="renewCard"></div>
+      <button class="btn-logout" onclick="deconnecter()">🔓 Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
+
+// ⚠️ REMPLACE PAR TON CLIENT ID DISCORD
+const DISCORD_CLIENT_ID = 'TON_CLIENT_ID_DISCORD_ICI';
+const REDIRECT_URI = encodeURIComponent(window.location.origin + '/points.html');
+
+let currentUser = null;
+let clientData = null;
+let passTypes = [];
+
+async function sb(endpoint, opts = {}) {
+  const r = await fetch(`${SB_URL}/rest/v1/${endpoint}`, {
+    headers: {
+      apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+      'Content-Type': 'application/json', Prefer: 'return=representation',
+      ...(opts.headers || {})
+    },
+    method: opts.method || 'GET', body: opts.body
+  });
+  try { return await r.json(); } catch { return []; }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+}
+
+function loginDiscord() {
+  const state = Math.random().toString(36).slice(2);
+  sessionStorage.setItem('discord_state_pts', state);
+  const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=identify&state=${state}`;
+  window.location.href = url;
+}
+
+function buildUserMini(user, containerId) {
+  const av = user.avatar
+    ? `<img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" onerror="this.parentElement.textContent='${(user.username||'?').charAt(0).toUpperCase()}';">`
+    : (user.username || '?').charAt(0).toUpperCase();
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = `
+    <div class="user-mini">
+      <div class="user-mini-av">${av}</div>
+      <span><strong>${user.username}</strong> · ${user.id}</span>
+    </div>`;
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  return Math.round((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
+}
+
+async function lookupClient(discordId) {
+  showScreen('scr-loading');
+  document.getElementById('loadingText').textContent = 'Recherche de votre compte...';
+
+  passTypes = await sb('pass_types?select=*') || [];
+  const data = await sb(`clients?discord_id=eq.${discordId}&limit=1`);
+
+  if (!Array.isArray(data) || !data.length) {
+    if (currentUser) {
+      buildUserMini(currentUser, 'userMiniWrap');
+      document.getElementById('discordIdDisplay').textContent = discordId;
+    }
+    showScreen('scr-no-account');
+    return;
+  }
+
+  clientData = data[0];
+
+  if (clientData.blacklist) {
+    if (currentUser) buildUserMini(currentUser, 'userMiniBlWrap');
+    showScreen('scr-blacklisted');
+    return;
+  }
+
+  renderAccount();
+  showScreen('scr-account');
+}
+
+function renderAccount() {
+  const c = clientData;
+  const user = currentUser;
+  const days = daysUntil(c.pass_expiry);
+  const passExpired = days !== null && days <= 0;
+  const passExpiring = days !== null && days > 0 && days <= 7;
+
+  // Avatar
+  const av = user?.avatar
+    ? `<img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" onerror="this.parentElement.textContent='${(c.prenom||'?').charAt(0).toUpperCase()}';">`
+    : (c.prenom || '?').charAt(0).toUpperCase();
+
+  document.getElementById('profileHeader').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-av">${av}</div>
+      <div>
+        <div class="profile-name">${c.prenom || ''} ${c.nom || ''}</div>
+        <div class="profile-discord">🔗 ${user?.username || 'Discord'} · ID ${user?.id || c.discord_id || '—'}</div>
+      </div>
+    </div>`;
+
+  // Points
+  document.getElementById('ptsCard').innerHTML = `
+    <div class="pts-card">
+      <div class="pts-label">🎯 Points fidélité</div>
+      <div class="pts-value">${(c.points || 0).toLocaleString('fr-FR')}</div>
+      <div class="pts-unit">points accumulés</div>
+    </div>`;
+
+  // Pass
+  let passHtml = '';
+  if (c.pass) {
+    const pt = passTypes.find(p => p.nom === c.pass);
+    const mult = pt?.multiplicateur || 1;
+    const reduc = pt?.reduction || 0;
+    const expiryDate = c.pass_expiry ? new Date(c.pass_expiry).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'}) : '—';
+    const barPct = days !== null ? Math.max(0, Math.min(100, Math.round((days / 30) * 100))) : 0;
+    const barColor = passExpired ? 'var(--red)' : passExpiring ? 'var(--warning)' : 'var(--success)';
+
+    passHtml = `
+      <div class="pass-card ${passExpired ? 'no-pass' : 'active-pass'}">
+        <div class="pass-header">
+          <div class="pass-badge">${passExpired ? '⚠️ Pass Expiré' : '🪪 ' + c.pass}</div>
+          <span class="pass-status ${passExpired ? 'expire' : 'actif'}">${passExpired ? 'Expiré' : 'Actif'}</span>
+        </div>
+        <div class="pass-details">
+          <div class="pass-detail">
+            <div class="pass-detail-label">Multiplicateur</div>
+            <div class="pass-detail-val" style="color:var(--gold);">×${mult}</div>
+          </div>
+          <div class="pass-detail">
+            <div class="pass-detail-label">Réduction</div>
+            <div class="pass-detail-val" style="color:var(--success);">${reduc > 0 ? '-' + reduc + '%' : 'Aucune'}</div>
+          </div>
+          <div class="pass-detail">
+            <div class="pass-detail-label">${passExpired ? 'Expiré le' : 'Expire le'}</div>
+            <div class="pass-detail-val" style="font-size:12px;">${expiryDate}</div>
+          </div>
+          <div class="pass-detail">
+            <div class="pass-detail-label">${passExpired ? 'Dépassé de' : 'Jours restants'}</div>
+            <div class="pass-detail-val" style="color:${barColor};">${passExpired ? Math.abs(days) + ' j' : days + ' j'}</div>
+          </div>
+        </div>
+        ${!passExpired ? `
+          <div class="expiry-bar-bg">
+            <div class="expiry-bar-fill" style="width:${barPct}%;background:${barColor};"></div>
+          </div>` : ''}
+      </div>`;
+  } else {
+    passHtml = `
+      <div class="pass-card no-pass">
+        <div class="pass-header">
+          <div class="pass-badge no">🪪 Aucun Pass</div>
+          <span class="pass-status aucun">Inactif</span>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:8px;">Vous n'avez pas de pass actif. Renseignez-vous auprès d'un employé du Burger Shot pour en obtenir un.</p>
+      </div>`;
+  }
+  document.getElementById('passCard').innerHTML = passHtml;
+
+  // Renouvellement -10%
+  let renewHtml = '';
+  if (c.pass && passExpiring && !passExpired) {
+    const pt = passTypes.find(p => p.nom === c.pass);
+    const prix = pt?.prix || 0;
+    const prixReduc = Math.round(prix * 0.9);
+    renewHtml = `
+      <div class="renew-card">
+        <div class="renew-title">🔄 Renouvellement disponible !</div>
+        <div class="renew-desc">Votre pass expire dans <strong>${days} jour${days > 1 ? 's' : ''}</strong>. Renouvelez maintenant et bénéficiez de <strong>10% de réduction</strong>.</div>
+        <div>
+          <span class="renew-price">${prixReduc.toLocaleString('fr-FR')}$</span>
+          <span class="renew-original">${prix.toLocaleString('fr-FR')}$</span>
+        </div>
+        <button class="btn-renew" onclick="demanderRenouvellement()">
+          🔄 Demander le renouvellement (-10%)
+        </button>
+      </div>`;
+  } else if (c.pass && passExpired) {
+    renewHtml = `
+      <div class="renew-card" style="background:rgba(192,57,43,.07);border-color:rgba(192,57,43,.25);">
+        <div class="renew-title" style="color:var(--red);">⚠️ Pass expiré</div>
+        <div class="renew-desc">Votre pass est expiré. Contactez un employé du Burger Shot pour le renouveler.</div>
+      </div>`;
+  }
+  document.getElementById('renewCard').innerHTML = renewHtml;
+}
+
+async function demanderRenouvellement() {
+  if (!clientData) return;
+  const btn = document.querySelector('.btn-renew');
+  if (btn) { btn.disabled = true; btn.textContent = 'Envoi...'; }
+  // Log la demande de renouvellement dans la table clients
+  // En RP, l'employé voit ça dans le dashboard et valide manuellement
+  const note = `DEMANDE_RENOUVELLEMENT:${new Date().toISOString()}`;
+  await sb(`clients?id=eq.${clientData.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ notes_pass: note })
+  });
+  document.getElementById('alertRenew').innerHTML = `<div class="alert alert-ok">✅ Demande envoyée ! Un employé validera votre renouvellement avec -10% lors de votre prochaine visite.</div>`;
+  if (btn) { btn.style.display = 'none'; }
+}
+
+function deconnecter() {
+  localStorage.removeItem('bs_points_user');
+  currentUser = null; clientData = null;
+  showScreen('scr-login');
+}
+
+function toggleTheme() {
+  const h = document.documentElement, b = document.getElementById('themeBtn');
+  h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
+  b.textContent = h.dataset.theme === 'dark' ? '☀️' : '🌙';
+}
+
+// ═══ INIT ═══
+window.addEventListener('DOMContentLoaded', async () => {
+  // 1. Utilisateur déjà connecté (session points)
+  const storedPts = localStorage.getItem('bs_points_user');
+  if (storedPts) {
+    try {
+      const u = JSON.parse(storedPts);
+      if (u?.id) { currentUser = u; await lookupClient(u.id); return; }
+    } catch {}
+  }
+
+  // 2. Utilisateur connecté via le dashboard principal
+  const storedBs = localStorage.getItem('bs_user');
+  if (storedBs) {
+    try {
+      const u = JSON.parse(storedBs);
+      if (u?.id) { currentUser = u; await lookupClient(u.id); return; }
+    } catch {}
+  }
+
+  // 3. Callback OAuth (code dans l'URL)
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showScreen('scr-loading');
+    document.getElementById('loadingText').textContent = 'Connexion Discord...';
+    // ⚠️ NOTE : Le vrai échange code→token nécessite un backend pour ne pas exposer le client_secret
+    // Pour l'instant on affiche un message explicatif
+    setTimeout(() => {
+      showScreen('scr-login');
+      document.getElementById('alertPts').innerHTML = '<div class="alert alert-warn">⚠️ La connexion Discord nécessite un backend pour l\'échange de token. Configurez votre <code>DISCORD_CLIENT_ID</code> et ajoutez un endpoint sur votre serveur.</div>';
+    }, 1500);
+    return;
+  }
+
+  showScreen('scr-login');
+});
+</script>
+</body>
+</html>
