@@ -260,6 +260,24 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 /* CARTE EMPLOYÉ personnalisable */
 .emp-perso-card{background:linear-gradient(135deg,var(--red-dark),#1a0a0a);border:2px solid rgba(192,57,43,.5);border-radius:16px;padding:20px;color:#fff;position:relative;overflow:hidden;max-width:340px;}
 .emp-perso-card::before{content:'BURGER SHOT';position:absolute;right:-10px;bottom:-14px;font-family:'Bebas Neue',sans-serif;font-size:64px;color:rgba(255,255,255,.04);letter-spacing:3px;pointer-events:none;}
+
+/* NAV DROPDOWNS */
+.nav-dropdown{position:relative;}
+.nav-dropdown-menu{
+  display:none;position:absolute;top:100%;left:0;
+  background:#a52d22;border:1px solid rgba(0,0,0,.3);
+  border-top:none;border-radius:0 0 10px 10px;
+  min-width:180px;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.5);
+  padding:4px 0;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown-menu:hover{display:block;}
+.nav-dropdown-menu .nav-item{
+  padding:9px 18px;border-bottom:1px solid rgba(0,0,0,.15);
+  border-bottom-width:0 0 1px 0;width:100%;
+}
+.nav-dropdown-menu .nav-item:last-child{border-bottom:none;}
+.nav-dropdown > .nav-item::after{content:' ▾';font-size:9px;opacity:.7;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -688,7 +706,7 @@ console.log('✅ Patch v2 chargé — inserts corrigés');
 ══════════════════════════════════════════════ */
 async function trackActivity(){
   if(!USER?.id||ROLE!=='employe')return;
-  await sb(`employes?discord_id=eq.${USER.id}`,{method:'PATCH',body:JSON.stringify({derniere_activite:new Date().toISOString()})});
+  await sb(`comptes_dashboard?discord_id=eq.${USER.id}`,{method:'PATCH',body:JSON.stringify({derniere_activite:new Date().toISOString()})});
 }
 
 /* ══════════════════════════════════════════════
@@ -736,14 +754,14 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (!id) { location.href = '/'; return; }
 
   if (!DIR_IDS.includes(id)) {
-    const gouvData = await sb(`gouvernement_comptes?discord_id=eq.${id}&statut=eq.actif`);
-    if (gouvData?.length) ROLE = 'gouvernement';
+    const compteData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=role,statut`);
+     if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
   }
   if (DIR_IDS.includes(id)) ROLE = 'direction';
 
   let _posteActuel = null;
   if (ROLE === 'employe') {
-    const empData = await sb(`employes?discord_id=eq.${id}&select=poste,actif,contrat`);
+    const empData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=poste,actif,contrat,role`);
     if (!empData?.[0] || !empData[0].actif) {
       localStorage.removeItem('bs_user');
       location.href = '/';
@@ -754,7 +772,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     _posteActuel = empData[0].poste;
   }
 
-  const empRP = await sb(`employes?discord_id=eq.${id}&select=nom,prenom`);
+  const empRP = await sb(`comptes_dashboard?discord_id=eq.${id}&select=nom,prenom`);
   const nomRP = empRP?.[0]?.nom, prenomRP = empRP?.[0]?.prenom;
   const displayName = (prenomRP && nomRP) ? `${prenomRP} ${nomRP}` : (prenom && nom) ? `${prenom} ${nom}` : username;
   USER = { id, username, displayName, avatar, role: ROLE };
@@ -888,7 +906,7 @@ async function updateStatutsActivite(){
     let statut_activite='actif';
     if(diff>=7)statut_activite='inactif';
     else if(diff>=3)statut_activite='absent';
-    await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({statut_activite})});
+    await sb(`comptes_dashboard?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({statut_activite})});
   }
 }
 
@@ -934,50 +952,98 @@ const NAV={
 
 function buildNav() {
   const nav = document.getElementById('topNav');
-  const perms = getPermissions();
-
-  let items;
-
+ 
   if (ROLE === 'direction') {
-    items = NAV.direction;
-  } else if (ROLE === 'gouvernement') {
-    items = [
-      {id:'stats',          icon:'📊', label:'Stats'},
-      {id:'employes_gouv',  icon:'👤', label:'Employés'},
-      {id:'vehicules_readonly', icon:'🚗', label:'Véhicules'},
-      {id:'stock_readonly', icon:'📦', label:'Stock'},
-    ];
-  } else {
-    items = [{id:'accueil', icon:'🏠', label:'Accueil'}];
-
-    if (perms.caisse)  items.push({id:'caisse',  icon:'🧾', label:'Caisse'});
-    if (perms.clients) items.push({id:'clients', icon:'👥', label:'Clients'});
-
-    items.push({id:'employes_readonly', icon:'👤', label:'Équipe'});
-    items.push({id:'quota',             icon:'🚚', label:'Mon Quota'});
-    items.push({id:'reglement', icon:'📜', label:'Règlement', href:'/reglement.html'});
-
-    if (perms.stock === 'write')      items.push({id:'stock',          icon:'📦', label:'Stock'});
-    else if (perms.stock === 'read')  items.push({id:'stock_readonly', icon:'📦', label:'Stock'});
-
-    if (perms.vehicules === 'write' || perms.vehicules === 'assign') {
-      items.push({id:'vehicules', icon:'🚗', label:'Véhicules'});
-    } else {
-      items.push({id:'vehicules_readonly', icon:'🚗', label:'Véhicules'});
-    }
-
-    items.push({id:'calendrier_readonly', icon:'📅', label:'Calendrier'});
-    items.push({id:'stats_readonly',      icon:'📊', label:'Stats'});
-
-    if (USER_NIVEAU >= 3) items.push({id:'gestion', icon:'⚙️', label:'Gestion', badge:'quota-badge'});
+    nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;flex-wrap:wrap;';
+    nav.innerHTML = `
+      <!-- Accueil -->
+      <div class="nav-item" id="nav-accueil" onclick="showPage('accueil')">🏠 Accueil</div>
+ 
+      <!-- Dropdown Vente -->
+      <div class="nav-dropdown">
+        <div class="nav-item" id="nav-vente">🛒 Vente</div>
+        <div class="nav-dropdown-menu">
+          <div class="nav-item" id="nav-caisse" onclick="showPage('caisse')">🧾 Caisse</div>
+          <div class="nav-item" id="nav-clients" onclick="showPage('clients')">👥 Clients</div>
+          <div class="nav-item" id="nav-quota" onclick="showPage('quota')">🚚 Mon Quota</div>
+        </div>
+      </div>
+ 
+      <!-- Dropdown Gestion -->
+      <div class="nav-dropdown">
+        <div class="nav-item" id="nav-gestion-group">⚙️ Gestion</div>
+        <div class="nav-dropdown-menu">
+          <div class="nav-item" id="nav-employes" onclick="showPage('employes')">👤 Employés</div>
+          <div class="nav-item" id="nav-menu" onclick="showPage('menu')">🍔 Menu</div>
+          <div class="nav-item" id="nav-stock" onclick="showPage('stock')">📦 Stock</div>
+          <div class="nav-item" id="nav-vehicules" onclick="showPage('vehicules')">🚗 Véhicules</div>
+          <div class="nav-item" id="nav-contrats" onclick="showPage('contrats')">📄 Contrats</div>
+          <div class="nav-item" id="nav-gestion" onclick="showPage('gestion')">⚙️ Gestion <span class="nav-badge" id="quota-badge"></span></div>
+          <div class="nav-item" id="nav-depenses" onclick="showPage('depenses')">💸 Dépenses</div>
+        </div>
+      </div>
+ 
+      <!-- Calendrier -->
+      <div class="nav-item" id="nav-calendrier" onclick="showPage('calendrier')">📅 Calendrier</div>
+ 
+      <!-- Stats -->
+      <div class="nav-item" id="nav-stats" onclick="showPage('stats')">📊 Stats</div>
+ 
+      <!-- Gouvernement -->
+      <div class="nav-item" id="nav-gouvernement" onclick="showPage('gouvernement')">🏛️ Gouvernement</div>
+ 
+      <!-- Comptes -->
+      <div class="nav-item" id="nav-comptes" onclick="showPage('comptes')">👥 Comptes</div>
+ 
+      <!-- Règlement -->
+      <a href="/reglement.html" target="_blank" class="nav-item" id="nav-reglement">📜 Règlement</a>
+    `;
+    return;
   }
-
+ 
+  if (ROLE === 'gouvernement') {
+    nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
+    nav.innerHTML = `
+      <div class="nav-item" id="nav-stats" onclick="showPage('stats')">📊 Stats</div>
+      <div class="nav-item" id="nav-employes_gouv" onclick="showPage('employes_gouv')">👤 Employés</div>
+      <div class="nav-item" id="nav-vehicules_readonly" onclick="showPage('vehicules_readonly')">🚗 Véhicules</div>
+      <div class="nav-item" id="nav-stock_readonly" onclick="showPage('stock_readonly')">📦 Stock</div>
+      <a href="/reglement.html" target="_blank" class="nav-item" id="nav-reglement">📜 Règlement</a>
+    `;
+    return;
+  }
+ 
+  // ── EMPLOYÉS (CDD / CDI / Chef d'équipe / Responsable) ──
+  const perms = getPermissions();
+  let items = [{ id: 'accueil', icon: '🏠', label: 'Accueil' }];
+ 
+  if (perms.caisse)  items.push({ id: 'caisse',  icon: '🧾', label: 'Caisse' });
+  if (perms.clients) items.push({ id: 'clients', icon: '👥', label: 'Clients' });
+ 
+  items.push({ id: 'employes_readonly', icon: '👤', label: 'Équipe' });
+  items.push({ id: 'quota',             icon: '🚚', label: 'Mon Quota' });
+  items.push({ id: 'reglement',         icon: '📜', label: 'Règlement', href: '/reglement.html' });
+ 
+  if (perms.stock === 'write')     items.push({ id: 'stock',          icon: '📦', label: 'Stock' });
+  else if (perms.stock === 'read') items.push({ id: 'stock_readonly', icon: '📦', label: 'Stock' });
+ 
+  if (perms.vehicules === 'write' || perms.vehicules === 'assign') {
+    items.push({ id: 'vehicules', icon: '🚗', label: 'Véhicules' });
+  } else {
+    items.push({ id: 'vehicules_readonly', icon: '🚗', label: 'Véhicules' });
+  }
+ 
+  items.push({ id: 'calendrier_readonly', icon: '📅', label: 'Calendrier' });
+  items.push({ id: 'stats_readonly',      icon: '📊', label: 'Stats' });
+ 
+  if (USER_NIVEAU >= 3) items.push({ id: 'gestion', icon: '⚙️', label: 'Gestion', badge: 'quota-badge' });
+ 
   nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
-  nav.innerHTML = items.filter(i => i !== 'LOGO').map(i => {
+  nav.innerHTML = items.map(i => {
     const badgeHtml = i.badge ? `<span class="nav-badge" id="${i.badge}"></span>` : '';
     return i.href
-    ? `<a href="${i.href}" target="_blank" class="nav-item" id="nav-${i.id}">${i.icon} ${i.label}</a>`
-    : `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
+      ? `<a href="${i.href}" target="_blank" class="nav-item" id="nav-${i.id}">${i.icon} ${i.label}</a>`
+      : `<div class="nav-item" id="nav-${i.id}" onclick="showPage('${i.id}')">${i.icon} ${i.label}${badgeHtml}</div>`;
   }).join('');
 }
 
@@ -1312,6 +1378,134 @@ html += `<div class="page" id="page-stats_readonly"><div class="red-line"></div>
   </div>
   <div class="card"><div class="card-title">🌡️ Activité</div><div id="statsHeatmapRo"></div></div>
 </div>`;
+ // PAGE COMPTES (direction uniquement)
+  if (dir) {
+    html += `<div class="page" id="page-comptes"><div class="red-line"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--red);">👥 Gestion des Comptes</div>
+        <div style="font-size:12px;color:var(--muted);">Créez et gérez tous les accès au dashboard</div>
+      </div>
+      <button class="btn btn-primary" onclick="ouvrirFormCompte()">➕ Nouveau compte</button>
+    </div>
+    
+    <!-- Filtres -->
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input class="form-input" id="comptesSearch" placeholder="🔍 Rechercher par nom, prénom, Discord..." 
+          oninput="filtrerComptes()" style="max-width:300px;">
+        <select class="form-select" id="comptesFilterRole" onchange="filtrerComptes()" style="max-width:180px;">
+          <option value="">Tous les rôles</option>
+          <option value="employe">Employé</option>
+          <option value="chef_equipe">Chef d'équipe</option>
+          <option value="responsable">Responsable</option>
+          <option value="direction">Direction</option>
+          <option value="gouvernement">Gouvernement</option>
+        </select>
+        <select class="form-select" id="comptesFilterContrat" onchange="filtrerComptes()" style="max-width:140px;">
+          <option value="">Tous contrats</option>
+          <option value="CDD">CDD</option>
+          <option value="CDI">CDI</option>
+        </select>
+        <select class="form-select" id="comptesFilterStatut" onchange="filtrerComptes()" style="max-width:140px;">
+          <option value="">Tous statuts</option>
+          <option value="actif">Actif</option>
+          <option value="suspendu">Suspendu</option>
+          <option value="revoque">Révoqué</option>
+        </select>
+      </div>
+    </div>
+ 
+    <div id="alertComptes" style="margin-bottom:10px;"></div>
+    
+    <!-- Formulaire création/édition -->
+    <div id="formCompteWrap" style="display:none;margin-bottom:24px;">
+      <div class="card">
+        <div class="card-title" id="formCompteTitre">Nouveau compte</div>
+        <input type="hidden" id="fcId">
+        
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Nom</label>
+            <input class="form-input" id="fcNom" placeholder="DUPONT" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="form-group"><label class="form-label">Prénom</label>
+            <input class="form-input" id="fcPrenom" placeholder="Jean"></div>
+        </div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Date de naissance</label>
+            <input class="form-input" id="fcNaissance" type="date"></div>
+          <div class="form-group"><label class="form-label">Téléphone</label>
+            <input class="form-input" id="fcTel" placeholder="(555) 555-5555" oninput="fmtPhone(this)" maxlength="14"></div>
+        </div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">ID Discord</label>
+            <input class="form-input" id="fcDiscord" placeholder="123456789012345678"></div>
+          <div class="form-group"><label class="form-label">Photo URL (optionnel)</label>
+            <input class="form-input" id="fcPhoto" placeholder="https://..."></div>
+        </div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Rôle</label>
+            <select class="form-select" id="fcRole" onchange="updateFormCompteRole()">
+              <option value="employe">Employé</option>
+              <option value="chef_equipe">Chef d'équipe</option>
+              <option value="responsable">Responsable</option>
+              <option value="direction">Direction</option>
+              <option value="gouvernement">Gouvernement</option>
+            </select>
+          </div>
+          <div class="form-group" id="fcContratGroup">
+            <label class="form-label">Contrat</label>
+            <select class="form-select" id="fcContrat">
+              <option value="CDD">CDD</option>
+              <option value="CDI">CDI</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="form-group" id="fcPosteGroup">
+            <label class="form-label">Poste</label>
+            <select class="form-select" id="fcPoste">
+              <option>Employé</option>
+              <option>Chef d'équipe</option>
+              <option>Responsable</option>
+              <option>Manager</option>
+              <option>Co-Patron</option>
+              <option>Patron</option>
+            </select>
+          </div>
+          <div class="form-group" id="fcFonctionGroup" style="display:none;">
+            <label class="form-label">Fonction gouvernement</label>
+            <select class="form-select" id="fcFonction">
+              <option>Gouverneur</option>
+              <option>Vice-Gouverneur</option>
+              <option>Directeur IRIS</option>
+              <option>Agent IRIS</option>
+              <option>Sénateur</option>
+              <option>Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Date d'embauche</label>
+            <input class="form-input" id="fcEmbauche" type="date"></div>
+          <div class="form-group"><label class="form-label">Statut</label>
+            <select class="form-select" id="fcStatut">
+              <option value="actif">Actif</option>
+              <option value="suspendu">Suspendu</option>
+              <option value="revoque">Révoqué</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:6px;">
+          <button class="btn btn-outline" onclick="fermerFormCompte()">Annuler</button>
+          <button class="btn btn-primary" onclick="sauvegarderCompte()">✅ Sauvegarder</button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Liste des comptes -->
+    <div id="comptesTable"><div class="loading"><div class="spin"></div></div></div>
+    </div>`;
+  }
 
   document.getElementById('mainContent').innerHTML=html;
 }
@@ -1406,7 +1600,7 @@ async function loadAccueil(){
   }
   let quotaHtml='';
   if(ROLE==='employe'){
-    const empData=await sb(`employes?discord_id=eq.${USER.id}&select=contrat,quota_viande_validee,quota_patates_validee`);
+    const empData=await sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=contrat,quota_viande_validee,quota_patates_validee`);
     const emp=empData?.[0];
     if(emp){
       const qMaxV=emp.contrat==='CDI'?quotaConfig.cdi_quota_viande:quotaConfig.cdd_quota_viande;
@@ -1628,7 +1822,7 @@ async function confirmerCommande(avecApercu=false){
   await sb('transactions',{method:'POST',body:JSON.stringify({montant:c.net,type:'vente',employe_discord:USER.id,client_id:clientActif?.id||null,semaine})});
   await decrementStockForCommande();
   // Prime sur vente via Supabase (taux_prime_grade configurable)
-  const empInfo=await sb(`employes?discord_id=eq.${USER.id}&select=id,poste,contrat`);
+  const empInfo=await sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=id,poste,contrat`);
   const emp=empInfo?.[0];
   if(emp){
     // On récupère le taux dans Supabase sinon fallback fixe
@@ -2160,10 +2354,10 @@ async function loadEmployes(){
   el.innerHTML='<div class="loading"><div class="spin"></div> Chargement...</div>';
   const semaine=getSemaine();
   const filter=document.getElementById('empFilter')?.value||'';
-  let query='employes?select=*&order=created_at.desc';
-  if(filter==='actif')query='employes?select=*&statut_activite=eq.actif&actif=eq.true&order=created_at.desc';
-  else if(filter==='absent')query='employes?select=*&statut_activite=eq.absent&actif=eq.true&order=created_at.desc';
-  else if(filter==='inactif')query='employes?select=*&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
+  let query='comptes_dashboard?select=*&order=created_at.desc';
+  if(filter==='actif')query='comptes_dashboard?select=*&statut_activite=eq.actif&actif=eq.true&order=created_at.desc';
+  else if(filter==='absent')query='comptes_dashboard?select=*&statut_activite=eq.absent&actif=eq.true&order=created_at.desc';
+  else if(filter==='inactif')query='comptes_dashboard?select=*&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
   const[data,cmds,allCmds,primes]=await Promise.all([
     sb(query),
     sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
@@ -2240,12 +2434,12 @@ async function loadEmployes(){
   }).join('');
 }
 
-async function updateEmpPoste(id,poste){await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({poste})});}
-async function updateEmpContrat(id,contrat){await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({contrat})});}
-async function toggleEmploye(id,actif){await sb(`employes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadEmployes();}
+async function updateEmpPoste(id,poste){await sb(`comptes_dashboard?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({poste})});}
+async function updateEmpContrat(id,contrat){await sb(`comptes_dashboard?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({contrat})});}
+async function toggleEmploye(id,actif){await sb(`comptes_dashboard?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadEmployes();}
 async function virer(id,nom,discordId){
   if(!confirm(`Virer ${nom} ? Cela supprimera toutes ses données.`))return;
-  await sb(`employes?id=eq.${id}`,{method:'DELETE'});
+  await sb(`comptes_dashboard?id=eq.${id}`,{method:'DELETE'});
   loadEmployes();
 }
 
@@ -2255,7 +2449,7 @@ async function ouvrirDocsAjout(empId, nom) {
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
   openOverlay('ovDocs');
 
-  const data = await sb(`employes?id=eq.${empId}&select=documents`);
+  const data = await sb(`comptes_dashboard?id=eq.${empId}&select=documents`);
   let docs = [];
   try {
     const raw = data?.[0]?.documents;
@@ -2294,7 +2488,7 @@ async function ajouterDoc(empId) {
   const url = document.getElementById('docUrl').value.trim();
   if (!url) { alert('URL obligatoire.'); return; }
 
-  const data = await sb(`employes?id=eq.${empId}&select=documents`);
+  const data = await sb(`comptes_dashboard?id=eq.${empId}&select=documents`);
   let docs = [];
   try {
     const raw = data?.[0]?.documents;
@@ -2302,7 +2496,7 @@ async function ajouterDoc(empId) {
   } catch { docs = []; }
 
   const newDocs = [...docs, { type, url }];
-  await sb(`employes?id=eq.${empId}`, { method: 'PATCH', body: JSON.stringify({ documents: JSON.stringify(newDocs) }) });
+  await sb(`comptes_dashboard?id=eq.${empId}`, { method: 'PATCH', body: JSON.stringify({ documents: JSON.stringify(newDocs) }) });
   closeOverlay('ovDocs');
   loadEmployes();
   alert('✅ Document ajouté !');
@@ -2311,7 +2505,7 @@ async function ajouterDoc(empId) {
 async function supprimerDocById(empId, idx) {
   if (!confirm('Supprimer ce document ?')) return;
 
-  const data = await sb(`employes?id=eq.${empId}&select=documents`);
+  const data = await sb(`comptes_dashboard?id=eq.${empId}&select=documents`);
   let docs = [];
   try {
     const raw = data?.[0]?.documents;
@@ -2319,7 +2513,7 @@ async function supprimerDocById(empId, idx) {
   } catch { docs = []; }
 
   const newDocs = docs.filter((_, i) => i !== idx);
-  await sb(`employes?id=eq.${empId}`, { method: 'PATCH', body: JSON.stringify({ documents: JSON.stringify(newDocs) }) });
+  await sb(`comptes_dashboard?id=eq.${empId}`, { method: 'PATCH', body: JSON.stringify({ documents: JSON.stringify(newDocs) }) });
   closeOverlay('ovDocs');
   loadEmployes();
 }
@@ -2328,7 +2522,7 @@ async function supprimerDoc(empId,docs,idx){
   if(typeof docs==='string')try{docs=JSON.parse(docs);}catch{docs=[];}
   if(!confirm('Supprimer ce document ?'))return;
   const newDocs=docs.filter((_,i)=>i!==idx);
-  await sb(`employes?id=eq.${empId}`,{method:'PATCH',body:JSON.stringify({documents:JSON.stringify(newDocs)})});
+  await sb(`comptes_dashboard?id=eq.${empId}`,{method:'PATCH',body:JSON.stringify({documents:JSON.stringify(newDocs)})});
   closeOverlay('ovDocs');loadEmployes();
 }
 
@@ -2338,7 +2532,7 @@ async function voirDocsEmploye(empId, nom) {
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
   openOverlay('ovDocs');
 
-  const data = await sb(`employes?id=eq.${empId}&select=*`);
+  const data = await sb(`comptes_dashboard?id=eq.${empId}&select=*`);
   const e = data?.[0];
   if (!e) { el.innerHTML = '<p style="color:var(--muted)">Données introuvables.</p>'; return; }
 
@@ -2476,7 +2670,7 @@ function openAddEmploye() {
     statut_activite: 'actif'
   };
 
-  const result = await sb('employes', { method: 'POST', body: JSON.stringify(payload) });
+  const result = await sb('comptes_dashboard', { method: 'POST', body: JSON.stringify(payload) });
 
   if (result === null) {
     alertEl.innerHTML = '<div class="alert alert-err">❌ Erreur Supabase. Vérifie la console (F12) et lance le SQL fix_supabase.sql</div>';
@@ -2536,7 +2730,7 @@ async function verserPrime(id){await sb(`primes?id=eq.${id}`,{method:'PATCH',bod
 async function loadQuotaPage(){
   const el=document.getElementById('quotaPageContent');if(!el)return;
   el.innerHTML='<div class="loading"><div class="spin"></div></div>';
-  const empData=await sb(`employes?discord_id=eq.${USER.id}&select=*`);
+  const empData=await sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=*`);
   const emp=empData?.[0];
   if(!emp){el.innerHTML='<div class="alert alert-warn">⚠️ Profil employé non configuré.</div>';return;}
   const qMaxV=emp.contrat==='CDI'?quotaConfig.cdi_quota_viande:quotaConfig.cdd_quota_viande;
@@ -2708,15 +2902,15 @@ async function renderQuotaTicketsList(tickets){
 async function validerQuotaTicket(ticketId,discordId,quantite,type){
   await sb(`quotas_tickets?id=eq.${ticketId}`,{method:'PATCH',body:JSON.stringify({statut:'valide'})});
   if(discordId){
-    const empData=await sb(`employes?discord_id=eq.${discordId}&select=id,quota_viande_validee,quota_patates_validee,contrat`);
+    const empData=await sb(`comptes_dashboard?discord_id=eq.${discordId}&select=id,quota_viande_validee,quota_patates_validee,contrat`);
     const emp=empData?.[0];
     if(emp){
       const isViande=type==='viande'||!type;
       const field=isViande?'quota_viande_validee':'quota_patates_validee';
       const current=parseInt(isViande?emp.quota_viande_validee:emp.quota_patates_validee)||0;
-      await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({[field]:current+quantite})});
+      await sb(`comptes_dashboard?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({[field]:current+quantite})});
       // Vérif si les 2 quotas sont maintenant à 100% → prime
-      const updated=await sb(`employes?id=eq.${emp.id}&select=quota_viande_validee,quota_patates_validee,contrat`);
+      const updated=await sb(`comptes_dashboard?id=eq.${emp.id}&select=quota_viande_validee,quota_patates_validee,contrat`);
       const u=updated?.[0];
       if(u){
         const qMaxV=u.contrat==='CDI'?quotaConfig.cdi_quota_viande:quotaConfig.cdd_quota_viande;
@@ -3038,7 +3232,7 @@ async function loadCoffre(){
 
 async function calculerPrimes(){
   const semaine=getSemaine();
-  const[employes,caData]=await Promise.all([sb('employes?select=*&actif=eq.true'),sb('parametres?cle=eq.ca_semaine')]);
+  const[employes,caData]=await Promise.all([sb('comptes_dashboard?select=*&actif=eq.true'),sb('parametres?cle=eq.ca_semaine')]);
   const ca=parseFloat(caData?.[0]?.valeur||0)||0;if(!ca){alert('CA semaine = 0$.');return;}
   for(const emp of(employes||[])){
     const tauxData=await sb(`taux_primes?poste=eq.${encodeURIComponent(emp.poste)}&limit=1`);
@@ -3064,7 +3258,7 @@ async function verserPrime(id){await sb(`primes?id=eq.${id}`,{method:'PATCH',bod
 async function cloturerSemaine(){
   if(!confirm('⚠️ Clôturer la semaine ? Les quotas seront remis à zéro.'))return;
   const semaine=getSemaine();
-  const[caData,primesData,employes,livraisonsData]=await Promise.all([sb('parametres?cle=eq.ca_semaine'),sb(`primes?select=*&semaine=eq.${semaine}`),sb('employes?select=*&actif=eq.true'),sb(`livraisons?select=montant&semaine=eq.${semaine}`)]);
+  const[caData,primesData,employes,livraisonsData]=await Promise.all([sb('parametres?cle=eq.ca_semaine'),sb(`primes?select=*&semaine=eq.${semaine}`),sb('comptes_dashboard?select=*&actif=eq.true'),sb(`livraisons?select=montant&semaine=eq.${semaine}`)]);
   const ca=parseFloat(caData?.[0]?.valeur||0)||0;
   const totalPrimes=(primesData||[]).reduce((a,p)=>a+p.montant,0);
   const totalLiv=(livraisonsData||[]).reduce((a,l)=>a+(l.montant||0),0);
@@ -3072,7 +3266,7 @@ async function cloturerSemaine(){
   const net=ca+totalLiv-totalPrimes-impots;
   await sb('caisse',{method:'POST',body:JSON.stringify({semaine,ca_brut:ca,livraisons:totalLiv,salaires:totalPrimes,impots,coffre_net:net})});
   await sb('parametres?cle=eq.ca_semaine',{method:'PATCH',body:JSON.stringify({valeur:'0'})});
-  for(const emp of(employes||[]))await sb(`employes?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({quota_viande_validee:0,quota_patates_validee:0})});
+  for(const emp of(employes||[]))await sb(`comptes_dashboard?id=eq.${emp.id}`,{method:'PATCH',body:JSON.stringify({quota_viande_validee:0,quota_patates_validee:0})});
   alert('✅ Semaine clôturée !');loadGestion();
 }
 function showPage(id) {
@@ -3107,6 +3301,7 @@ function showPage(id) {
     'gouvernement':         loadGouvernement,
     'reglement':            loadReglement,
     'depenses':             loadDepenses,
+    'comptes':              loadComptes,
   };
 
   if (loaders[id]) loaders[id]();
@@ -3118,7 +3313,7 @@ async function loadEmployesReadonly() {
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
   const semaine = getSemaine();
   const [data, cmds, primes] = await Promise.all([
-    sb('employes?select=*&actif=eq.true&order=nom.asc'),
+    sb('comptes_dashboard?select=*&actif=eq.true&order=nom.asc'),
     sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
     sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
   ]);
@@ -3449,7 +3644,7 @@ async function executerCloture() {
   }
 
   // Reset quotas
-  await sb('employes?actif=eq.true', { method: 'PATCH', body: JSON.stringify({ quota_viande_validee: 0, quota_patates_validee: 0 }) });
+  await sb('comptes_dashboard?actif=eq.true', { method: 'PATCH', body: JSON.stringify({ quota_viande_validee: 0, quota_patates_validee: 0 }) });
   // Reset CA semaine
   await sb('parametres?cle=eq.ca_semaine', { method: 'PATCH', body: JSON.stringify({ valeur: '0' }) });
 
@@ -3819,6 +4014,217 @@ async function loadHistoriqueCompteRendus() {
     <td><strong>${Math.round(cr.solde_final||0).toLocaleString('fr-FR')}$</strong></td>
     <td><button class="btn btn-outline btn-sm" onclick='genererPDFCompteRendu(${JSON.stringify(cr).replace(/'/g,"&#39;")})'>📄 PDF</button></td>
   </tr>`).join('') + '</tbody></table>';
+}
+
+let allComptes = [];
+ 
+async function loadComptes() {
+  const data = await sb('comptes_dashboard?select=*&order=created_at.desc');
+  allComptes = Array.isArray(data) ? data : [];
+  filtrerComptes();
+}
+ 
+function filtrerComptes() {
+  const search = document.getElementById('comptesSearch')?.value.toLowerCase() || '';
+  const role   = document.getElementById('comptesFilterRole')?.value || '';
+  const contrat= document.getElementById('comptesFilterContrat')?.value || '';
+  const statut = document.getElementById('comptesFilterStatut')?.value || '';
+ 
+  let list = allComptes.filter(c => {
+    const matchSearch = `${c.prenom||''} ${c.nom||''} ${c.discord_id||''} ${c.username||''}`.toLowerCase().includes(search);
+    const matchRole   = !role   || c.role === role;
+    const matchContrat= !contrat|| c.contrat === contrat;
+    const matchStatut = !statut || c.statut === statut;
+    return matchSearch && matchRole && matchContrat && matchStatut;
+  });
+ 
+  renderComptes(list);
+}
+ 
+const ROLE_LABELS = {
+  employe: '🧾 Employé',
+  chef_equipe: '👷 Chef d\'équipe',
+  responsable: '🎯 Responsable',
+  direction: '⭐ Direction',
+  gouvernement: '🏛️ Gouvernement'
+};
+ 
+const ROLE_BADGE = {
+  employe: 'badge-grey',
+  chef_equipe: 'badge-blue',
+  responsable: 'badge-orange',
+  direction: 'badge-gold',
+  gouvernement: 'badge-purple'
+};
+ 
+function renderComptes(list) {
+  const el = document.getElementById('comptesTable');
+  if (!el) return;
+  if (!list.length) { el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:30px;">Aucun compte trouvé.</p>'; return; }
+ 
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Identité</th><th>Discord</th><th>Rôle</th><th>Poste / Fonction</th>
+      <th>Contrat</th><th>Statut</th><th>Embauche</th><th>Actions</th>
+    </tr></thead>
+    <tbody>` +
+    list.map(c => {
+      const initials = `${c.prenom?.charAt(0)||''}${c.nom?.charAt(0)||''}`.toUpperCase();
+      const avatarHtml = c.avatar
+        ? `<img src="https://cdn.discordapp.com/avatars/${c.discord_id}/${c.avatar}.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
+        : `<div style="width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>`;
+      const isGouv = c.role === 'gouvernement';
+      const statutBadge = c.statut === 'actif' ? 'badge-green' : c.statut === 'suspendu' ? 'badge-orange' : 'badge-black';
+ 
+      return `<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${avatarHtml}
+            <div>
+              <div style="font-weight:700;">${c.prenom||'—'} ${c.nom||''}</div>
+              ${c.username ? `<div style="font-size:10px;color:var(--muted);">${c.username}</div>` : ''}
+            </div>
+          </div>
+        </td>
+        <td><span style="font-size:11px;color:var(--muted);">${c.discord_id||'—'}</span></td>
+        <td><span class="badge ${ROLE_BADGE[c.role]||'badge-grey'}">${ROLE_LABELS[c.role]||c.role}</span></td>
+        <td>${isGouv ? (c.fonction||'—') : (c.poste||'—')}</td>
+        <td>${!isGouv ? `<span class="badge badge-blue">${c.contrat||'—'}</span>` : '—'}</td>
+        <td><span class="badge ${statutBadge}">${c.statut||'actif'}</span></td>
+        <td style="font-size:12px;">${c.date_embauche ? new Date(c.date_embauche).toLocaleDateString('fr-FR') : '—'}</td>
+        <td>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-outline btn-sm" onclick="editerCompte('${c.id}')">✏️</button>
+            ${c.statut === 'actif'
+              ? `<button class="btn btn-warn btn-sm" onclick="changerStatutCompte('${c.id}','suspendu')">⏸️</button>`
+              : `<button class="btn btn-success btn-sm" onclick="changerStatutCompte('${c.id}','actif')">▶️</button>`}
+            <button class="btn btn-danger btn-sm" onclick="supprimerCompte('${c.id}','${c.prenom} ${c.nom}')">🗑️</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('') +
+    '</tbody></table>';
+}
+ 
+function ouvrirFormCompte() {
+  document.getElementById('fcId').value = '';
+  document.getElementById('fcNom').value = '';
+  document.getElementById('fcPrenom').value = '';
+  document.getElementById('fcNaissance').value = '';
+  document.getElementById('fcTel').value = '';
+  document.getElementById('fcDiscord').value = '';
+  document.getElementById('fcPhoto').value = '';
+  document.getElementById('fcRole').value = 'employe';
+  document.getElementById('fcContrat').value = 'CDD';
+  document.getElementById('fcPoste').value = 'Employé';
+  document.getElementById('fcFonction').value = 'Gouverneur';
+  document.getElementById('fcStatut').value = 'actif';
+  document.getElementById('fcEmbauche').value = new Date().toISOString().split('T')[0];
+  document.getElementById('formCompteTitre').textContent = 'Nouveau compte';
+  updateFormCompteRole();
+  document.getElementById('formCompteWrap').style.display = 'block';
+  document.getElementById('formCompteWrap').scrollIntoView({ behavior: 'smooth' });
+}
+ 
+function fermerFormCompte() {
+  document.getElementById('formCompteWrap').style.display = 'none';
+  document.getElementById('alertComptes').innerHTML = '';
+}
+ 
+function updateFormCompteRole() {
+  const role = document.getElementById('fcRole')?.value;
+  const isGouv = role === 'gouvernement';
+  document.getElementById('fcContratGroup').style.display = isGouv ? 'none' : 'block';
+  document.getElementById('fcPosteGroup').style.display = isGouv ? 'none' : 'block';
+  document.getElementById('fcFonctionGroup').style.display = isGouv ? 'block' : 'none';
+}
+ 
+async function editerCompte(id) {
+  const c = allComptes.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('fcId').value = c.id;
+  document.getElementById('fcNom').value = c.nom || '';
+  document.getElementById('fcPrenom').value = c.prenom || '';
+  document.getElementById('fcNaissance').value = c.date_naissance || '';
+  document.getElementById('fcTel').value = c.telephone || '';
+  document.getElementById('fcDiscord').value = c.discord_id || '';
+  document.getElementById('fcPhoto').value = c.photo_url || '';
+  document.getElementById('fcRole').value = c.role || 'employe';
+  document.getElementById('fcContrat').value = c.contrat || 'CDD';
+  document.getElementById('fcPoste').value = c.poste || 'Employé';
+  document.getElementById('fcFonction').value = c.fonction || 'Gouverneur';
+  document.getElementById('fcStatut').value = c.statut || 'actif';
+  document.getElementById('fcEmbauche').value = c.date_embauche || '';
+  document.getElementById('formCompteTitre').textContent = `Modifier — ${c.prenom} ${c.nom}`;
+  updateFormCompteRole();
+  document.getElementById('formCompteWrap').style.display = 'block';
+  document.getElementById('formCompteWrap').scrollIntoView({ behavior: 'smooth' });
+}
+ 
+async function sauvegarderCompte() {
+  const alertEl = document.getElementById('alertComptes');
+  const discord = document.getElementById('fcDiscord')?.value.trim();
+  const nom     = document.getElementById('fcNom')?.value.trim();
+  const prenom  = document.getElementById('fcPrenom')?.value.trim();
+  const role    = document.getElementById('fcRole')?.value;
+  const isGouv  = role === 'gouvernement';
+ 
+  if (!discord || !nom || !prenom) {
+    alertEl.innerHTML = '<div class="alert alert-err">⚠️ Nom, prénom et Discord ID sont obligatoires.</div>';
+    return;
+  }
+ 
+  alertEl.innerHTML = '<div class="alert alert-warn">⏳ Enregistrement...</div>';
+ 
+  const payload = {
+    discord_id:     discord,
+    nom,
+    prenom,
+    date_naissance: document.getElementById('fcNaissance')?.value || null,
+    telephone:      document.getElementById('fcTel')?.value.trim() || null,
+    photo_url:      document.getElementById('fcPhoto')?.value.trim() || null,
+    role,
+    contrat:        isGouv ? null : document.getElementById('fcContrat')?.value,
+    poste:          isGouv ? null : document.getElementById('fcPoste')?.value,
+    fonction:       isGouv ? document.getElementById('fcFonction')?.value : null,
+    statut:         document.getElementById('fcStatut')?.value,
+    actif:          document.getElementById('fcStatut')?.value === 'actif',
+    date_embauche:  document.getElementById('fcEmbauche')?.value || null,
+    quota_viande_validee: 0,
+    quota_patates_validee: 0,
+    statut_activite: 'actif'
+  };
+ 
+  const id = document.getElementById('fcId')?.value;
+  let result;
+  if (id) {
+    result = await sb(`comptes_dashboard?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
+  } else {
+    result = await sb('comptes_dashboard', { method: 'POST', body: JSON.stringify(payload) });
+  }
+ 
+  if (result === null) {
+    alertEl.innerHTML = '<div class="alert alert-err">❌ Erreur Supabase. Vérifiez la console (F12).</div>';
+    return;
+  }
+ 
+  alertEl.innerHTML = '<div class="alert alert-ok">✅ Compte sauvegardé !</div>';
+  fermerFormCompte();
+  await loadComptes();
+}
+ 
+async function changerStatutCompte(id, statut) {
+  await sb(`comptes_dashboard?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ statut, actif: statut === 'actif' })
+  });
+  await loadComptes();
+}
+ 
+async function supprimerCompte(id, nom) {
+  if (!confirm(`Supprimer le compte de ${nom} ? Cette action est irréversible.`)) return;
+  await sb(`comptes_dashboard?id=eq.${id}`, { method: 'DELETE' });
+  await loadComptes();
 }
 </script>
 </body>
