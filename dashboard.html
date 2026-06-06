@@ -1228,6 +1228,7 @@ function buildPages(){
     html+=`<div class="page" id="page-employes"><div class="red-line"></div>
     <div style="display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input class="form-input" id="empSearch" placeholder="🔍 Rechercher un employé..." oninput="filtrerEmployes(this.value)" style="max-width:280px;">
         <select class="form-select" id="empFilter" onchange="loadEmployes()" style="width:160px;">
           <option value="">Tous les statuts</option>
           <option value="actif">🟢 Actifs</option>
@@ -2560,9 +2561,13 @@ async function loadEmployes() {
     const pctP = qMaxP>0 ? Math.min(100,Math.round((qP/qMaxP)*100)) : 0;
     const taux = tauxPoste[e.poste] ?? .10;
     const statut = e.statut_activite || 'actif';
+    const discordAvatar = e.discord_id && e.avatar
+    ? `https://cdn.discordapp.com/avatars/${e.discord_id}/${e.avatar}.png`
+    : `https://cdn.discordapp.com/embed/avatars/${(parseInt(e.discord_id||0) % 5)}.png`;
+
     const avatarContent = e.photo_url
-      ? `<img src="${e.photo_url}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="width:100%;height:100%;object-fit:cover;"><span style="display:none;font-size:18px;font-weight:800;">${initials}</span>`
-      : `<span style="font-size:18px;font-weight:800;">${initials}</span>`;
+    ? `<img src="${e.photo_url}" onerror="this.src='${discordAvatar}'" style="width:100%;height:100%;object-fit:cover;">`
+    : `<img src="${discordAvatar}" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:18px;font-weight:800;\\'>${initials}</span>')" style="width:100%;height:100%;object-fit:cover;">`;
  
     // Badge règlement signé
     const reglBadge = e.reglement_signe
@@ -5257,6 +5262,13 @@ async function verserPrime(id) {
     el.innerHTML = fakeEl.innerHTML;
     fakeEl.remove();
   }
+  function filtrerEmployes(val) {
+  const f = val.toLowerCase();
+  document.querySelectorAll('.emp-card').forEach(card => {
+    const text = card.innerText.toLowerCase();
+    card.style.display = text.includes(f) ? '' : 'none';
+  });
+}
 </script>
 </body>
 </html>
