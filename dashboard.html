@@ -3716,18 +3716,6 @@ function getSemaineSV() {
   return getSemaine();
 }
 
-function getLabelSemaine(date) {
-  // Trouve le samedi précédent et le vendredi suivant
-  const d = date ? new Date(date) : new Date();
-  const day = d.getDay(); // 0=dim, 6=sam
-  // Samedi précédent (ou aujourd'hui si samedi)
-  const diffSam = (day === 6) ? 0 : (day + 1);
-  const sam = new Date(d); sam.setDate(d.getDate() - diffSam);
-  const ven = new Date(sam); ven.setDate(sam.getDate() + 6);
-  const fmt = dt => dt.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'});
-  return `Semaine du ${fmt(sam)} au ${fmt(ven)}`;
-}
-
 function getDatesSemaine() {
   const d = new Date();
   const day = d.getDay();
