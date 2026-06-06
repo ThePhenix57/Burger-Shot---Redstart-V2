@@ -1567,13 +1567,51 @@ html += `<div class="page" id="page-stats_readonly"><div class="red-line"></div>
 /* ══════════════════════════════════════════════
    UTILS
 ══════════════════════════════════════════════ */
-function getSemaine(){
-  const d=new Date(),utc=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
-  const day=utc.getUTCDay()||7;
-  utc.setUTCDate(utc.getUTCDate()+4-day);
-  const ys=new Date(Date.UTC(utc.getUTCFullYear(),0,1));
-  const wk=Math.ceil((((utc-ys)/86400000)+1)/7);
-  return `${utc.getUTCFullYear()}-W${String(wk).padStart(2,'0')}`;
+function getSemaine() {
+  const d = new Date();
+  const day = d.getDay(); // 0=dim, 6=sam
+  // Ramener au samedi précédent (ou aujourd'hui si samedi)
+  const diffSam = (day === 6) ? 0 : (day + 1) % 7 === 0 ? 7 : (day + 1);
+  const sam = new Date(d);
+  sam.setDate(d.getDate() - (day === 6 ? 0 : day + 1));
+  sam.setHours(0, 0, 0, 0);
+  const ven = new Date(sam);
+  ven.setDate(sam.getDate() + 6);
+
+  // Clé BDD : YYYY-Wxx (conservé pour compatibilité)
+  const utc = new Date(Date.UTC(sam.getFullYear(), sam.getMonth(), sam.getDate()));
+  const ys = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const wk = Math.ceil((((utc - ys) / 86400000) + 1) / 7);
+  return `${utc.getUTCFullYear()}-W${String(wk).padStart(2, '0')}`;
+}
+
+function getLabelSemaine(cleOuDate) {
+  // Si on passe une clé "2026-W23", on reconstitue les dates
+  // Si on passe rien, on prend la semaine actuelle
+  let sam;
+  if (cleOuDate && cleOuDate.includes('-W')) {
+    const [annee, semStr] = cleOuDate.split('-W');
+    const sem = parseInt(semStr);
+    // 4 janvier = toujours dans semaine 1
+    const jan4 = new Date(Date.UTC(parseInt(annee), 0, 4));
+    const lunSem1 = new Date(jan4);
+    lunSem1.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() || 7) - 1));
+    const lunSemaine = new Date(lunSem1);
+    lunSemaine.setUTCDate(lunSem1.getUTCDate() + (sem - 1) * 7);
+    // Notre semaine commence le samedi = lundi - 2
+    sam = new Date(lunSemaine);
+    sam.setUTCDate(lunSemaine.getUTCDate() - 2);
+  } else {
+    const d = new Date();
+    const day = d.getDay();
+    sam = new Date(d);
+    sam.setDate(d.getDate() - (day === 6 ? 0 : day + 1));
+    sam.setHours(0, 0, 0, 0);
+  }
+  const ven = new Date(sam);
+  ven.setDate(sam.getDate() + 6);
+  const fmt = dt => `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;
+  return `${fmt(sam)} → ${fmt(ven)}`;
 }
 function calcImpot(m){
   if(m<200000)return 0;if(m<400000)return m*.05;
@@ -3395,7 +3433,7 @@ async function loadCoffre(){
   ].map(s=>`<div class="stat-card" style="--accent:${s.accent};"><div class="stat-label">${s.label}</div><div class="stat-value" style="font-size:26px;">${s.value}</div></div>`).join('');
   const hist=await sb('caisse?select=*&order=created_at.desc&limit=10');
   const histoEl=document.getElementById('coffreHisto');
-  if(histoEl){if(!Array.isArray(hist)||!hist.length){histoEl.innerHTML='<p style="color:var(--muted)">Aucun historique.</p>';return;}histoEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Livraisons</th><th>Primes</th><th>Impôts</th><th>Net coffre</th></tr></thead><tbody>`+hist.map(h=>`<tr><td>${h.semaine}</td><td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td><td style="color:var(--orange);">${(h.livraisons||0).toLocaleString('fr-FR')}$</td><td style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</td><td style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</td><td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td></tr>`).join('')+'</tbody></table>';}
+  if(histoEl){if(!Array.isArray(hist)||!hist.length){histoEl.innerHTML='<p style="color:var(--muted)">Aucun historique.</p>';return;}histoEl.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA Brut</th><th>Livraisons</th><th>Primes</th><th>Impôts</th><th>Net coffre</th></tr></thead><tbody>`+hist.map(h=>`<tr><td>${getLabelSemaine(h.semaine)}</td><td>${(h.ca_brut||0).toLocaleString('fr-FR')}$</td><td style="color:var(--orange);">${(h.livraisons||0).toLocaleString('fr-FR')}$</td><td style="color:var(--warning);">${(h.salaires||0).toLocaleString('fr-FR')}$</td><td style="color:var(--red);">${(h.impots||0).toLocaleString('fr-FR')}$</td><td><strong style="color:var(--success);">${(h.coffre_net||0).toLocaleString('fr-FR')}$</strong></td></tr>`).join('')+'</tbody></table>';}
 }
 
 async function calculerPrimes(){
@@ -4505,7 +4543,7 @@ async function loadBenefices() {
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--red);">💹 Analyse des Bénéfices</div>
     <select class="form-select" id="benefSemaineSelect" onchange="loadBenefices()" style="max-width:200px;margin-left:auto;">
-      ${semaines.map(s => `<option value="${s}"${s === semaineFiltre ? ' selected' : ''}>${s === semaine ? '📍 ' + s + ' (en cours)' : s}</option>`).join('')}
+      ${semaines.map(s => `<option value="${s}"${s === semaineFiltre ? ' selected' : ''}> ${s === semaine ? '📍 ' : ''}${getLabelSemaine(s)}${s === semaine ? ' (en cours)' : ''} </option>`).join('')}
     </select>
   </div>
 
