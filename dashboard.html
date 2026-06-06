@@ -1050,19 +1050,16 @@ function buildNav() {
   }
  
   if (ROLE === 'gouvernement') {
-    nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
-    nav.innerHTML = `
-      <div class="nav-item" id="nav-stats" onclick="showPage('stats')">📊 Stats</div>
-      html += `<div class="page" id="page-benefices"><div class="red-line"></div>
-        <div id="beneficesContent"><div class="loading"><div class="spin"></div></div></div>
-        </div>`;
-      <div class="nav-item" id="nav-employes_gouv" onclick="showPage('employes_gouv')">👤 Employés</div>
-      <div class="nav-item" id="nav-vehicules_readonly" onclick="showPage('vehicules_readonly')">🚗 Véhicules</div>
-      <div class="nav-item" id="nav-stock_readonly" onclick="showPage('stock_readonly')">📦 Stock</div>
-      <a href="/reglement.html" target="_blank" class="nav-item" id="nav-reglement">📜 Règlement</a>
-    `;
-    return;
-  }
+  nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
+  nav.innerHTML = `
+    <div class="nav-item" id="nav-stats" onclick="showPage('stats')">📊 Stats</div>
+    <div class="nav-item" id="nav-employes_gouv" onclick="showPage('employes_gouv')">👤 Employés</div>
+    <div class="nav-item" id="nav-vehicules_readonly" onclick="showPage('vehicules_readonly')">🚗 Véhicules</div>
+    <div class="nav-item" id="nav-stock_readonly" onclick="showPage('stock_readonly')">📦 Stock</div>
+    <a href="/reglement.html" target="_blank" class="nav-item" id="nav-reglement">📜 Règlement</a>
+  `;
+  return;
+}
  
   // ── EMPLOYÉS (CDD / CDI / Chef d'équipe / Responsable) ──
   const perms = getPermissions();
@@ -1558,7 +1555,12 @@ html += `<div class="page" id="page-stats_readonly"><div class="red-line"></div>
     <div id="comptesTable"><div class="loading"><div class="spin"></div></div></div>
     </div>`;
   }
-
+  // PAGE BÉNÉFICES (direction + responsable+)
+  if (ROLE === 'direction' || USER_NIVEAU >= 2) {
+    html += `<div class="page" id="page-benefices"><div class="red-line"></div>
+    <div id="beneficesContent"><div class="loading"><div class="spin"></div></div></div>
+    </div>`;
+  }
   document.getElementById('mainContent').innerHTML=html;
 }
 
