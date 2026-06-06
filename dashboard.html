@@ -1026,6 +1026,7 @@ function buildNav() {
           <div class="nav-item" id="nav-vehicules" onclick="showPage('vehicules')">🚗 Véhicules</div>
           <div class="nav-item" id="nav-contrats" onclick="showPage('contrats')">📄 Contrats</div>
           <div class="nav-item" id="nav-gestion" onclick="showPage('gestion')">⚙️ Gestion <span class="nav-badge" id="quota-badge"></span></div>
+          <div class="nav-item" id="nav-benefices" onclick="showPage('benefices')">💹 Bénéfices</div>
           <div class="nav-item" id="nav-depenses" onclick="showPage('depenses')">💸 Dépenses</div>
         </div>
       </div>
@@ -1052,6 +1053,9 @@ function buildNav() {
     nav.style.cssText = 'display:flex;align-items:center;background:var(--red);min-height:38px;overflow-x:auto;scrollbar-width:none;justify-content:center;flex-wrap:wrap;';
     nav.innerHTML = `
       <div class="nav-item" id="nav-stats" onclick="showPage('stats')">📊 Stats</div>
+      html += `<div class="page" id="page-benefices"><div class="red-line"></div>
+        <div id="beneficesContent"><div class="loading"><div class="spin"></div></div></div>
+        </div>`;
       <div class="nav-item" id="nav-employes_gouv" onclick="showPage('employes_gouv')">👤 Employés</div>
       <div class="nav-item" id="nav-vehicules_readonly" onclick="showPage('vehicules_readonly')">🚗 Véhicules</div>
       <div class="nav-item" id="nav-stock_readonly" onclick="showPage('stock_readonly')">📦 Stock</div>
@@ -1066,6 +1070,7 @@ function buildNav() {
  
   if (perms.caisse)  items.push({ id: 'caisse',  icon: '🧾', label: 'Caisse' });
   if (perms.clients) items.push({ id: 'clients', icon: '👥', label: 'Clients' });
+  if (USER_NIVEAU >= 2) items.push({ id: 'benefices', icon: '💹', label: 'Bénéfices' });
  
   items.push({ id: 'employes_readonly', icon: '👤', label: 'Équipe' });
   items.push({ id: 'quota',             icon: '🚚', label: 'Mon Quota' });
@@ -3463,6 +3468,7 @@ function showPage(id) {
     'reglement':            loadReglement,
     'depenses':             loadDepenses,
     'comptes':              loadComptes,
+    'benefices':            loadBenefices,
   };
 
   if (loaders[id]) loaders[id]();
@@ -4400,6 +4406,258 @@ async function supprimerCompte(id, nom) {
   if (!confirm(`Supprimer le compte de ${nom} ? Cette action est irréversible.`)) return;
   await sb(`comptes_dashboard?id=eq.${id}`, { method: 'DELETE' });
   await loadComptes();
+}
+/* ══════════════════════════════════════════════
+   BÉNÉFICES
+══════════════════════════════════════════════ */
+async function loadBenefices() {
+  const el = document.getElementById('beneficesContent');
+  if (!el) return;
+
+  // Vérif accès
+  const canView = ROLE === 'direction' || ROLE === 'gouvernement' || USER_NIVEAU >= 2;
+  if (!canView) {
+    el.innerHTML = '<div class="alert alert-err">🚫 Accès réservé aux Responsables et supérieurs.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="loading"><div class="spin"></div> Calcul des bénéfices...</div>';
+
+  const semaine = getSemaine();
+
+  // Filtre semaine sélectionné
+  const semaineFiltre = document.getElementById('benefSemaineSelect')?.value || semaine;
+
+  const [cmdsData, prodsData, livrData, depData, primesData, historiqueData, empsData] = await Promise.all([
+    sb(`commandes?select=*&semaine=eq.${semaineFiltre}`),
+    sb('produits?select=*'),
+    sb(`livraisons?select=montant&semaine=eq.${semaineFiltre}`),
+    sb(`depenses?select=montant&semaine=eq.${semaineFiltre}`),
+    sb(`primes?select=montant&semaine=eq.${semaineFiltre}`),
+    sb('comptes_rendus?select=*&order=created_at.desc&limit=12'),
+    sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaineFiltre}`)
+  ]);
+
+  const cmds = Array.isArray(cmdsData) ? cmdsData : [];
+  const prods = Array.isArray(prodsData) ? prodsData : [];
+  const livraisons = Array.isArray(livrData) ? livrData : [];
+  const depenses = Array.isArray(depData) ? depData : [];
+  const primes = Array.isArray(primesData) ? primesData : [];
+  const historique = Array.isArray(historiqueData) ? historiqueData : [];
+
+  // ── Calcul bénéfice par produit ──
+  const prodMap = {};
+  cmds.forEach(c => {
+    let items = [];
+    try { items = JSON.parse(c.items || '[]'); } catch {}
+    items.forEach(it => {
+      const prod = prods.find(p => p.id === it.id || p.nom === it.nom);
+      const coutAchat = prod?.cout_achat || 0;
+      const prixVente = it.prix || prod?.prix || 0;
+      const benef = (prixVente - coutAchat) * it.qte;
+      const coutTotal = coutAchat * it.qte;
+      const caTotal = prixVente * it.qte;
+      if (!prodMap[it.nom]) {
+        prodMap[it.nom] = { nom: it.nom, qte: 0, prixVente, coutAchat, ca: 0, cout: 0, benef: 0, cat: prod?.categorie || '—' };
+      }
+      prodMap[it.nom].qte += it.qte;
+      prodMap[it.nom].ca += caTotal;
+      prodMap[it.nom].cout += coutTotal;
+      prodMap[it.nom].benef += benef;
+    });
+  });
+
+  const prodList = Object.values(prodMap).sort((a, b) => b.benef - a.benef);
+  const totalCA = prodList.reduce((a, p) => a + p.ca, 0);
+  const totalCout = prodList.reduce((a, p) => a + p.cout, 0);
+  const totalBenefVente = prodList.reduce((a, p) => a + p.benef, 0);
+  const totalLivraisons = livraisons.reduce((a, l) => a + (l.montant || 0), 0);
+  const totalDepenses = depenses.reduce((a, d) => a + (d.montant || 0), 0);
+  const totalPrimes = primes.reduce((a, p) => a + (p.montant || 0), 0);
+  const impots = Math.round(calcImpot(totalCA));
+  const beneficeNet = totalBenefVente + totalLivraisons - totalDepenses - totalPrimes - impots;
+
+  // ── Bénéfice par employé ──
+  const empMap = {};
+  (Array.isArray(empsData) ? empsData : []).forEach(c => {
+    const id = c.employe_discord_id;
+    if (!id) return;
+    if (!empMap[id]) empMap[id] = { ca: 0, cmds: 0 };
+    empMap[id].ca += c.total_apres_reduction || c.total || 0;
+    empMap[id].cmds++;
+  });
+
+  // Récupérer les noms des employés
+  const discordIds = Object.keys(empMap);
+  let empNames = {};
+  if (discordIds.length) {
+    const empsInfo = await sb(`comptes_dashboard?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,poste`);
+    (empsInfo || []).forEach(e => empNames[e.discord_id] = e);
+  }
+
+  // Options semaines pour le filtre
+  const semaines = [...new Set([semaine, ...historique.map(h => h.semaine)])].slice(0, 12);
+
+  el.innerHTML = `
+  <!-- Filtre semaine -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--red);">💹 Analyse des Bénéfices</div>
+    <select class="form-select" id="benefSemaineSelect" onchange="loadBenefices()" style="max-width:200px;margin-left:auto;">
+      ${semaines.map(s => `<option value="${s}"${s === semaineFiltre ? ' selected' : ''}>${s === semaine ? '📍 ' + s + ' (en cours)' : s}</option>`).join('')}
+    </select>
+  </div>
+
+  <!-- KPI résumé -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px;">
+    <div class="stat-card" style="--accent:var(--blue);--accent-bg:rgba(52,152,219,.12);--accent-border:rgba(52,152,219,.3);">
+      <div class="stat-icon">🧾</div>
+      <div class="stat-label">CA Brut ventes</div>
+      <div class="stat-value" style="font-size:26px;">${totalCA.toLocaleString('fr-FR')}$</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red);--accent-bg:rgba(192,57,43,.12);--accent-border:rgba(192,57,43,.3);">
+      <div class="stat-icon">📦</div>
+      <div class="stat-label">Coût import total</div>
+      <div class="stat-value" style="font-size:26px;color:var(--red);">${totalCout.toLocaleString('fr-FR')}$</div>
+      <div class="stat-sub">${totalCA > 0 ? Math.round(totalCout / totalCA * 100) : 0}% du CA</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--success);--accent-bg:rgba(39,174,96,.12);--accent-border:rgba(39,174,96,.3);">
+      <div class="stat-icon">📈</div>
+      <div class="stat-label">Bénéfice brut ventes</div>
+      <div class="stat-value" style="font-size:26px;color:var(--success);">+${totalBenefVente.toLocaleString('fr-FR')}$</div>
+      <div class="stat-sub">Marge : ${totalCA > 0 ? Math.round(totalBenefVente / totalCA * 100) : 0}%</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--orange);--accent-bg:rgba(230,126,34,.12);--accent-border:rgba(230,126,34,.3);">
+      <div class="stat-icon">🚚</div>
+      <div class="stat-label">Livraisons</div>
+      <div class="stat-value" style="font-size:26px;color:var(--orange);">+${totalLivraisons.toLocaleString('fr-FR')}$</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--warning);">
+      <div class="stat-icon">👥</div>
+      <div class="stat-label">Primes employés</div>
+      <div class="stat-value" style="font-size:26px;color:var(--warning);">-${totalPrimes.toLocaleString('fr-FR')}$</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red);">
+      <div class="stat-icon">💸</div>
+      <div class="stat-label">Dépenses</div>
+      <div class="stat-value" style="font-size:26px;color:var(--red);">-${totalDepenses.toLocaleString('fr-FR')}$</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red-dark);">
+      <div class="stat-icon">🏛️</div>
+      <div class="stat-label">Impôts (${tauxLabel(totalCA)})</div>
+      <div class="stat-value" style="font-size:26px;color:var(--red);">-${impots.toLocaleString('fr-FR')}$</div>
+    </div>
+    <div class="stat-card" style="--accent:${beneficeNet >= 0 ? 'var(--success)' : 'var(--red)'};border:2px solid ${beneficeNet >= 0 ? 'rgba(39,174,96,.4)' : 'rgba(192,57,43,.4)'};">
+      <div class="stat-icon">${beneficeNet >= 0 ? '🏆' : '📉'}</div>
+      <div class="stat-label">Bénéfice NET final</div>
+      <div class="stat-value" style="font-size:28px;color:${beneficeNet >= 0 ? 'var(--success)' : 'var(--red)'};">${beneficeNet >= 0 ? '+' : ''}${Math.round(beneficeNet).toLocaleString('fr-FR')}$</div>
+    </div>
+  </div>
+
+  <!-- Détail par produit -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">📦 Bénéfice par produit — ${cmds.length} commandes</div>
+    ${!prodList.length ? '<p style="color:var(--muted)">Aucune vente cette semaine.</p>' : `
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Catégorie</th>
+          <th>Qté vendue</th>
+          <th>Prix vente</th>
+          <th>Coût import</th>
+          <th>CA total</th>
+          <th>Coût total</th>
+          <th>Bénéfice</th>
+          <th>Marge</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${prodList.map(p => {
+          const marge = p.ca > 0 ? Math.round(p.benef / p.ca * 100) : 0;
+          const margeColor = marge >= 60 ? 'var(--success)' : marge >= 30 ? 'var(--orange)' : 'var(--red)';
+          return `<tr>
+            <td><strong>${p.nom}</strong></td>
+            <td><span class="badge badge-blue">${p.cat}</span></td>
+            <td style="text-align:center;font-weight:700;">×${p.qte}</td>
+            <td>${p.prixVente.toLocaleString('fr-FR')}$</td>
+            <td style="color:var(--red);">${p.coutAchat > 0 ? p.coutAchat.toLocaleString('fr-FR') + '$' : '<span style="color:var(--muted)">maison</span>'}</td>
+            <td><strong>+${Math.round(p.ca).toLocaleString('fr-FR')}$</strong></td>
+            <td style="color:var(--red);">${p.coutAchat > 0 ? '-' + Math.round(p.cout).toLocaleString('fr-FR') + '$' : '—'}</td>
+            <td><strong style="color:var(--success);">+${Math.round(p.benef).toLocaleString('fr-FR')}$</strong></td>
+            <td><span class="badge" style="background:${margeColor}20;color:${margeColor};">${marge}%</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border);font-weight:700;">
+          <td colspan="2"><strong>TOTAL</strong></td>
+          <td style="text-align:center;">×${prodList.reduce((a,p)=>a+p.qte,0)}</td>
+          <td>—</td>
+          <td>—</td>
+          <td><strong style="color:var(--blue);">${Math.round(totalCA).toLocaleString('fr-FR')}$</strong></td>
+          <td><strong style="color:var(--red);">-${Math.round(totalCout).toLocaleString('fr-FR')}$</strong></td>
+          <td><strong style="color:var(--success);">+${Math.round(totalBenefVente).toLocaleString('fr-FR')}$</strong></td>
+          <td><span class="badge" style="background:rgba(39,174,96,.2);color:var(--success);">${totalCA > 0 ? Math.round(totalBenefVente / totalCA * 100) : 0}%</span></td>
+        </tr>
+      </tfoot>
+    </table>
+    </div>`}
+  </div>
+
+  <!-- Bénéfice par employé -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">👤 CA généré par employé</div>
+    ${!discordIds.length ? '<p style="color:var(--muted)">Aucune donnée.</p>' : `
+    <table>
+      <thead><tr><th>Employé</th><th>Poste</th><th>Commandes</th><th>CA généré</th><th>% du CA total</th></tr></thead>
+      <tbody>
+        ${Object.entries(empMap)
+          .sort((a,b) => b[1].ca - a[1].ca)
+          .map(([id, d]) => {
+            const emp = empNames[id] || {};
+            const pct = totalCA > 0 ? Math.round(d.ca / totalCA * 100) : 0;
+            return `<tr>
+              <td><strong>${emp.prenom || '?'} ${emp.nom || ''}</strong></td>
+              <td><span class="badge badge-orange">${emp.poste || '—'}</span></td>
+              <td style="text-align:center;">${d.cmds}</td>
+              <td><strong style="color:var(--success);">${Math.round(d.ca).toLocaleString('fr-FR')}$</strong></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;height:6px;background:var(--card3);border-radius:3px;overflow:hidden;">
+                    <div style="width:${pct}%;height:100%;background:var(--red);border-radius:3px;"></div>
+                  </div>
+                  <span style="font-size:11px;min-width:30px;">${pct}%</span>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+      </tbody>
+    </table>`}
+  </div>
+
+  <!-- Historique semaines -->
+  <div class="card">
+    <div class="card-title">📅 Historique des bénéfices</div>
+    ${!historique.length ? '<p style="color:var(--muted)">Aucun historique disponible.</p>' : `
+    <table>
+      <thead><tr><th>Semaine</th><th>CA</th><th>Bénéfice brut</th><th>Dépenses</th><th>Primes</th><th>Impôts</th><th>Bénéfice NET</th></tr></thead>
+      <tbody>
+        ${historique.map(h => {
+          const bn = Math.round(h.benefice_net || 0);
+          return `<tr>
+            <td><strong>${h.semaine_label || h.semaine}</strong></td>
+            <td>${Math.round(h.ca_ventes || 0).toLocaleString('fr-FR')}$</td>
+            <td style="color:var(--success);">+${Math.round((h.ca_ventes||0) - (h.total_depenses||0)).toLocaleString('fr-FR')}$</td>
+            <td style="color:var(--red);">-${Math.round(h.total_depenses||0).toLocaleString('fr-FR')}$</td>
+            <td style="color:var(--warning);">-${Math.round(h.total_primes||0).toLocaleString('fr-FR')}$</td>
+            <td style="color:var(--red);">-${Math.round(h.total_impots||0).toLocaleString('fr-FR')}$</td>
+            <td><strong style="color:${bn>=0?'var(--success)':'var(--red)'};">${bn>=0?'+':''}${bn.toLocaleString('fr-FR')}$</strong></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`}
+  </div>`;
 }
 </script>
 </body>
