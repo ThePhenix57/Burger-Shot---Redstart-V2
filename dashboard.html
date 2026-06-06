@@ -1067,6 +1067,7 @@ function buildNav() {
     <div class="nav-item" id="nav-employes_gouv" onclick="showPage('employes_gouv')">👤 Employés</div>
     <div class="nav-item" id="nav-vehicules_readonly" onclick="showPage('vehicules_readonly')">🚗 Véhicules</div>
     <div class="nav-item" id="nav-stock_readonly" onclick="showPage('stock_readonly')">📦 Stock</div>
+    <div class="nav-item" id="nav-registre_readonly" onclick="showPage('registre_readonly')">📒 Registre</div>
     <a href="/reglement.html" target="_blank" class="nav-item" id="nav-reglement">📜 Règlement</a>
   `;
   return;
@@ -1427,6 +1428,9 @@ html += `<div class="page" id="page-employes_readonly"><div class="red-line"></d
 // STOCK LECTURE SEULE
 html += `<div class="page" id="page-stock_readonly"><div class="red-line"></div>
   <div id="stockReadonlyContent"><div class="loading"><div class="spin"></div></div></div>
+</div>`;
+html += `<div class="page" id="page-registre_readonly"><div class="red-line"></div>
+  <div id="registreReadonlyContent"><div class="loading"><div class="spin"></div></div></div>
 </div>`;
 
 // VÉHICULES LECTURE SEULE
@@ -3652,6 +3656,7 @@ function showPage(id) {
     'comptes':              loadComptes,
     'benefices':            loadBenefices,
     'registre':             loadRegistre,
+    'registre_readonly':    loadRegistreReadonly,
   };
 
   if (loaders[id]) loaders[id]();
@@ -5226,6 +5231,18 @@ async function verserPrime(id) {
     document.querySelectorAll('[id^="rf"]').forEach(b => b.style.fontWeight = 'normal');
     const active = document.getElementById(type === 'tous' ? 'rfTous' : `rf${type}`);
     if (active) active.style.fontWeight = '900';
+  }
+    async function loadRegistreReadonly() {
+    const el = document.getElementById('registreReadonlyContent');
+    if (!el) return;
+    // Réutilise le même rendu mais injecte dans registreReadonlyContent
+    // On remplace temporairement l'id cible
+    const fakeEl = document.createElement('div');
+    fakeEl.id = 'registreContent';
+    document.body.appendChild(fakeEl);
+    await loadRegistre();
+    el.innerHTML = fakeEl.innerHTML;
+    fakeEl.remove();
   }
 </script>
 </body>
