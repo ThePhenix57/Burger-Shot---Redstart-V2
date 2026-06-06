@@ -3475,10 +3475,29 @@ async function calculerPrimes(){
 
 async function loadPrimesTable(){
   const el=document.getElementById('primesTable');if(!el)return;
-  const data=await sb(`primes?select=*,employes(nom,prenom,poste,contrat)&semaine=eq.${getSemaine()}&order=created_at.desc`);
+  const data=await sb(`primes?select=*&semaine=eq.${getSemaine()}&order=created_at.desc`);
   if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime.</p>';return;}
+
+  // Récupère tous les discord_ids uniques
+  const discordIds=[...new Set(data.map(p=>p.employe_discord).filter(Boolean))];
+  let empMap={};
+  if(discordIds.length){
+    const emps=await sb(`comptes_dashboard?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,poste`);
+    (emps||[]).forEach(e=>empMap[e.discord_id]=e);
+  }
+
   el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Action</th></tr></thead><tbody>`+
-  data.map(p=>{const emp=p.employes||{};return`<tr><td><strong>${emp.prenom||'—'} ${emp.nom||''}</strong></td><td>${emp.poste||'—'}</td><td><span class="badge badge-blue">${p.type||'vente'}</span></td><td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td><td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td><td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td></tr>`;}).join('')+'</tbody></table>';
+  data.map(p=>{
+    const emp=empMap[p.employe_discord]||{};
+    return`<tr>
+      <td><strong>${emp.prenom?`${emp.prenom} ${emp.nom}`:'—'}</strong></td>
+      <td>${emp.poste||'—'}</td>
+      <td><span class="badge badge-blue">${p.type||'vente'}</span></td>
+      <td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td>
+      <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td>
+      <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
+    </tr>`;
+  }).join('')+'</tbody></table>';
 }
 
 async function cloturerSemaine(){
