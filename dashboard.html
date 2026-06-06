@@ -3158,12 +3158,12 @@ async function updateMenuCatUI(val,existingProds){
   const compDiv=document.getElementById('menuComposition');if(!compDiv)return;
   if(val!=='Menu'){compDiv.style.display='none';return;}
   compDiv.style.display='block';
-  const prods=existingProds||await sb('produits?select=*&actif=eq.true')||[];
-  const makeItems=(list,prefix)=>list.length?list.map(p=>`<label class="menu-comp-item"><input type="checkbox" id="${prefix}-${p.id}" data-nom="${p.nom}" data-id="${p.id}" data-prix="${p.prix}"> ${p.nom} <span style="font-size:10px;color:var(--muted);">(${p.prix}$)</span> <input class="menu-comp-qty" id="${prefix}-qty-${p.id}" value="1" min="1" max="9" type="number"></label>`).join(''):'<span style="font-size:11px;color:var(--muted);">Aucun</span>';
-  document.getElementById('compBurgers').innerHTML=makeItems(prods.filter(p=>p.categorie==='Burger'),'cb');
-  document.getElementById('compBoissons').innerHTML=makeItems(prods.filter(p=>p.categorie==='Boisson'),'cbo');
-  document.getElementById('compAccomps').innerHTML=makeItems(prods.filter(p=>p.categorie==='Accompagnement'),'ca');
-  document.getElementById('compDesserts').innerHTML=makeItems(prods.filter(p=>p.categorie==='Dessert'),'cd');
+  const stockProds=await sb('produits_stock?select=*&order=categorie.asc,nom.asc')||[];
+  const makeItems=(list,prefix)=>list.length?list.map(p=>`<label class="menu-comp-item"><input type="checkbox" id="${prefix}-${p.id}" data-nom="${p.nom}" data-id="${p.id}" data-stock-id="${p.id}"> ${p.nom} <span style="font-size:10px;color:var(--muted);">(${p.categorie})</span> <input class="menu-comp-qty" id="${prefix}-qty-${p.id}" value="1" min="1" max="9" type="number"></label>`).join(''):'<span style="font-size:11px;color:var(--muted);">Aucun</span>';
+  document.getElementById('compBurgers').innerHTML=makeItems(stockProds.filter(p=>p.categorie==='Burger'),'cb');
+  document.getElementById('compBoissons').innerHTML=makeItems(stockProds.filter(p=>p.categorie==='Boisson'),'cbo');
+  document.getElementById('compAccomps').innerHTML=makeItems(stockProds.filter(p=>p.categorie==='Accompagnement'||p.categorie==='Viande'||p.categorie==='Patate'),'ca');
+  document.getElementById('compDesserts').innerHTML=makeItems(stockProds.filter(p=>p.categorie==='Dessert'),'cd');
 }
 function updateMenuImgPreview(v){const prev=document.getElementById('mImgPreview'),img=document.getElementById('mImgPrev');if(!prev||!img)return;if(v.trim()){img.src=v.trim();prev.style.display='block';}else prev.style.display='none';}
 
@@ -3175,8 +3175,8 @@ async function saveProduit(){
   let composition=null;
   if(cat==='Menu'){
     composition=[];
-    const push=(prefix,type)=>document.querySelectorAll(`[id^="${prefix}-"]:not([id*="qty"])`).forEach(cb=>{if(cb.checked){const pid=cb.dataset.id,qty=parseInt(document.getElementById(`${prefix}-qty-${pid}`)?.value||1);composition.push({id:pid,nom:cb.dataset.nom,qty,prix:parseFloat(cb.dataset.prix||0),type});}});
-    push('cb','Burger');push('cbo','Boisson');push('ca','Accompagnement');push('cd','Dessert');
+    const push=(prefix,type)=>document.querySelectorAll(`[id^="${prefix}-"]:not([id*="qty"])`).forEach(cb=>{if(cb.checked){const pid=cb.dataset.id,qty=parseInt(document.getElementById(`${prefix}-qty-${pid}`)?.value||1);composition.push({stock_id:pid,nom:cb.dataset.nom,qty,type});}});
+push('cb','Burger');push('cbo','Boisson');push('ca','Accompagnement');push('cd','Dessert');
   }
   const res=await sb('produits',{method:'POST',body:JSON.stringify({nom,prix:parseFloat(prix),cout_achat:parseFloat(coutAchat)||0,points:parseInt(document.getElementById('mPoints').value)||0,categorie:cat,image_url:document.getElementById('mImg').value.trim()||null,composition:composition?JSON.stringify(composition):null,actif:true})});
   if(res !== null){alertEl.innerHTML='<div class="alert alert-ok">✅ Produit ajouté !</div>';['mNom','mPrix','mCoutAchat','mPoints','mImg'].forEach(id=>document.getElementById(id).value='');loadMenu();}
