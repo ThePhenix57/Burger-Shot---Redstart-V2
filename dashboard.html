@@ -1807,7 +1807,7 @@ async function loadCaisse(){
   const CAT_ORDER=['Burger','Menu','Nugget','Boisson','Dessert','Accompagnement','Autre'];
   const allCats=[...CAT_ORDER.filter(c=>produits.some(p=>p.categorie===c)),...[...new Set(produits.map(p=>p.categorie))].filter(c=>!CAT_ORDER.includes(c))];
   el.innerHTML=allCats.map(cat=>{
-    const items=produits.filter(p=>p.categorie===cat);if(!items.length)return'';
+    const items=produits.filter(p=>p.categorie===cat).sort((a,b)=>a.prix-b.prix);if(!items.length)return'';
     return`<div class="caisse-cat"><div class="caisse-cat-title">${getEmoji(cat)} ${cat}</div><div class="caisse-grid">${items.map(p=>`
     <div class="prod-card">
       <div class="prod-img" onclick="addToTicketQty('${p.id}')">
