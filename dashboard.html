@@ -3175,8 +3175,16 @@ async function saveProduit(){
   let composition=null;
   if(cat==='Menu'){
     composition=[];
-    const push=(prefix,type)=>document.querySelectorAll(`[id^="${prefix}-"]:not([id*="qty"])`).forEach(cb=>{if(cb.checked){const pid=cb.dataset.id,qty=parseInt(document.getElementById(`${prefix}-qty-${pid}`)?.value||1);composition.push({stock_id:pid,nom:cb.dataset.nom,qty,type});}});
-push('cb','Burger');push('cbo','Boisson');push('ca','Accompagnement');push('cd','Dessert');
+    const push=(prefix,type)=>document.querySelectorAll(`[id^="${prefix}-"]:not([id*="qty"])`).forEach(cb=>{
+      if(cb.checked){
+        const pid=cb.dataset.id;
+        const qty=parseInt(document.getElementById(`${prefix}-qty-${pid}`)?.value||1);
+        composition.push({stock_id:pid, nom:cb.dataset.nom, qty, type});
+        console.log('pushed:', {stock_id:pid, nom:cb.dataset.nom, qty, type});
+      }
+    });
+    push('cb','Burger');push('cbo','Boisson');push('ca','Accompagnement');push('cd','Dessert');
+    console.log('composition finale:', composition);
   }
   const res=await sb('produits',{method:'POST',body:JSON.stringify({nom,prix:parseFloat(prix),cout_achat:parseFloat(coutAchat)||0,points:parseInt(document.getElementById('mPoints').value)||0,categorie:cat,image_url:document.getElementById('mImg').value.trim()||null,composition:composition?JSON.stringify(composition):null,actif:true})});
   if(res !== null){alertEl.innerHTML='<div class="alert alert-ok">✅ Produit ajouté !</div>';['mNom','mPrix','mCoutAchat','mPoints','mImg'].forEach(id=>document.getElementById(id).value='');loadMenu();}
