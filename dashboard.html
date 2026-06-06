@@ -13,6 +13,7 @@
   --bg:#0d0d0d;--card:#141414;--card2:#1c1c1c;--card3:#222;
   --text:#f1f1f1;--muted:#777;--border:rgba(255,255,255,.07);
   --shadow:0 4px 24px rgba(0,0,0,.4);--radius:12px;
+  html {font-size: 16px;zoom: 1.15;}
 }
 [data-theme="light"]{
   --bg:#ede9e3;--card:#fff;--card2:#f5f1eb;--card3:#eee;
@@ -23,7 +24,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 a{text-decoration:none;color:inherit;}
 button,input,select,textarea{font-family:'Barlow',sans-serif;}
 /* TOPBAR */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:200;overflow:visible;width:100%;}
+.topbar{position:sticky;top:0;z-index:200;overflow:visible;}
 .checker-bar{height:12px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:12px 12px;}
 .topbar-main{display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:90px;gap:20px;position:relative;}
 .topbar-logo{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;}
@@ -41,6 +42,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .topbar-actions{display:flex;align-items:center;gap:8px;}
 /* NAV */
 .topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow:visible;scrollbar-width:none;position:relative;}
+.topbar {position: sticky;top: 0;z-index: 200;overflow: visible;}
 .topbar-nav {overflow: visible !important;}
 .topbar-nav::-webkit-scrollbar{display:none;}
 .topbar-coffre{font-size:11px;color:var(--success);font-weight:700;letter-spacing:1px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);border-radius:20px;padding:3px 10px;white-space:nowrap;}
@@ -50,7 +52,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .nav-item.active{color:#fff;background:rgba(0,0,0,.2);border-bottom-color:#fff;}
 .nav-badge{background:rgba(255,255,255,.25);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-weight:800;}
 /* LAYOUT */
-.content{padding:28px;width:100%;max-width:1400px;margin:0 auto;padding-top:160px;}
+.content{padding:28px;width:100%;max-width:1400px;margin:0 auto;}
 .page{display:none;}
 .page.active{display:block;}
 /* COMPOSANTS */
@@ -777,8 +779,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch { isGouv = false; }
   }
 
-   // Priorité 2 : session employé
+  // Priorité 2 : session employé
   if (!isGouv) raw = localStorage.getItem('bs_user');
+  if (!raw) { location.href = '/'; return; }
+
   let userData;
   try { userData = JSON.parse(raw); }
   catch(e) {
@@ -789,24 +793,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   const { id, username, avatar, nom, prenom } = userData;
   if (!id) { location.href = '/'; return; }
+
   if (!DIR_IDS.includes(id)) {
     const compteData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=role,statut`);
-    if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
-  }
-  if (DIR_IDS.includes(id)) ROLE = 'direction';
-
-  if (avatar) {
-    await sb(`comptes_dashboard?discord_id=eq.${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ avatar })
-    });
-  }
-
-  const { id, username, avatar, nom, prenom } = userData;
-  if (!id) { location.href = '/'; return; }
-  if (!DIR_IDS.includes(id)) {
-    const compteData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=role,statut`);
-    if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
+     if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
   }
   if (DIR_IDS.includes(id)) ROLE = 'direction';
 
@@ -1234,7 +1224,6 @@ function buildPages(){
     html+=`<div class="page" id="page-employes"><div class="red-line"></div>
     <div style="display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <input class="form-input" id="empSearch" placeholder="🔍 Rechercher un employé..." oninput="filtrerEmployes(this.value)" style="max-width:280px;">
         <select class="form-select" id="empFilter" onchange="loadEmployes()" style="width:160px;">
           <option value="">Tous les statuts</option>
           <option value="actif">🟢 Actifs</option>
@@ -2567,17 +2556,9 @@ async function loadEmployes() {
     const pctP = qMaxP>0 ? Math.min(100,Math.round((qP/qMaxP)*100)) : 0;
     const taux = tauxPoste[e.poste] ?? .10;
     const statut = e.statut_activite || 'actif';
-    const discordAvatar = e.discord_id && e.photo_url
-    ? e.photo_url
-    : e.discord_id
-    ? `https://cdn.discordapp.com/avatars/${e.discord_id}/${e.avatar}.png`
-    : `https://cdn.discordapp.com/embed/avatars/${(parseInt(e.discord_id||0) % 5)}.png`;
-
-    const avatarContent = e.discord_id
-    ? `<img src="https://cdn.discordapp.com/avatars/${e.discord_id}/${e.discord_id}.png" 
-         style="width:100%;height:100%;object-fit:cover;" 
-         onerror="this.outerHTML='<span style=\\'font-size:18px;font-weight:800;\\'>${initials}</span>'">`
-    : `<span style="font-size:18px;font-weight:800;">${initials}</span>`;
+    const avatarContent = e.photo_url
+      ? `<img src="${e.photo_url}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="width:100%;height:100%;object-fit:cover;"><span style="display:none;font-size:18px;font-weight:800;">${initials}</span>`
+      : `<span style="font-size:18px;font-weight:800;">${initials}</span>`;
  
     // Badge règlement signé
     const reglBadge = e.reglement_signe
@@ -3688,7 +3669,7 @@ function showPage(id) {
   };
 
   if (loaders[id]) loaders[id]();
-}  
+}  // ← showPage se ferme ici
 
 async function loadEmployesReadonly() {
   const el = document.getElementById('empReadonlyGrid');
@@ -5272,13 +5253,6 @@ async function verserPrime(id) {
     el.innerHTML = fakeEl.innerHTML;
     fakeEl.remove();
   }
-  function filtrerEmployes(val) {
-  const f = val.toLowerCase();
-  document.querySelectorAll('.emp-card').forEach(card => {
-    const text = card.innerText.toLowerCase();
-    card.style.display = text.includes(f) ? '' : 'none';
-  });
-}
 </script>
 </body>
 </html>
