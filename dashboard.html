@@ -777,7 +777,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch { isGouv = false; }
   }
 
-  // Priorité 2 : session employé
+   // Priorité 2 : session employé
   if (!isGouv) raw = localStorage.getItem('bs_user');
   let userData;
   try { userData = JSON.parse(raw); }
