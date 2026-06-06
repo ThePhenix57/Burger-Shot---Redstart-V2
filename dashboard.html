@@ -782,7 +782,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (!isGouv) raw = localStorage.getItem('bs_user');
   if (!raw) { location.href = '/'; return; }
 
-  let userData;
+ Une seule correction à faire dans le JS — dans DOMContentLoaded, cherche et supprime ces 6 lignes qui sont mal placées (elles sont AVANT la déstructuration de userData) :
+Cherche ce bloc :
+javascript  let userData;
   try { userData = JSON.parse(raw); }
   catch(e) {
     localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
@@ -797,7 +799,21 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   const { id, username, avatar, nom, prenom } = userData;
+Remplace par (supprime juste le bloc if (avatar)) :
+javascript  let userData;
+  try { userData = JSON.parse(raw); }
+  catch(e) {
+    localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
+    location.href = '/';
+    return;
+  }
+
+  const { id, username, avatar, nom, prenom } = userData;
   if (!id) { location.href = '/'; return; }
+  if (!DIR_IDS.includes(id)) {
+    const compteData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=role,statut`);
+    if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
+  }
   if (DIR_IDS.includes(id)) ROLE = 'direction';
 
   let _posteActuel = null;
