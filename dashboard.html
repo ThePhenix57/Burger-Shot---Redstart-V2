@@ -13,7 +13,11 @@
   --bg:#0d0d0d;--card:#141414;--card2:#1c1c1c;--card3:#222;
   --text:#f1f1f1;--muted:#777;--border:rgba(255,255,255,.07);
   --shadow:0 4px 24px rgba(0,0,0,.4);--radius:12px;
-  html {font-size: 16px;zoom: 1.25;}
+  body {
+  transform: scale(1.15);
+  transform-origin: top left;
+  width: calc(100% / 1.15);
+}
 }
 [data-theme="light"]{
   --bg:#ede9e3;--card:#fff;--card2:#f5f1eb;--card3:#eee;
