@@ -14,7 +14,6 @@
   --text:#f1f1f1;--muted:#777;--border:rgba(255,255,255,.07);
   --shadow:0 4px 24px rgba(0,0,0,.4);--radius:12px;
 }
-}
 [data-theme="light"]{
   --bg:#ede9e3;--card:#fff;--card2:#f5f1eb;--card3:#eee;
   --text:#111;--muted:#666;--border:rgba(0,0,0,.08);--shadow:0 4px 24px rgba(0,0,0,.1);
@@ -790,23 +789,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   const { id, username, avatar, nom, prenom } = userData;
   if (!id) { location.href = '/'; return; }
-
   if (!DIR_IDS.includes(id)) {
     const compteData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=role,statut`);
     if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
   }
   if (DIR_IDS.includes(id)) ROLE = 'direction';
-  try { userData = JSON.parse(raw); }
-  catch(e) {
-    localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
-    location.href = '/';
-    return;
-  }
+
   if (avatar) {
-  await sb(`comptes_dashboard?discord_id=eq.${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ avatar })
-  });
+    await sb(`comptes_dashboard?discord_id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ avatar })
+    });
   }
 
   const { id, username, avatar, nom, prenom } = userData;
@@ -3695,7 +3688,7 @@ function showPage(id) {
   };
 
   if (loaders[id]) loaders[id]();
-}  // ← showPage se ferme ici
+}  
 
 async function loadEmployesReadonly() {
   const el = document.getElementById('empReadonlyGrid');
