@@ -1038,6 +1038,7 @@ function buildNav() {
           <div class="nav-item" id="nav-gestion" onclick="showPage('gestion')">⚙️ Gestion <span class="nav-badge" id="quota-badge"></span></div>
           <div class="nav-item" id="nav-benefices" onclick="showPage('benefices')">💹 Bénéfices</div>
           <div class="nav-item" id="nav-depenses" onclick="showPage('depenses')">💸 Dépenses</div>
+          <div class="nav-item" id="nav-registre" onclick="showPage('registre')">📒 Registre</div>
         </div>
       </div>
  
@@ -1385,6 +1386,9 @@ function buildPages(){
       <div class="card-title" style="margin-top:24px;">📁 Historique comptes rendus</div>
       <div id="historiqueCompteRendus"></div>
     </div></div>`;
+  html+=`<div class="page" id="page-registre"><div class="red-line"></div>
+  <div id="registreContent"><div class="loading"><div class="spin"></div></div></div>
+  </div>`;
   html+=`<div class="page" id="page-depenses"><div class="red-line"></div>
   <div class="g2" style="align-items:start;gap:24px;">
     <div class="card" style="flex-shrink:0;">
@@ -1958,6 +1962,22 @@ async function confirmerCommande(avecApercu=false){
   const cc=document.getElementById('caisseContrat');if(cc)cc.value='';
   genTicket();
   if(!avecApercu)alert('✅ Commande validée !');
+  // Notif Discord — Vente
+  await envoyerWebhookDiscord({
+    username: 'Burger Shot — Caisse',
+    embeds: [{
+      title: '🧾 Nouvelle commande validée',
+      color: 0x27ae60,
+      fields: [
+        { name: '👤 Employé', value: USER.displayName || '—', inline: true },
+        { name: '💰 Total net', value: `${c.net.toLocaleString('fr-FR')}$`, inline: true },
+        { name: '👥 Client', value: clientActif ? `${clientActif.prenom} ${clientActif.nom}` : 'Client comptant', inline: true },
+        { name: '🛒 Articles', value: commande.map(p=>`${p.nom} ×${p.qte}`).join(', '), inline: false },
+      ],
+      timestamp: new Date().toISOString(),
+      footer: { text: 'Burger Shot • Los Santos' }
+    }]
+  });
   if(ROLE==='employe')trackActivity();
 }
   async function payerParPoints() {
@@ -2289,6 +2309,27 @@ async function confirmerMvtStock(id,type){
   const sd=await sb(`produits_stock?id=eq.${id}&select=quantite`);const current=sd?.[0]?.quantite||0;
   const newQte=type==='entree'?current+qte:Math.max(0,current-qte);
   await sb(`produits_stock?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({quantite:newQte})});
+  // Vérifie si stock critique après mouvement
+  if (type === 'sortie') {
+    const updated = await sb(`produits_stock?id=eq.${id}&select=nom,quantite,seuil_alerte`);
+    const prod = updated?.[0];
+    if (prod && prod.quantite <= prod.seuil_alerte) {
+      await envoyerWebhookDiscord({
+        username: 'Burger Shot — Stock',
+        embeds: [{
+          title: '⚠️ Stock critique !',
+          color: 0xe67e22,
+          fields: [
+            { name: '📦 Produit', value: prod.nom, inline: true },
+            { name: '🔢 Quantité restante', value: `${prod.quantite} unités`, inline: true },
+            { name: '🚨 Seuil alerte', value: `${prod.seuil_alerte} unités`, inline: true },
+          ],
+          timestamp: new Date().toISOString(),
+          footer: { text: 'Burger Shot • Stock Management' }
+        }]
+      });
+    }
+  }
   await sb('stock_mouvements',{method:'POST',body:JSON.stringify({produit_stock_id:id,type,quantite:qte,employe_discord:USER.id,notes:document.getElementById('mvtNotes')?.value||null})});
   closeOverlay('ovStockMvt');loadStock();
 }
@@ -3002,6 +3043,25 @@ async function soumettreQuota() {
   }
   closeOverlay('ovQuota');
   alert('✅ Déclaration envoyée !');
+    // Notif Discord — Quota soumis
+  const empData = await sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=nom,prenom,contrat`);
+  const emp = empData?.[0];
+  await envoyerWebhookDiscord({
+    username: 'Burger Shot — Quotas',
+    embeds: [{
+      title: '🚚 Nouveau quota déclaré',
+      color: 0x3498db,
+      fields: [
+        { name: '👤 Employé', value: emp ? `${emp.prenom} ${emp.nom}` : USER.displayName, inline: true },
+        { name: '📋 Contrat', value: emp?.contrat || '—', inline: true },
+        { name: '🚛 Plaque', value: plaque, inline: true },
+        ...(qteV > 0 ? [{ name: '🥩 Viande', value: `${qteV} unités`, inline: true }] : []),
+        ...(qteP > 0 ? [{ name: '🥔 Patates', value: `${qteP} unités`, inline: true }] : []),
+      ],
+      timestamp: new Date().toISOString(),
+      footer: { text: 'Burger Shot • En attente de validation' }
+    }]
+  });
   loadQuotaPage();
 }
 
@@ -3478,13 +3538,70 @@ async function loadPrimesTable(){
   const data=await sb(`primes?select=*&semaine=eq.${getSemaine()}&order=created_at.desc`);
   if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime.</p>';return;}
 
-  // Récupère tous les discord_ids uniques
   const discordIds=[...new Set(data.map(p=>p.employe_discord).filter(Boolean))];
   let empMap={};
   if(discordIds.length){
     const emps=await sb(`comptes_dashboard?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,poste`);
     (emps||[]).forEach(e=>empMap[e.discord_id]=e);
   }
+
+  const enAttente=data.filter(p=>!p.verse);
+  const versees=data.filter(p=>p.verse);
+  const totalVerse=versees.reduce((a,p)=>a+p.montant,0);
+  const totalAttente=enAttente.reduce((a,p)=>a+p.montant,0);
+
+  const renderRows=(list)=>list.map(p=>{
+    const emp=empMap[p.employe_discord]||{};
+    const date=p.updated_at||p.created_at;
+    return`<tr>
+      <td><strong>${emp.prenom?`${emp.prenom} ${emp.nom}`:'—'}</strong></td>
+      <td>${emp.poste||'—'}</td>
+      <td><span class="badge badge-blue">${p.type||'vente'}</span></td>
+      <td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td>
+      <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'⏳ En attente'}</span></td>
+      <td style="font-size:11px;color:var(--muted);">${p.verse&&date?new Date(date).toLocaleString('fr-FR'):'—'}</td>
+      <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML=`
+  <!-- Résumé -->
+  <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="padding:10px 16px;background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.3);border-radius:8px;font-size:13px;">
+      ⏳ En attente : <strong style="color:var(--warning);">${totalAttente.toLocaleString('fr-FR')}$</strong>
+    </div>
+    <div style="padding:10px 16px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:8px;font-size:13px;">
+      ✅ Déjà versé : <strong style="color:var(--success);">${totalVerse.toLocaleString('fr-FR')}$</strong>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button class="btn btn-primary btn-sm" id="tabAttente" onclick="switchPrimeTab('attente')">⏳ En attente (${enAttente.length})</button>
+    <button class="btn btn-outline btn-sm" id="tabVersees" onclick="switchPrimeTab('versees')">✅ Versées (${versees.length})</button>
+  </div>
+
+  <!-- Table En attente -->
+  <div id="primeTabAttente">
+    ${!enAttente.length?'<p style="color:var(--muted)">Toutes les primes ont été versées ✅</p>':`
+    <table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>${renderRows(enAttente)}</tbody></table>`}
+  </div>
+
+  <!-- Table Versées (masquée par défaut) -->
+  <div id="primeTabVersees" style="display:none;">
+    ${!versees.length?'<p style="color:var(--muted)">Aucune prime versée cette semaine.</p>':`
+    <table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Versée le</th><th></th></tr></thead>
+    <tbody>${renderRows(versees)}</tbody></table>`}
+  </div>`;
+}
+
+function switchPrimeTab(tab){
+  document.getElementById('primeTabAttente').style.display=tab==='attente'?'block':'none';
+  document.getElementById('primeTabVersees').style.display=tab==='versees'?'block':'none';
+  document.getElementById('tabAttente').className=`btn btn-sm ${tab==='attente'?'btn-primary':'btn-outline'}`;
+  document.getElementById('tabVersees').className=`btn btn-sm ${tab==='versees'?'btn-primary':'btn-outline'}`;
+}
 
   el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Action</th></tr></thead><tbody>`+
   data.map(p=>{
@@ -3548,6 +3665,7 @@ function showPage(id) {
     'depenses':             loadDepenses,
     'comptes':              loadComptes,
     'benefices':            loadBenefices,
+    'registre':             loadRegistre,
   };
 
   if (loaders[id]) loaders[id]();
@@ -4794,14 +4912,14 @@ async function handleFileSelect(file) {
 
     setTimeout(() => { if (progress) progress.style.display = 'none'; }, 800);
 
-  } catch(err) {
-    console.error('Upload error:', err);
-    if (inner) inner.innerHTML = `
-      <div class="upload-zone-icon">❌</div>
-      <div class="upload-zone-text" style="color:var(--red);">Erreur upload</div>
-      <div class="upload-zone-sub">${err.message?.slice(0,80) || 'Vérifie que le bucket "produits" est public dans Supabase'}</div>`;
-    if (progress) progress.style.display = 'none';
-  } async function verserPrime(id) {
+    } catch(err) {
+      console.error('Upload error:', err);
+      if (inner) inner.innerHTML = `...`;
+      if (progress) progress.style.display = 'none';
+    }
+  }
+
+async function verserPrime(id) {
     await sb(`primes?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ verse: true }) });
   
     // Récupère le discord_id lié à cette prime
@@ -4830,7 +4948,299 @@ async function handleFileSelect(file) {
   
     alert('✅ Prime versée et quota remis à zéro !');
   }
-}
+  /* ══════════════════════════════════════════════
+   REGISTRE COMPTABLE
+══════════════════════════════════════════════ */
+  async function loadRegistre() {
+    const el = document.getElementById('registreContent');
+    if (!el) return;
+    el.innerHTML = '<div class="loading"><div class="spin"></div> Chargement du registre...</div>';
+  
+    // Semaines disponibles
+    const historique = await sb('comptes_rendus?select=semaine,semaine_label&order=created_at.desc&limit=20') || [];
+    const semaineCourante = getSemaine();
+    const semaines = [...new Set([semaineCourante, ...(historique||[]).map(h=>h.semaine)])];
+  
+    const semaineFiltre = document.getElementById('registreSemaineSelect')?.value || semaineCourante;
+  
+    // Récupère toutes les données
+    const [cmdsData, livrData, primesData, depData, coffreData, caData] = await Promise.all([
+      sb(`commandes?select=*&semaine=eq.${semaineFiltre}&order=created_at.asc`),
+      sb(`livraisons?select=*&semaine=eq.${semaineFiltre}&order=created_at.asc`),
+      sb(`primes?select=*&semaine=eq.${semaineFiltre}&order=created_at.asc`),
+      sb(`depenses?select=*&semaine=eq.${semaineFiltre}&order=created_at.asc`),
+      sb('coffre_solde?limit=1'),
+      sb('parametres?cle=eq.ca_semaine'),
+    ]);
+  
+    // Noms employés
+    const allDiscords = [
+      ...(cmdsData||[]).map(c=>c.employe_discord_id),
+      ...(primesData||[]).map(p=>p.employe_discord),
+      ...(livrData||[]).map(l=>l.enregistre_par),
+      ...(depData||[]).map(d=>d.employe_discord),
+    ].filter(Boolean);
+    const uniqueDiscords = [...new Set(allDiscords)];
+    let empMap = {};
+    if (uniqueDiscords.length) {
+      const emps = await sb(`comptes_dashboard?discord_id=in.(${uniqueDiscords.join(',')})&select=discord_id,nom,prenom`);
+      (emps||[]).forEach(e => empMap[e.discord_id] = `${e.prenom} ${e.nom}`);
+    }
+  
+    // Construction des lignes
+    const lignes = [];
+  
+    // Ventes
+    (cmdsData||[]).forEach(c => {
+      const montant = c.total_apres_reduction || c.total || 0;
+      if (montant <= 0) return;
+      lignes.push({
+        date: c.created_at,
+        type: 'vente',
+        label: `Vente caisse`,
+        detail: `${c.reduction_pct ? `-${c.reduction_pct}% · ` : ''}${empMap[c.employe_discord_id] || '—'}`,
+        entree: montant,
+        sortie: 0,
+      });
+    });
+  
+    // Livraisons
+    (livrData||[]).forEach(l => {
+      lignes.push({
+        date: l.created_at,
+        type: 'livraison',
+        label: 'Livraison externe',
+        detail: l.notes || (empMap[l.enregistre_par] || '—'),
+        entree: l.montant || 0,
+        sortie: 0,
+      });
+    });
+  
+    // Primes versées
+    (primesData||[]).filter(p => p.verse).forEach(p => {
+      lignes.push({
+        date: p.updated_at || p.created_at,
+        type: 'prime',
+        label: `Prime ${p.type || 'vente'}`,
+        detail: `${empMap[p.employe_discord] || '—'}${p.raison ? ' · ' + p.raison : ''}`,
+        entree: 0,
+        sortie: p.montant || 0,
+      });
+    });
+  
+    // Primes en attente (pas encore versées)
+    (primesData||[]).filter(p => !p.verse).forEach(p => {
+      lignes.push({
+        date: p.created_at,
+        type: 'prime_attente',
+        label: `Prime ${p.type || 'vente'} (en attente)`,
+        detail: `${empMap[p.employe_discord] || '—'}${p.raison ? ' · ' + p.raison : ''}`,
+        entree: 0,
+        sortie: 0, // pas encore sorti
+        attente: p.montant || 0,
+      });
+    });
+  
+    // Dépenses
+    (depData||[]).forEach(d => {
+      lignes.push({
+        date: d.created_at,
+        type: 'depense',
+        label: d.libelle || 'Dépense',
+        detail: empMap[d.employe_discord] || '—',
+        entree: 0,
+        sortie: d.montant || 0,
+        preuve: d.preuve_url || null,
+      });
+    });
+  
+    // Impôts (calculé)
+    const caVentes = (cmdsData||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
+    const impots = Math.round(calcImpot(caVentes));
+    if (impots > 0) {
+      lignes.push({
+        date: new Date().toISOString(),
+        type: 'impot',
+        label: `Impôts (${tauxLabel(caVentes)})`,
+        detail: `Calculé sur CA de ${caVentes.toLocaleString('fr-FR')}$`,
+        entree: 0,
+        sortie: impots,
+      });
+    }
+  
+    // Tri chronologique
+    lignes.sort((a,b) => new Date(a.date) - new Date(b.date));
+  
+    // Totaux
+    const totalEntrees = lignes.reduce((a,l)=>a+l.entree,0);
+    const totalSorties = lignes.reduce((a,l)=>a+l.sortie,0);
+    const totalAttente = lignes.reduce((a,l)=>a+(l.attente||0),0);
+    const soldeDepart = parseFloat(coffreData?.[0]?.solde || 500000);
+    const beneficeNet = totalEntrees - totalSorties;
+    const soldeFinal = soldeDepart + beneficeNet;
+  
+    // Couleurs et icônes par type
+    const typeConfig = {
+      vente:         { icon:'💰', color:'var(--success)', bg:'rgba(39,174,96,.08)',   border:'rgba(39,174,96,.2)',  label:'Vente' },
+      livraison:     { icon:'🚚', color:'var(--orange)',  bg:'rgba(230,126,34,.08)',  border:'rgba(230,126,34,.2)', label:'Livraison' },
+      prime:         { icon:'👥', color:'var(--red)',     bg:'rgba(192,57,43,.08)',   border:'rgba(192,57,43,.2)',  label:'Prime' },
+      prime_attente: { icon:'⏳', color:'var(--warning)', bg:'rgba(243,156,18,.06)',  border:'rgba(243,156,18,.15)',label:'Prime (attente)' },
+      depense:       { icon:'💸', color:'var(--red)',     bg:'rgba(192,57,43,.08)',   border:'rgba(192,57,43,.2)',  label:'Dépense' },
+      impot:         { icon:'🏛️', color:'#e74c3c',       bg:'rgba(231,76,60,.08)',   border:'rgba(231,76,60,.2)',  label:'Impôts' },
+    };
+  
+    el.innerHTML = `
+    <!-- Header + filtre -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--red);">📒 Registre Comptable</div>
+        <div style="font-size:12px;color:var(--muted);">Toutes les entrées et sorties d'argent</div>
+      </div>
+      <select class="form-select" id="registreSemaineSelect" onchange="loadRegistre()" style="max-width:220px;">
+        ${semaines.map(s=>`<option value="${s}"${s===semaineFiltre?' selected':''}>${s===semaineCourante?'📍 ':''} ${getLabelSemaine(s)}${s===semaineCourante?' (en cours)':''}</option>`).join('')}
+      </select>
+    </div>
+  
+    <!-- KPI bilan -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px;">
+      <div class="stat-card" style="--accent:var(--blue);">
+        <div class="stat-icon">🏦</div>
+        <div class="stat-label">Solde coffre départ</div>
+        <div class="stat-value" style="font-size:22px;">${soldeDepart.toLocaleString('fr-FR')}$</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--success);">
+        <div class="stat-icon">📈</div>
+        <div class="stat-label">Total entrées</div>
+        <div class="stat-value" style="font-size:22px;color:var(--success);">+${totalEntrees.toLocaleString('fr-FR')}$</div>
+        <div class="stat-sub">${lignes.filter(l=>l.entree>0).length} opérations</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--red);">
+        <div class="stat-icon">📉</div>
+        <div class="stat-label">Total sorties</div>
+        <div class="stat-value" style="font-size:22px;color:var(--red);">-${totalSorties.toLocaleString('fr-FR')}$</div>
+        <div class="stat-sub">${lignes.filter(l=>l.sortie>0).length} opérations</div>
+      </div>
+      ${totalAttente > 0 ? `
+      <div class="stat-card" style="--accent:var(--warning);">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Primes en attente</div>
+        <div class="stat-value" style="font-size:22px;color:var(--warning);">${totalAttente.toLocaleString('fr-FR')}$</div>
+        <div class="stat-sub">pas encore sorties</div>
+      </div>` : ''}
+      <div class="stat-card" style="--accent:${beneficeNet>=0?'var(--success)':'var(--red)'};border:2px solid ${beneficeNet>=0?'rgba(39,174,96,.4)':'rgba(192,57,43,.4)'};">
+        <div class="stat-icon">${beneficeNet>=0?'🏆':'📉'}</div>
+        <div class="stat-label">Bénéfice net semaine</div>
+        <div class="stat-value" style="font-size:22px;color:${beneficeNet>=0?'var(--success)':'var(--red)'};">${beneficeNet>=0?'+':''}${Math.round(beneficeNet).toLocaleString('fr-FR')}$</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--blue);border:2px solid rgba(52,152,219,.4);">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">Solde coffre estimé</div>
+        <div class="stat-value" style="font-size:22px;color:var(--blue);">${Math.round(soldeFinal).toLocaleString('fr-FR')}$</div>
+      </div>
+    </div>
+  
+    <!-- Légende filtres -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+      <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-right:4px;">Filtrer :</span>
+      <button class="btn btn-outline btn-sm" onclick="filtrerRegistre('tous')" id="rfTous" style="border-color:var(--red);color:var(--red);">Tous (${lignes.length})</button>
+      ${Object.entries(typeConfig).map(([k,v])=>{
+        const count=lignes.filter(l=>l.type===k).length;
+        return count>0?`<button class="btn btn-outline btn-sm" onclick="filtrerRegistre('${k}')" id="rf${k}" style="border-color:${v.color};color:${v.color);">${v.icon} ${v.label} (${count})</button>`:'';
+      }).join('')}
+    </div>
+  
+    <!-- Tableau registre -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="overflow-x:auto;">
+      <table id="registreTable">
+        <thead>
+          <tr style="background:var(--card2);">
+            <th style="width:130px;">Date / Heure</th>
+            <th style="width:120px;">Type</th>
+            <th>Libellé</th>
+            <th>Détail</th>
+            <th style="text-align:right;color:var(--success);">Entrée</th>
+            <th style="text-align:right;color:var(--red);">Sortie</th>
+            <th style="text-align:right;">Preuve</th>
+          </tr>
+        </thead>
+        <tbody id="registreBody">
+          ${renderLignesRegistre(lignes, typeConfig)}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  
+    <!-- Bilan final -->
+    <div style="margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="background:var(--card2);padding:12px 20px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--red);">📊 BILAN DE LA SEMAINE</div>
+      <div style="padding:16px 20px;">
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>💰 Ventes</span><strong style="color:var(--success);">+${(cmdsData||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0).toLocaleString('fr-FR')}$</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>🚚 Livraisons</span><strong style="color:var(--orange);">+${(livrData||[]).reduce((a,l)=>a+(l.montant||0),0).toLocaleString('fr-FR')}$</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>👥 Primes versées</span><strong style="color:var(--red);">-${(primesData||[]).filter(p=>p.verse).reduce((a,p)=>a+(p.montant||0),0).toLocaleString('fr-FR')}$</strong>
+        </div>
+        ${totalAttente>0?`
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;opacity:.6;">
+          <span>⏳ Primes en attente (non sorties)</span><strong style="color:var(--warning);">${totalAttente.toLocaleString('fr-FR')}$</strong>
+        </div>`:''}
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>💸 Dépenses</span><strong style="color:var(--red);">-${(depData||[]).reduce((a,d)=>a+(d.montant||0),0).toLocaleString('fr-FR')}$</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>🏛️ Impôts estimés (${tauxLabel(caVentes)})</span><strong style="color:var(--red);">-${impots.toLocaleString('fr-FR')}$</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:14px 0;border-top:2px solid var(--border);margin-top:4px;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;">BÉNÉFICE NET</span>
+          <strong style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${beneficeNet>=0?'var(--success)':'var(--red)'};">${beneficeNet>=0?'+':''}${Math.round(beneficeNet).toLocaleString('fr-FR')}$</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:14px 16px;background:${soldeFinal>=soldeDepart?'rgba(39,174,96,.1)':'rgba(192,57,43,.1)'};border-radius:10px;border:1px solid ${soldeFinal>=soldeDepart?'rgba(39,174,96,.3)':'rgba(192,57,43,.3)'};">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;">💰 SOLDE COFFRE ESTIMÉ</span>
+          <strong style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:${soldeFinal>=soldeDepart?'var(--success)':'var(--red)'};">${Math.round(soldeFinal).toLocaleString('fr-FR')}$</strong>
+        </div>
+      </div>
+    </div>`;
+  
+    // Stocke pour le filtre
+    window._registreLignes = lignes;
+    window._registreTypeConfig = typeConfig;
+  }
+  
+  function renderLignesRegistre(lignes, typeConfig) {
+    if (!lignes.length) return '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px;">Aucune opération cette semaine.</td></tr>';
+    return lignes.map(l => {
+      const cfg = typeConfig[l.type] || { icon:'📌', color:'var(--muted)', bg:'transparent', border:'transparent' };
+      const isEntree = l.entree > 0;
+      const isSortie = l.sortie > 0;
+      const isAttente = l.attente > 0;
+      return `<tr style="border-left:3px solid ${cfg.color};">
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${new Date(l.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+        <td><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;background:${cfg.bg};border:1px solid ${cfg.border};color:${cfg.color};">${cfg.icon} ${cfg.label}</span></td>
+        <td style="font-weight:700;">${l.label}</td>
+        <td style="font-size:12px;color:var(--muted);">${l.detail}</td>
+        <td style="text-align:right;font-weight:700;color:var(--success);">${isEntree?'+'+l.entree.toLocaleString('fr-FR')+'$':'—'}</td>
+        <td style="text-align:right;font-weight:700;color:${isAttente?'var(--warning)':'var(--red)'};">${isSortie?'-'+l.sortie.toLocaleString('fr-FR')+'$':isAttente?'('+l.attente.toLocaleString('fr-FR')+'$)':'—'}</td>
+        <td style="text-align:right;">${l.preuve?`<a href="${l.preuve}" target="_blank" class="btn btn-blue btn-sm">🖼️</a>`:'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+  
+  function filtrerRegistre(type) {
+    const lignes = window._registreLignes || [];
+    const typeConfig = window._registreTypeConfig || {};
+    const filtered = type === 'tous' ? lignes : lignes.filter(l => l.type === type);
+    const body = document.getElementById('registreBody');
+    if (body) body.innerHTML = renderLignesRegistre(filtered, typeConfig);
+  
+    // Highlight bouton actif
+    document.querySelectorAll('[id^="rf"]').forEach(b => b.style.fontWeight = 'normal');
+    const active = document.getElementById(type === 'tous' ? 'rfTous' : `rf${type}`);
+    if (active) active.style.fontWeight = '900';
+  }
 </script>
 </body>
 </html>
