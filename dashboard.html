@@ -47,7 +47,6 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .content{padding:28px;width:100%;max-width:1400px;margin:0 auto;padding-top: 160px;}
 /* NAV */
 .topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow:visible;scrollbar-width:none;position:relative;}
-.topbar {position: sticky;top: 0;z-index: 200;overflow: visible;}
 .topbar-nav {overflow: visible !important;}
 .topbar-nav::-webkit-scrollbar{display:none;}
 .topbar-coffre{font-size:11px;color:var(--success);font-weight:700;letter-spacing:1px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);border-radius:20px;padding:3px 10px;white-space:nowrap;}
@@ -794,6 +793,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
     location.href = '/';
     return;
+  }
+  if (avatar) {
+  await sb(`comptes_dashboard?discord_id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ avatar })
+  });
   }
 
   const { id, username, avatar, nom, prenom } = userData;
@@ -2562,13 +2567,17 @@ async function loadEmployes() {
     const pctP = qMaxP>0 ? Math.min(100,Math.round((qP/qMaxP)*100)) : 0;
     const taux = tauxPoste[e.poste] ?? .10;
     const statut = e.statut_activite || 'actif';
-    const discordAvatar = e.discord_id && e.avatar
+    const discordAvatar = e.discord_id && e.photo_url
+    ? e.photo_url
+    : e.discord_id
     ? `https://cdn.discordapp.com/avatars/${e.discord_id}/${e.avatar}.png`
     : `https://cdn.discordapp.com/embed/avatars/${(parseInt(e.discord_id||0) % 5)}.png`;
 
-    const avatarContent = e.photo_url
-    ? `<img src="${e.photo_url}" onerror="this.src='${discordAvatar}'" style="width:100%;height:100%;object-fit:cover;">`
-    : `<img src="${discordAvatar}" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:18px;font-weight:800;\\'>${initials}</span>')" style="width:100%;height:100%;object-fit:cover;">`;
+    const avatarContent = e.discord_id
+    ? `<img src="https://cdn.discordapp.com/avatars/${e.discord_id}/${e.discord_id}.png" 
+         style="width:100%;height:100%;object-fit:cover;" 
+         onerror="this.outerHTML='<span style=\\'font-size:18px;font-weight:800;\\'>${initials}</span>'">`
+    : `<span style="font-size:18px;font-weight:800;">${initials}</span>`;
  
     // Badge règlement signé
     const reglBadge = e.reglement_signe
