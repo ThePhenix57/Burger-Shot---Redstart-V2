@@ -780,11 +780,22 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Priorité 2 : session employé
   if (!isGouv) raw = localStorage.getItem('bs_user');
-  if (!raw) { location.href = '/'; return; }
+  let userData;
+  try { userData = JSON.parse(raw); }
+  catch(e) {
+    localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
+    location.href = '/';
+    return;
+  }
 
- Une seule correction à faire dans le JS — dans DOMContentLoaded, cherche et supprime ces 6 lignes qui sont mal placées (elles sont AVANT la déstructuration de userData) :
-Cherche ce bloc :
-javascript  let userData;
+  const { id, username, avatar, nom, prenom } = userData;
+  if (!id) { location.href = '/'; return; }
+
+  if (!DIR_IDS.includes(id)) {
+    const compteData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=role,statut`);
+    if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
+  }
+  if (DIR_IDS.includes(id)) ROLE = 'direction';
   try { userData = JSON.parse(raw); }
   catch(e) {
     localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
@@ -796,16 +807,6 @@ javascript  let userData;
     method: 'PATCH',
     body: JSON.stringify({ avatar })
   });
-  }
-
-  const { id, username, avatar, nom, prenom } = userData;
-Remplace par (supprime juste le bloc if (avatar)) :
-javascript  let userData;
-  try { userData = JSON.parse(raw); }
-  catch(e) {
-    localStorage.removeItem(isGouv ? 'bs_gouv_user' : 'bs_user');
-    location.href = '/';
-    return;
   }
 
   const { id, username, avatar, nom, prenom } = userData;
