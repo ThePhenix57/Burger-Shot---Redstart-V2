@@ -2858,7 +2858,6 @@ async function savePrimeExcep(){
   alertEl.innerHTML='<div class="alert alert-ok">✅ Prime attribuée !</div>';
   setTimeout(()=>closeOverlay('ovPrimeExcep'),1500);
 }
-async function verserPrime(id){await sb(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})});const el=document.getElementById('ovEmpPrimeContent');if(el)el.querySelector(`[onclick*="${id}"]`)?.closest('div[style]')?.remove();}
 
 /* ══════════════════════════════════════════════
    QUOTA PAGE (2 quotas : viande + patates)
@@ -3481,7 +3480,6 @@ async function loadPrimesTable(){
   el.innerHTML=`<table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th>Action</th></tr></thead><tbody>`+
   data.map(p=>{const emp=p.employes||{};return`<tr><td><strong>${emp.prenom||'—'} ${emp.nom||''}</strong></td><td>${emp.poste||'—'}</td><td><span class="badge badge-blue">${p.type||'vente'}</span></td><td><strong style="color:var(--success);">${p.montant.toLocaleString('fr-FR')}$</strong></td><td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'✅ Versée':'En attente'}</span></td><td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td></tr>`;}).join('')+'</tbody></table>';
 }
-async function verserPrime(id){await sb(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})});loadPrimesTable();}
 
 async function cloturerSemaine(){
   if(!confirm('⚠️ Clôturer la semaine ? Les quotas seront remis à zéro.'))return;
@@ -4784,6 +4782,34 @@ async function handleFileSelect(file) {
       <div class="upload-zone-text" style="color:var(--red);">Erreur upload</div>
       <div class="upload-zone-sub">${err.message?.slice(0,80) || 'Vérifie que le bucket "produits" est public dans Supabase'}</div>`;
     if (progress) progress.style.display = 'none';
+  } async function verserPrime(id) {
+    await sb(`primes?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ verse: true }) });
+  
+    // Récupère le discord_id lié à cette prime
+    const primeData = await sb(`primes?id=eq.${id}&select=employe_discord`);
+    const discordId = primeData?.[0]?.employe_discord;
+  
+    if (discordId) {
+      // Remet les quotas à 0
+      await sb(`comptes_dashboard?discord_id=eq.${discordId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          quota_viande_validee: 0,
+          quota_patates_validee: 0
+        })
+      });
+    }
+  
+    // Supprime visuellement la ligne dans l'overlay détail
+    const row = document.querySelector(`[onclick*="verserPrime('${id}')"]`);
+    if (row) row.closest('div[style*="border-bottom"]')?.remove();
+  
+    // Rafraîchit selon la page active
+    loadPrimesTable();
+    if (document.getElementById('page-employes')?.classList.contains('active')) loadEmployes();
+    if (document.getElementById('page-quota')?.classList.contains('active')) loadQuotaPage();
+  
+    alert('✅ Prime versée et quota remis à zéro !');
   }
 }
 </script>
