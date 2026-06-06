@@ -8,16 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --red:#c0392b; --red-dark:#922b21; --red-light:#e74c3c;
-  --orange:#e67e22; --success:#27ae60; --warning:#f39c12; --blue:#3498db;
-  --bg:#0d0d0d; --card:#141414; --card2:#1c1c1c; --card3:#222;
-  --text:#f1f1f1; --muted:#777; --border:rgba(255,255,255,.07);
-  --shadow:0 4px 24px rgba(0,0,0,.4); --radius:12px;
-}
-body {
-  transform: scale(1.15);
-  transform-origin: top left;
-  width: calc(100% / 1.15);
+  --red:#c0392b;--red-dark:#922b21;--red-light:#e74c3c;
+  --orange:#e67e22;--success:#27ae60;--warning:#f39c12;--blue:#3498db;
+  --bg:#0d0d0d;--card:#141414;--card2:#1c1c1c;--card3:#222;
+  --text:#f1f1f1;--muted:#777;--border:rgba(255,255,255,.07);
+  --shadow:0 4px 24px rgba(0,0,0,.4);--radius:12px;
 }
 }
 [data-theme="light"]{
@@ -29,7 +24,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 a{text-decoration:none;color:inherit;}
 button,input,select,textarea{font-family:'Barlow',sans-serif;}
 /* TOPBAR */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:200;overflow:visible;width: calc(100% / 1.15);}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;overflow:visible;width:100%;}
 .checker-bar{height:12px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:12px 12px;}
 .topbar-main{display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:90px;gap:20px;position:relative;}
 .topbar-logo{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;}
@@ -45,7 +40,6 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .btn-logout{padding:4px 12px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:20px;color:var(--red);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:.2s;white-space:nowrap;}
 .btn-logout:hover{background:var(--red);color:#fff;}
 .topbar-actions{display:flex;align-items:center;gap:8px;}
-.content{padding:28px;width:100%;max-width:1400px;margin:0 auto;padding-top: 160px;}
 /* NAV */
 .topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow:visible;scrollbar-width:none;position:relative;}
 .topbar-nav {overflow: visible !important;}
@@ -57,7 +51,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .nav-item.active{color:#fff;background:rgba(0,0,0,.2);border-bottom-color:#fff;}
 .nav-badge{background:rgba(255,255,255,.25);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-weight:800;}
 /* LAYOUT */
-.content{padding:28px;width:100%;max-width:1400px;margin:0 auto;}
+.content{padding:28px;width:100%;max-width:1400px;margin:0 auto;padding-top:160px;}
 .page{display:none;}
 .page.active{display:block;}
 /* COMPOSANTS */
@@ -804,11 +798,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   const { id, username, avatar, nom, prenom } = userData;
   if (!id) { location.href = '/'; return; }
-
-  if (!DIR_IDS.includes(id)) {
-    const compteData = await sb(`comptes_dashboard?discord_id=eq.${id}&select=role,statut`);
-     if (compteData?.[0]?.role === 'gouvernement') ROLE = 'gouvernement';
-  }
   if (DIR_IDS.includes(id)) ROLE = 'direction';
 
   let _posteActuel = null;
