@@ -28,7 +28,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 a{text-decoration:none;color:inherit;}
 button,input,select,textarea{font-family:'Barlow',sans-serif;}
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:200;overflow:visible;}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;overflow:visible;width: calc(100% / 1.2);}
 .checker-bar{height:12px;background-image:repeating-conic-gradient(var(--red) 0% 25%,#fff 0% 50%);background-size:12px 12px;}
 .topbar-main{display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:90px;gap:20px;position:relative;}
 .topbar-logo{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;}
@@ -44,6 +44,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 .btn-logout{padding:4px 12px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:20px;color:var(--red);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:.2s;white-space:nowrap;}
 .btn-logout:hover{background:var(--red);color:#fff;}
 .topbar-actions{display:flex;align-items:center;gap:8px;}
+.content{padding:28px;width:100%;max-width:1400px;margin:0 auto;padding-top: 160px;}
 /* NAV */
 .topbar-nav{display:flex;align-items:center;background:var(--red);min-height:38px;overflow:visible;scrollbar-width:none;position:relative;}
 .topbar {position: sticky;top: 0;z-index: 200;overflow: visible;}
