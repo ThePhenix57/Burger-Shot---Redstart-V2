@@ -285,6 +285,16 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
   display: block;
 }
 .nav-dropdown-menu .nav-item:last-child { border-bottom: none; }
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:.2s;position:relative;background:var(--card2);margin-bottom:12px;}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--red);background:rgba(192,57,43,.06);}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-zone-icon{font-size:32px;margin-bottom:8px;}
+.upload-zone-text{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.5px;}
+.upload-zone-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+.upload-progress{height:4px;background:var(--card3);border-radius:2px;margin-top:10px;overflow:hidden;display:none;}
+.upload-progress-bar{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:2px;transition:width .3s;}
+.upload-thumb{width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px;border:1px solid var(--border);padding:6px;background:var(--card);display:block;margin-bottom:8px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -1271,8 +1281,20 @@ function buildPages(){
             </select>
           </div>
         </div>
-        <div class="form-group"><label class="form-label">Image URL (optionnel)</label><input class="form-input" id="mImg" placeholder="https://..."></div>
-        <div id="mImgPreview" style="margin-bottom:12px;display:none;"><img id="mImgPrev" style="width:80px;height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--border);"></div>
+        <div class="form-group">
+        <label class="form-label">Image</label>
+        <div class="upload-zone" id="uploadZone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <input type="file" id="mImgFile" accept="image/*" onchange="handleFileSelect(this.files[0])">
+          <div id="uploadZoneInner">
+            <div class="upload-zone-icon">🖼️</div>
+            <div class="upload-zone-text">Glisser une image ici</div>
+            <div class="upload-zone-sub">ou cliquer pour parcourir · JPG, PNG, WEBP</div>
+          </div>
+          <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar" style="width:0%"></div></div>
+        </div>
+        <input class="form-input" id="mImg" placeholder="https://... (ou uploader ci-dessus)" style="font-size:11px;color:var(--muted);">
+      </div>
+      <div id="mImgPreview" style="margin-bottom:12px;display:none;"><img id="mImgPrev" style="width:80px;height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--border);"></div>
         <div id="menuComposition" style="display:none;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px;">📋 Composition du Menu</div>
           <div id="menuCompBurger" class="menu-comp-section"><div class="menu-comp-title">🍔 Burgers</div><div class="menu-comp-items" id="compBurgers"></div></div>
@@ -4686,6 +4708,83 @@ async function loadBenefices() {
       </tbody>
     </table>`}
   </div>`;
+}
+/* ══════════════════════════════════════════════
+   UPLOAD IMAGE → SUPABASE STORAGE
+══════════════════════════════════════════════ */
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone')?.classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  document.getElementById('uploadZone')?.classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone')?.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFileSelect(file);
+}
+
+async function handleFileSelect(file) {
+  if (!file) return;
+  const zone = document.getElementById('uploadZone');
+  const progress = document.getElementById('uploadProgress');
+  const bar = document.getElementById('uploadProgressBar');
+  const inner = document.getElementById('uploadZoneInner');
+
+  // Affiche progression
+  if (progress) { progress.style.display = 'block'; bar.style.width = '20%'; }
+  if (inner) inner.innerHTML = '<div class="upload-zone-text">⏳ Upload en cours...</div>';
+
+  // Nom de fichier unique
+  const ext = file.name.split('.').pop();
+  const fileName = `produit_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+
+  try {
+    // Upload vers Supabase Storage
+    const res = await fetch(`${SB_URL}/storage/v1/object/produits/${fileName}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+
+    if (bar) bar.style.width = '100%';
+
+    // URL publique
+    const publicUrl = `${SB_URL}/storage/v1/object/public/produits/${fileName}`;
+
+    // Rempli le champ URL + preview
+    const imgInput = document.getElementById('mImg');
+    if (imgInput) imgInput.value = publicUrl;
+    updateMenuImgPreview(publicUrl);
+
+    // Mise à jour de la zone upload avec miniature
+    if (inner) inner.innerHTML = `
+      <img class="upload-thumb" src="${publicUrl}" alt="Aperçu">
+      <div class="upload-zone-text" style="color:var(--success);">✅ Image uploadée !</div>
+      <div class="upload-zone-sub">Cliquer pour changer</div>`;
+
+    setTimeout(() => { if (progress) progress.style.display = 'none'; }, 800);
+
+  } catch(err) {
+    console.error('Upload error:', err);
+    if (inner) inner.innerHTML = `
+      <div class="upload-zone-icon">❌</div>
+      <div class="upload-zone-text" style="color:var(--red);">Erreur upload</div>
+      <div class="upload-zone-sub">${err.message?.slice(0,80) || 'Vérifie que le bucket "produits" est public dans Supabase'}</div>`;
+    if (progress) progress.style.display = 'none';
+  }
 }
 </script>
 </body>
