@@ -1811,6 +1811,7 @@ async function loadAccueil(){
 async function loadCaisse(){
   const[prods,contrats]=await Promise.all([sb('produits?select=*&actif=eq.true&order=categorie.asc,nom.asc'),sb('contrats_reduction?select=*&actif=eq.true')]);
   produits=Array.isArray(prods)?prods:[];
+  const el=document.getElementById('caisseProduits');
   const sel=document.getElementById('caisseContrat');
   if(sel)sel.innerHTML='<option value="">— Aucun contrat —</option>'+(Array.isArray(contrats)?contrats:[])
     .filter(c => ROLE === 'direction' || !c.prix_achat)
