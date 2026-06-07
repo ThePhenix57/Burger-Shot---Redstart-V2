@@ -814,6 +814,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     USER_NIVEAU = NIVEAU_POSTE[empData[0].poste] || 0;
     USER_CONTRAT = empData[0].contrat || 'CDD';
     _posteActuel = empData[0].poste;
+
+    // Patron et Co-Patron = direction automatiquement
+    if (['Patron', 'Co-Patron'].includes(_posteActuel)) {
+      ROLE = 'direction';
+    }
   }
 
   const empRP = await sb(`comptes_dashboard?discord_id=eq.${id}&select=nom,prenom`);
@@ -832,11 +837,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   document.getElementById('topName').textContent = displayName;
-  const isHautGrade = ['Patron', 'Co-Patron'].includes(_posteActuel);
   document.getElementById('topRole').textContent =
     ROLE === 'direction'    ? '⭐ Direction' :
     ROLE === 'gouvernement' ? '🏛️ Gouvernement' :
-    isHautGrade             ? '⭐ Direction' :
                               '🧾 Employé';
 
   await loadQuotaConfig();
