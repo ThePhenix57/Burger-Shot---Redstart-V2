@@ -1224,6 +1224,7 @@ function buildPages(){
     html+=`<div class="page" id="page-employes"><div class="red-line"></div>
     <div style="display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input class="form-input" id="empSearch" placeholder="🔍 Rechercher un employé..." oninput="filtrerEmpSearch(this.value)" style="max-width:280px;">
         <select class="form-select" id="empFilter" onchange="loadEmployes()" style="width:160px;">
           <option value="">Tous les statuts</option>
           <option value="actif">🟢 Actifs</option>
@@ -5252,6 +5253,13 @@ async function verserPrime(id) {
     await loadRegistre();
     el.innerHTML = fakeEl.innerHTML;
     fakeEl.remove();
+  }
+  function filtrerEmpSearch(val) {
+    const f = val.toLowerCase();
+    document.querySelectorAll('#empGrid .emp-card').forEach(card => {
+      const txt = card.textContent.toLowerCase();
+      card.style.display = txt.includes(f) ? '' : 'none';
+    });
   }
 </script>
 </body>
