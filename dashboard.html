@@ -961,7 +961,7 @@ function refreshCurrentPage() {
 }
 
 async function updateStatutsActivite(){
-  const data=await sb('employes?select=id,discord_id,derniere_activite&actif=eq.true');
+  const data=await sb('comptes_dashboard?select=id,discord_id,derniere_activite&actif=eq.true');
   const now=new Date();
   for(const emp of(data||[])){
     if(!emp.derniere_activite)continue;
@@ -1713,7 +1713,7 @@ async function loadAccueil(){
   const semaine=getSemaine(),today=new Date().toISOString().split('T')[0];
   const[clients,employes,cmdSemaine,cmdJour,empPerf]=await Promise.all([
     sb('clients?select=id'),
-    sb('employes?select=id,poste,actif&actif=eq.true'),
+    sb('comptes_dashboard?select=id,poste,actif&actif=eq.true&role=neq.gouvernement'),
     sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}`),
     sb(`commandes?select=total,total_apres_reduction&created_at=gte.${today}T00:00:00`),
     sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}&employe_discord_id=eq.${USER.id}`),
@@ -1812,8 +1812,9 @@ async function loadCaisse(){
   const[prods,contrats]=await Promise.all([sb('produits?select=*&actif=eq.true&order=categorie.asc,nom.asc'),sb('contrats_reduction?select=*&actif=eq.true')]);
   produits=Array.isArray(prods)?prods:[];
   const sel=document.getElementById('caisseContrat');
-  if(sel)sel.innerHTML='<option value="">— Aucun contrat —</option>'+(Array.isArray(contrats)?contrats:[]).map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}" data-prix-achat="${c.prix_achat||false}">${c.nom}${c.prix_achat?' (Prix achat)':` (-${c.pourcentage}%)`}</option>`).join('');
-  const el=document.getElementById('caisseProduits');
+  if(sel)sel.innerHTML='<option value="">— Aucun contrat —</option>'+(Array.isArray(contrats)?contrats:[])
+    .filter(c => ROLE === 'direction' || !c.prix_achat)
+    .map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}" data-prix-achat="${c.prix_achat||false}">${c.nom}${c.prix_achat?' (Prix achat)':` (-${c.pourcentage}%)`}</option>`).join('');
   if(!el)return;
   if(!produits.length){el.innerHTML='<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">Aucun produit.</p></div>';return;}
   const CAT_ORDER=['Burger','Menu','Nugget','Boisson','Dessert','Accompagnement','Autre'];
@@ -2393,7 +2394,7 @@ async function loadVehicules() {
   const discordIds = [...new Set(data.map(v => v.employe_discord_id).filter(Boolean))];
   let empMap = {};
   if (discordIds.length) {
-    const emps = await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);
+    const emps = await sb(`comptes_dashboard?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);
     if (Array.isArray(emps)) emps.forEach(e => empMap[e.discord_id] = e);
   }
  
@@ -2502,7 +2503,7 @@ async function filtrerGouv(v) {
 ══════════════════════════════════════════════ */
 let allGouvEmps=[];
 async function loadEmployesGouv(){
-  const data=await sb('employes?select=id,nom,prenom,poste,contrat,actif,statut_activite,date_embauche,derniere_activite,photo_url,documents&order=nom.asc');
+  const data=await sb('comptes_dashboard?select=id,nom,prenom,poste,contrat,actif,statut_activite,date_embauche,derniere_activite,photo_url,documents&order=nom.asc&role=neq.gouvernement');
   allGouvEmps=Array.isArray(data)?data:[];
   renderGouvEmps(allGouvEmps);
 }
@@ -3096,7 +3097,7 @@ async function soumettreQuota() {
 async function renderQuotaTicketsList(tickets){
   const discordIds=[...new Set(tickets.map(t=>t.employe_discord_id).filter(Boolean))];
   let empMap={};
-  if(discordIds.length){const emps=await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
+  if(discordIds.length){const emps=await sb(`comptes_dashboard?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
   return tickets.map(t=>{
     const emp=empMap[t.employe_discord_id]||{};
     const isViande=t.type==='viande'||!t.type;
@@ -3420,7 +3421,7 @@ async function loadStats(){
   const[cmds,clients,employes,caData,livraisons]=await Promise.all([
     sb(`commandes?select=*&semaine=eq.${semaine}`),
     sb('clients?select=id'),
-    sb('employes?select=id&actif=eq.true'),
+    sb('comptes_dashboard?select=id&actif=eq.true&role=neq.gouvernement'),
     sb('parametres?cle=eq.ca_semaine'),
     sb(`livraisons?select=montant&semaine=eq.${semaine}`)
   ]);
@@ -3481,7 +3482,7 @@ async function loadQuotaTickets(){
   if(!Array.isArray(data)||!data.length){el.innerHTML='<p style="color:var(--muted)">Aucun ticket en attente.</p>';return;}
   const discordIds=[...new Set(data.map(t=>t.employe_discord_id).filter(Boolean))];
   let empMap={};
-  if(discordIds.length){const emps=await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
+  if(discordIds.length){const emps=await sb(`comptes_dashboard?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom,contrat`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
   el.innerHTML=data.map(t=>{
     const emp=empMap[t.employe_discord_id]||{};
     const isViande=t.type==='viande'||!t.type;
@@ -3783,7 +3784,7 @@ async function loadVehiculesReadonly() {
   const discordIds = [...new Set(data.map(v => v.employe_discord_id).filter(Boolean))];
   let empMap = {};
   if (discordIds.length) {
-    const emps = await sb(`employes?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);
+    const emps = await sb(`comptes_dashboard?discord_id=in.(${discordIds.join(',')})&select=discord_id,nom,prenom`);
     if (Array.isArray(emps)) emps.forEach(e => empMap[e.discord_id] = e);
   }
   el.innerHTML = data.map(v => {
