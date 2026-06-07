@@ -1330,7 +1330,12 @@ function buildPages(){
         <div class="card-title">Nouveau contrat</div>
         <div id="alertContrat"></div>
         <div class="form-group"><label class="form-label">Nom entreprise</label><input class="form-input" id="cNom" placeholder="Los Santos Corp"></div>
-        <div class="form-group"><label class="form-label">Réduction (%)</label><input class="form-input" id="cPct" type="number" min="1" max="100" placeholder="20"></div>
+        <div class="form-group"><label class="form-label">Réduction (%)</label><input class="form-input" id="cPct" type="number" min="0" max="100" placeholder="20"></div>
+        <div class="form-group"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;">
+          <input type="checkbox" id="cPrixAchat" style="accent-color:var(--red);width:16px;height:16px;">
+          Contrat au prix d'achat (employés)
+        </label>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Si coché, le prix final = coût d'achat de chaque produit (réduction ignorée)</div></div>
         <button class="btn btn-primary" onclick="saveContrat()">✅ Créer</button>
       </div>
       <div class="card" style="flex:1;"><div class="card-title">Contrats actifs</div><div id="contratsTable"></div></div>
@@ -1807,7 +1812,7 @@ async function loadCaisse(){
   const[prods,contrats]=await Promise.all([sb('produits?select=*&actif=eq.true&order=categorie.asc,nom.asc'),sb('contrats_reduction?select=*&actif=eq.true')]);
   produits=Array.isArray(prods)?prods:[];
   const sel=document.getElementById('caisseContrat');
-  if(sel)sel.innerHTML='<option value="">— Aucun contrat —</option>'+(Array.isArray(contrats)?contrats:[]).map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}">${c.nom} (-${c.pourcentage}%)</option>`).join('');
+  if(sel)sel.innerHTML='<option value="">— Aucun contrat —</option>'+(Array.isArray(contrats)?contrats:[]).map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}" data-prix-achat="${c.prix_achat||false}">${c.nom}${c.prix_achat?' (Prix achat)':` (-${c.pourcentage}%)`}</option>`).join('');
   const el=document.getElementById('caisseProduits');
   if(!el)return;
   if(!produits.length){el.innerHTML='<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">Aucun produit.</p></div>';return;}
@@ -1849,12 +1854,22 @@ function addToTicketQty(id){
 function updateContrat(){
   const sel=document.getElementById('caisseContrat');if(!sel)return;
   const opt=sel.options[sel.selectedIndex];
-  contratActif=sel.value?{id:sel.value,pct:parseFloat(opt.dataset.pct),nom:opt.text}:null;
+  contratActif=sel.value?{id:sel.value,pct:parseFloat(opt.dataset.pct),nom:opt.text,prixAchat:opt.dataset.prixAchat==='true'}:null;
   renderTicket();
 }
 function removeFromTicket(id){commande=commande.filter(x=>x.id!==id);renderTicket();}
 function calcCmd(){
   const brut=commande.reduce((a,b)=>a+(b.prix*b.qte),0);
+  
+  // Contrat "prix achat" : total = somme des cout_achat
+  if(contratActif?.prixAchat){
+    const net=commande.reduce((a,b)=>a+((b.cout_achat||0)*b.qte),0);
+    const montantR=brut-net;
+    const r=brut>0?Math.round((montantR/brut)*100):0;
+    const tvx=Math.round(net*TVX);
+    return{brut,r,montantR,net,tvx};
+  }
+  
   let r=0;
   if(clientActif?.pass){const pt=passTypes.find(p=>p.nom===clientActif.pass);if(pt?.reduction>0)r=Math.max(r,parseFloat(pt.reduction));}
   if(contratActif)r=Math.max(r,contratActif.pct);
@@ -3263,8 +3278,8 @@ async function loadContrats(){
 async function saveContrat(){
   const nom=document.getElementById('cNom').value.trim(),pct=document.getElementById('cPct').value;
   const alertEl=document.getElementById('alertContrat');
-  if(!nom||!pct){alertEl.innerHTML='<div class="alert alert-err">⚠️ Champs obligatoires.</div>';return;}
-  await sb('contrats_reduction',{method:'POST',body:JSON.stringify({nom,pourcentage:parseFloat(pct),actif:true})});
+  if(!nom){alertEl.innerHTML='<div class="alert alert-err">⚠️ Champs obligatoires.</div>';return;}
+  await sb('contrats_reduction',{method:'POST',body:JSON.stringify({nom,pourcentage:parseFloat(pct)||0,prix_achat:document.getElementById('cPrixAchat')?.checked||false,actif:true})});
   alertEl.innerHTML='<div class="alert alert-ok">✅ Contrat créé !</div>';
   document.getElementById('cNom').value='';document.getElementById('cPct').value='';loadContrats();
 }
