@@ -859,7 +859,9 @@ document.addEventListener('click', e => {
 });
   buildPages();
   updateTopCoffre();
-  showPage(ROLE === 'gouvernement' ? 'stats' : 'accueil');
+  const lastPage = localStorage.getItem('bs_last_page');
+  const defaultPage = ROLE === 'gouvernement' ? 'stats' : 'accueil';
+  showPage(lastPage || defaultPage);
   if (ROLE === 'employe') trackActivity();
 
   initRealtime();
@@ -3670,7 +3672,8 @@ function showPage(id) {
   };
 
   if (loaders[id]) loaders[id]();
-}  // ← showPage se ferme ici
+  localStorage.setItem('bs_last_page', id);
+}  // ← showPage se ferme ici  // ← showPage se ferme ici
 
 async function loadEmployesReadonly() {
   const el = document.getElementById('empReadonlyGrid');
