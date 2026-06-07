@@ -2184,7 +2184,7 @@ async function voirCommandesClient(clientId,clientName){
     let items=[];try{items=JSON.parse(c.items||'[]');}catch{}
     return`<div style="padding:12px;background:var(--card2);border-radius:8px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:12px;color:var(--muted);">${new Date(c.created_at).toLocaleString('fr-FR')}</span>
+        <span style="font-size:12px;color:var(--muted);">${new Date(c.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</span>
         <strong style="color:var(--success);">${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong>
       </div>
       <div style="font-size:12px;color:var(--muted);">${items.map(i=>`${i.nom}×${i.qte}`).join(', ')}</div>
@@ -2975,7 +2975,7 @@ async function loadQuotaPage(){
       <div style="display:flex;justify-content:space-between;align-items:start;">
         <div>
           <div style="font-weight:700;">${t.type==='viande'?'🥩 Viande':'🥔 Patates'} — 🚚 ${t.plaque} — ${t.quantite} unités</div>
-          <div style="font-size:12px;color:var(--muted);">${new Date(t.created_at).toLocaleString('fr-FR')}</div>
+          <div style="font-size:12px;color:var(--muted);">${new Date(t.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</div>
           ${t.notes?`<div style="font-size:12px;color:var(--muted);">${t.notes}</div>`:''}
         </div>
         <span class="badge ${t.statut==='valide'?'badge-green':t.statut==='refuse'?'badge-red':'badge-orange'}">${t.statut==='valide'?'✅ Validé':t.statut==='refuse'?'❌ Refusé':'⏳ En attente'}</span>
@@ -3083,7 +3083,7 @@ async function renderQuotaTicketsList(tickets){
     return`<div class="quota-ticket pending" id="ticket-${t.id}">
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;"><div>
         <div style="font-weight:800;">${emp.prenom||'?'} ${emp.nom||''}</div>
-        <div style="font-size:12px;color:var(--muted);">${emp.contrat||'—'} · ${new Date(t.created_at).toLocaleString('fr-FR')}</div>
+        <div style="font-size:12px;color:var(--muted);">${emp.contrat||'—'} · ${new Date(t.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</div>
       </div><span class="badge badge-orange">⏳</span></div>
       <div style="display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
         <span>${isViande?'🥩':'🥔'} <strong>${isViande?'Viande':'Patates'}</strong></span>
@@ -3413,7 +3413,7 @@ async function loadStats(){
   ].map(s=>`<div class="stat-card" style="--accent:${s.accent};"><div class="stat-icon">${s.icon}</div><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>`).join('');
   const recentEl=document.getElementById('statsCommandes');
   if(!Array.isArray(cmds)||!cmds.length)recentEl.innerHTML='<p style="color:var(--muted)">Aucune commande.</p>';
-  else recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th><th>Réduction</th></tr></thead><tbody>`+cmds.slice(0,10).map(c=>`<tr><td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</td><td><strong>${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong></td><td>${c.reduction_pct?`<span class="badge badge-orange">-${c.reduction_pct}%</span>`:'—'}</td></tr>`).join('')+'</tbody></table>';
+  else recentEl.innerHTML=`<table><thead><tr><th>Heure</th><th>Total</th><th>Réduction</th></tr></thead><tbody>`+cmds.slice(0,10).map(c=>`<tr><td>${new Date(c.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'})}</td><td><strong>${(c.total_apres_reduction||c.total||0).toLocaleString('fr-FR')}$</strong></td><td>${c.reduction_pct?`<span class="badge badge-orange">-${c.reduction_pct}%</span>`:'—'}</td></tr>`).join('')+'</tbody></table>';
   document.getElementById('statsFinances').innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;">
     <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>CA brut</span><strong>${ca.toLocaleString('fr-FR')}$</strong></div>
     <div style="display:flex;justify-content:space-between;padding:12px;background:var(--card2);border-radius:8px;"><span>Livraisons</span><strong style="color:var(--orange);">+${caLiv.toLocaleString('fr-FR')}$</strong></div>
@@ -3508,7 +3508,7 @@ async function loadLivraisons(){
   const total=data.reduce((a,l)=>a+(l.montant||0),0);
   el.innerHTML=`<div style="margin-bottom:10px;font-weight:700;color:var(--success);">Total semaine : ${total.toLocaleString('fr-FR')}$</div>`+
   `<table><thead><tr><th>Montant</th><th>Notes</th><th>Date</th></tr></thead><tbody>`+
-  data.map(l=>`<tr><td><strong style="color:var(--success);">+${l.montant.toLocaleString('fr-FR')}$</strong></td><td>${l.notes||'—'}</td><td>${new Date(l.created_at).toLocaleString('fr-FR')}</td></tr>`).join('')+
+  data.map(l=>`<tr><td><strong style="color:var(--success);">+${l.montant.toLocaleString('fr-FR')}$</strong></td><td>${l.notes||'—'}</td><td>${new Date(d.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</td></tr>`).join('')+
   '</tbody></table>';
 }
 
@@ -5219,7 +5219,7 @@ async function verserPrime(id) {
       const isSortie = l.sortie > 0;
       const isAttente = l.attente > 0;
       return `<tr style="border-left:3px solid ${cfg.color};">
-        <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${new Date(l.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${new Date(l.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'})}</td>
         <td><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;background:${cfg.bg};border:1px solid ${cfg.border};color:${cfg.color};">${cfg.icon} ${cfg.label}</span></td>
         <td style="font-weight:700;">${l.label}</td>
         <td style="font-size:12px;color:var(--muted);">${l.detail}</td>
