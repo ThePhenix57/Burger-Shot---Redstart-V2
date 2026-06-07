@@ -3471,7 +3471,7 @@ function renderHeatmap(cmds){
         <div style="font-size:10px;color:var(--muted);display:flex;align-items:center;">${day}</div>
         ${grid[di].map(v=>{
           const p=v/maxVal;
-          const alpha=v===0?0.04:0.12+p*0.83;
+          const alpha=v===0?0:0.12+p*0.83;
           const textColor=p>0.5?'#fff':v>0?'var(--text)':'transparent';
           return`<div style="height:28px;border-radius:4px;background:rgba(192,57,43,${alpha.toFixed(2)});display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${textColor};">${v>0?v:''}</div>`;
         }).join('')}
