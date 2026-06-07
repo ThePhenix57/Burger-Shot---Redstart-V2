@@ -3449,10 +3449,35 @@ async function loadStats(){
   document.getElementById('statsImpots').innerHTML=`<table><thead><tr><th>Tranche</th><th>Taux</th><th>Statut</th></tr></thead><tbody>`+paliers.map(p=>`<tr><td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td><td><span class="badge badge-blue">${p.taux}</span></td><td>${ca>=p.min&&ca<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td></tr>`).join('')+'</tbody></table>';
 }
 function renderHeatmap(cmds){
-  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],hours=['8h','10h','12h','14h','16h','18h','20h'],grid=Array.from({length:7},()=>Array(7).fill(0));
-  (cmds||[]).forEach(c=>{const d=new Date(c.created_at||Date.now()),di=(d.getDay()+6)%7,hi=Math.min(6,Math.max(0,Math.floor((d.getHours()-8)/2)));grid[di][hi]++;});
+  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const hours=Array.from({length:24},(_,i)=>String(i).padStart(2,'0')+'h');
+  const grid=Array.from({length:7},()=>Array(24).fill(0));
+
+  (cmds||[]).forEach(c=>{
+    const d=new Date(c.created_at||Date.now());
+    const di=(d.getDay()+6)%7;
+    const hi=d.getHours(); // 0-23 direct
+    grid[di][hi]++;
+  });
+
   const maxVal=Math.max(1,...grid.flat());
-  document.getElementById('statsHeatmap').innerHTML=`<div style="display:grid;grid-template-columns:50px repeat(7,1fr);gap:3px;margin-top:10px;"><div></div>${hours.map(h=>`<div style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:4px;">${h}</div>`).join('')}${days.map((day,di)=>`<div style="font-size:10px;color:var(--muted);display:flex;align-items:center;">${day}</div>${grid[di].map(v=>{const p=v/maxVal,a=0.05+p*.85;return`<div style="height:32px;border-radius:4px;background:rgba(192,57,43,${a.toFixed(2)});display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${p>.4?'#fff':'var(--muted)'};">${v||''}</div>`;}).join('')}`).join('')}</div>`;
+
+  document.getElementById('statsHeatmap').innerHTML=`
+    <div style="overflow-x:auto;">
+    <div style="display:grid;grid-template-columns:50px repeat(24,1fr);gap:3px;margin-top:10px;min-width:700px;">
+      <div></div>
+      ${hours.map(h=>`<div style="text-align:center;font-size:9px;color:var(--muted);padding-bottom:4px;">${h}</div>`).join('')}
+      ${days.map((day,di)=>`
+        <div style="font-size:10px;color:var(--muted);display:flex;align-items:center;">${day}</div>
+        ${grid[di].map(v=>{
+          const p=v/maxVal;
+          const alpha=v===0?0.04:0.12+p*0.83;
+          const textColor=p>0.5?'#fff':v>0?'var(--text)':'transparent';
+          return`<div style="height:28px;border-radius:4px;background:rgba(192,57,43,${alpha.toFixed(2)});display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${textColor};">${v||''}</div>`;
+        }).join('')}
+      `).join('')}
+    </div>
+    </div>`;
 }
 
 /* ══════════════════════════════════════════════
