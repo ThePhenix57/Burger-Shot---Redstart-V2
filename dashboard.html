@@ -4766,6 +4766,7 @@ async function loadBenefices() {
             <td><span class="badge badge-blue">${p.cat}</span></td>
             <td style="text-align:center;font-weight:700;">×${p.qte}</td>
             <td>${p.prixVente.toLocaleString('fr-FR')}$</td>
+            <td style="color:var(--red);">${p.coutAchat > 0 ? p.coutAchat.toLocaleString('fr-FR') + '$' : '<span style="color:var(--muted)">maison</span>'}</td>
             <td><strong>+${Math.round(p.ca).toLocaleString('fr-FR')}$</strong></td>
             <td style="color:var(--red);">${p.coutAchat > 0 ? '-' + Math.round(p.cout).toLocaleString('fr-FR') + '$' : '—'}</td>
             <td><strong style="color:var(--success);">+${Math.round(p.benef).toLocaleString('fr-FR')}$</strong></td>
