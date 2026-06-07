@@ -1938,6 +1938,7 @@ function ouvrirValidation(){
 }
 async function confirmerCommande(avecApercu=false){
   const c=calcCmd(),pts=calcPts(),semaine=getSemaine();
+  const commandeSnapshot=[...commande];
   const cmdResult=await sb('commandes',{method:'POST',body:JSON.stringify({
     client_id:clientActif?.id||null,employe_discord_id:USER.id,items:JSON.stringify(commande),
     total:c.brut,reduction_pct:c.r,total_apres_reduction:c.net,
@@ -1973,6 +1974,7 @@ async function confirmerCommande(avecApercu=false){
   // Notif Discord — Vente
   await envoyerWebhookDiscord({
     username: 'Burger Shot — Caisse',
+    avatar_url: 'https://upload.redstartrp.fr/uploads/photo-1780754200-4124687fb57f.png',
     embeds: [{
       title: '🧾 Nouvelle commande validée',
       color: 0x27ae60,
@@ -1980,7 +1982,7 @@ async function confirmerCommande(avecApercu=false){
         { name: '👤 Employé', value: USER.displayName || '—', inline: true },
         { name: '💰 Total net', value: `${c.net.toLocaleString('fr-FR')}$`, inline: true },
         { name: '👥 Client', value: clientActif ? `${clientActif.prenom} ${clientActif.nom}` : 'Client comptant', inline: true },
-        { name: '🛒 Articles', value: commande.map(p=>`${p.nom} ×${p.qte}`).join(', '), inline: false },
+        { name: '🛒 Articles', value: commandeSnapshot.map(p=>`${p.nom} ×${p.qte}`).join(', ') || '—', inline: false },
       ],
       timestamp: new Date().toISOString(),
       footer: { text: 'Burger Shot • Los Santos' }
