@@ -827,7 +827,14 @@ window.addEventListener('DOMContentLoaded', async () => {
   USER = { id, username, displayName, avatar, role: ROLE };
 
   const av = document.getElementById('topAvatar');
-  if (avatar) {
+  // Priorité : photo_url BDD → avatar Discord → initiale
+  const photoUrl = empRP?.[0]?.photo_url || null;
+  if (photoUrl) {
+    const img = document.createElement('img');
+    img.src = photoUrl;
+    img.onerror = () => { av.innerHTML = ''; av.textContent = displayName.charAt(0).toUpperCase(); };
+    av.appendChild(img);
+  } else if (avatar) {
     const img = document.createElement('img');
     img.src = `https://cdn.discordapp.com/avatars/${id}/${avatar}.png`;
     img.onerror = () => av.textContent = displayName.charAt(0).toUpperCase();
@@ -2672,6 +2679,8 @@ async function ouvrirDocsAjout(empId, nom) {
   document.getElementById('ovDocsTitle').textContent = `📎 Ajouter un document — ${nom}`;
   const el = document.getElementById('ovDocsContent');
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const _p = document.querySelector('#ovDocs .popup');
+  if (_p) { _p.style.maxHeight = ''; _p.style.overflowY = ''; }
   openOverlay('ovDocs');
 
   const data = await sb(`comptes_dashboard?id=eq.${empId}&select=documents`);
@@ -2755,6 +2764,8 @@ async function voirDocsEmploye(empId, nom) {
   document.getElementById('ovDocsTitle').textContent = `👤 Fiche — ${nom}`;
   const el = document.getElementById('ovDocsContent');
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const _p = document.querySelector('#ovDocs .popup');
+  if (_p) { _p.style.maxHeight = 'none'; _p.style.overflowY = 'visible'; }
   openOverlay('ovDocs');
 
   const data = await sb(`comptes_dashboard?id=eq.${empId}&select=*`);
@@ -3419,6 +3430,8 @@ function afficherDetailJour(y, m, d) {
   document.getElementById('ovDocsTitle').textContent = `📅 ${pad(d)}/${pad(m)}/${y}`;
   document.getElementById('ovDocsContent').innerHTML = html +
     (canAdd ? `<button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="closeOverlay('ovDocs');prefillResa(${y},${m},${d})">➕ Ajouter un événement</button>` : '');
+  const _p = document.querySelector('#ovDocs .popup');
+  if (_p) { _p.style.maxHeight = ''; _p.style.overflowY = ''; }
   openOverlay('ovDocs');
 }
  
@@ -3435,6 +3448,8 @@ async function afficherDetailEvenement(id) {
       ${e.notes?`<div style="font-size:14px;margin-top:10px;">${e.notes}</div>`:''}
     </div>
     ${(ROLE==='direction'||USER_NIVEAU>=2)?`<button class="btn btn-danger btn-sm" style="margin-top:14px;" onclick="supprimerEvenement('${e.id}')">🗑️ Supprimer cet événement</button>`:''}`;
+  const ovDocsPopup = document.querySelector('#ovDocs .popup');
+  if (ovDocsPopup) { ovDocsPopup.style.maxHeight = ''; ovDocsPopup.style.overflowY = ''; }
   openOverlay('ovDocs');
 }
  
