@@ -1817,7 +1817,11 @@ async function loadCaisse(){
   const el=document.getElementById('caisseProduits');
   const sel=document.getElementById('caisseContrat');
   if(sel)sel.innerHTML='<option value="">— Aucun contrat —</option>'+(Array.isArray(contrats)?contrats:[])
-    .filter(c => ROLE === 'direction' || !c.prix_achat)
+    .filter(c => {
+    if (!c.prix_achat) return true;
+    // Contrat "prix achat" = réservé direction stricte uniquement
+    return ROLE === 'direction';
+  })
     .map(c=>`<option value="${c.id}" data-pct="${c.pourcentage}" data-prix-achat="${c.prix_achat||false}">${c.nom}${c.prix_achat?' (Prix achat)':` (-${c.pourcentage}%)`}</option>`).join('');
   if(!el)return;
   if(!produits.length){el.innerHTML='<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">Aucun produit.</p></div>';return;}
@@ -1995,6 +1999,15 @@ async function confirmerCommande(avecApercu=false){
   genTicket();
   if(!avecApercu)alert('✅ Commande validée !');
   // Notif Discord — Vente
+  // Notif Discord — Vente
+const reductionDetail = c.r > 0
+  ? contratActif
+    ? `Contrat entreprise : ${contratActif.nom}${contratActif.prixAchat ? ' (prix achat)' : ` (-${c.r}%)`} → -${c.montantR.toLocaleString('fr-FR')}$`
+    : clientActif?.pass
+      ? `Pass client : ${clientActif.pass} (-${c.r}%) → -${c.montantR.toLocaleString('fr-FR')}$`
+      : `Réduction -${c.r}% → -${c.montantR.toLocaleString('fr-FR')}$`
+  : null;
+
   await envoyerWebhookDiscord({
     username: 'Burger Shot — Caisse',
     avatar_url: 'https://upload.redstartrp.fr/uploads/photo-1780754200-4124687fb57f.png',
@@ -2003,8 +2016,10 @@ async function confirmerCommande(avecApercu=false){
       color: 0x27ae60,
       fields: [
         { name: '👤 Employé', value: USER.displayName || '—', inline: true },
-        { name: '💰 Total net', value: `${c.net.toLocaleString('fr-FR')}$`, inline: true },
+        { name: '💰 Brut', value: `${c.brut.toLocaleString('fr-FR')}$`, inline: true },
+        { name: '💵 Total net', value: `${c.net.toLocaleString('fr-FR')}$`, inline: true },
         { name: '👥 Client', value: clientActif ? `${clientActif.prenom} ${clientActif.nom}` : 'Client comptant', inline: true },
+        ...(reductionDetail ? [{ name: '🏷️ Réduction appliquée', value: reductionDetail, inline: false }] : []),
         { name: '🛒 Articles', value: commandeSnapshot.map(p=>`${p.nom} ×${p.qte}`).join(', ') || '—', inline: false },
       ],
       timestamp: new Date().toISOString(),
@@ -2774,15 +2789,31 @@ async function voirDocsEmploye(empId, nom) {
   el.innerHTML = `
     <!-- CARTE IDENTITÉ -->
     <div style="background:linear-gradient(135deg,rgba(192,57,43,.12),rgba(230,126,34,.08));border:1px solid rgba(192,57,43,.25);border-radius:12px;padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:18px;">
-      <div style="width:72px;height:72px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;flex-shrink:0;border:3px solid rgba(192,57,43,.4);overflow:hidden;">
-        ${e.photo_url ? `<img src="${e.photo_url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">` : initials}
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+      <div style="position:relative;flex-shrink:0;">
+        <div style="width:80px;height:80px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;border:3px solid rgba(192,57,43,.4);overflow:hidden;cursor:pointer;" 
+             id="avatarPreview" onclick="document.getElementById('avatarFileInput').click()"
+             ondragover="event.preventDefault();this.style.borderColor='#fff'" 
+             ondragleave="this.style.borderColor='rgba(192,57,43,.4)'"
+             ondrop="handleAvatarDrop(event,'${e.id}')">
+          ${e.photo_url ? `<img src="${e.photo_url}" id="avatarImg" style="width:100%;height:100%;object-fit:cover;">` : `<span id="avatarInitials">${initials}</span>`}
+        </div>
+        <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:2px solid var(--card);" onclick="document.getElementById('avatarFileInput').click()">✏️</div>
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarFile(this.files[0],'${e.id}')">
       </div>
       <div style="flex:1;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;">${e.prenom} ${e.nom}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Cliquer ou glisser une image sur l'avatar pour le modifier</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
           <span class="badge badge-orange">${e.poste||'—'}</span>
           <span class="badge badge-blue">${e.contrat||'—'}</span>
           <span class="badge ${e.actif?'badge-green':'badge-red'}">${e.actif?'Actif':'Inactif'}</span>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input class="form-input" id="avatarUrlInput" placeholder="Ou coller une URL d'image..." 
+                 value="${e.photo_url||''}" style="flex:1;font-size:12px;min-width:200px;"
+                 oninput="previewAvatarUrl(this.value)">
+          <button class="btn btn-primary btn-sm" onclick="sauvegarderAvatar('${e.id}')">💾 Sauvegarder</button>
         </div>
       </div>
     </div>
@@ -5314,6 +5345,94 @@ async function verserPrime(id) {
       card.style.display = txt.includes(f) ? '' : 'none';
     });
   }
+/* ══════════════════════════════════════════════
+   AVATAR EMPLOYÉ
+══════════════════════════════════════════════ */
+function handleAvatarDrop(event, empId) {
+  event.preventDefault();
+  document.getElementById('avatarPreview').style.borderColor = 'rgba(192,57,43,.4)';
+  const file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleAvatarFile(file, empId);
+}
+
+async function handleAvatarFile(file, empId) {
+  if (!file) return;
+  const preview = document.getElementById('avatarPreview');
+  if (preview) preview.style.opacity = '0.5';
+
+  const ext = file.name.split('.').pop();
+  const fileName = `avatar_${empId}_${Date.now()}.${ext}`;
+
+  try {
+    const res = await fetch(`${SB_URL}/storage/v1/object/produits/${fileName}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    const publicUrl = `${SB_URL}/storage/v1/object/public/produits/${fileName}`;
+
+    // Met à jour le preview
+    if (preview) {
+      preview.innerHTML = `<img src="${publicUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      preview.style.opacity = '1';
+    }
+    const urlInput = document.getElementById('avatarUrlInput');
+    if (urlInput) urlInput.value = publicUrl;
+
+    // Sauvegarde direct
+    await sauvegarderAvatarUrl(empId, publicUrl);
+
+  } catch(err) {
+    console.error('Avatar upload error:', err);
+    if (preview) preview.style.opacity = '1';
+    alert('❌ Erreur lors de l\'upload.');
+  }
+}
+
+function previewAvatarUrl(url) {
+  const preview = document.getElementById('avatarPreview');
+  if (!preview) return;
+  if (url.trim()) {
+    preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<span style=\\'font-size:24px;\\'>❌</span>'">`;
+  }
+}
+
+async function sauvegarderAvatar(empId) {
+  const url = document.getElementById('avatarUrlInput')?.value.trim();
+  if (!url) { alert('URL vide.'); return; }
+  await sauvegarderAvatarUrl(empId, url);
+}
+
+async function sauvegarderAvatarUrl(empId, url) {
+  await sb(`comptes_dashboard?id=eq.${empId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ photo_url: url })
+  });
+
+  // Met à jour la carte employé dans la grille sans recharger toute la page
+  const card = document.querySelector(`[onclick*="voirDocsEmploye('${empId}'"]`);
+  if (card) {
+    const avatarEl = card.closest('.emp-card')?.querySelector('.emp-avatar img');
+    if (avatarEl) avatarEl.src = url;
+  }
+
+  // Notif discrète
+  const btn = document.querySelector(`[onclick="sauvegarderAvatar('${empId}')"]`);
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✅ Sauvegardé !';
+    btn.style.background = 'var(--success)';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+  }
+}
 </script>
 </body>
 </html>
