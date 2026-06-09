@@ -805,6 +805,7 @@ async function trackActivity(){
 ══════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async () => {
   startClock();
+  afficherBanniereZouzous();
 
   // Priorité 1 : session gouvernement
   let raw = localStorage.getItem('bs_gouv_user');
