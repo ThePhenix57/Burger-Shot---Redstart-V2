@@ -300,7 +300,16 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 .upload-progress-bar{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:2px;transition:width .3s;}
 .upload-thumb{width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px;border:1px solid var(--border);padding:6px;background:var(--card);display:block;margin-bottom:8px;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+/* MERCREDI DES ZOUZOUS */
+.zouzous-banner{position:fixed;right:20px;top:160px;z-index:9000;background:linear-gradient(135deg,#e74c3c,#e67e22);border-radius:14px;padding:12px 18px;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:220px;text-align:center;animation:zouzousPulse 2s ease-in-out infinite;}
+.zouzous-banner .zz-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#fff;}
+.zouzous-banner .zz-sub{font-size:11px;color:rgba(255,255,255,.85);margin-top:3px;}
+.zouzous-banner .zz-pct{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;line-height:1;}
+@keyframes zouzousPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;opacity:0;pointer-events:none;z-index:8999;animation:confettiFall linear forwards;}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(-80vh) rotate(720deg);}}
+</script>
 </head>
 <body>
 
@@ -745,6 +754,44 @@ function startClock() {
  
 console.log('✅ Patch v2 chargé — inserts corrigés');
 
+/* ══ MERCREDI DES ZOUZOUS ══ */
+function isMercredi(){return new Date().getDay()===3;}
+
+function lancerConfettis(){
+  if(sessionStorage.getItem('zz_confettis'))return;
+  sessionStorage.setItem('zz_confettis','1');
+  const colors=['#e74c3c','#e67e22','#f1c40f','#27ae60','#3498db','#9b59b6'];
+  const positions=[{left:'5px',bottom:'0'},{right:'5px',bottom:'0'}];
+  positions.forEach(pos=>{
+    for(let i=0;i<18;i++){
+      const el=document.createElement('div');
+      el.className='confetti-piece';
+      el.style.cssText=Object.entries(pos).map(([k,v])=>`${k}:${v}`).join(';');
+      el.style.left=pos.left||'auto';
+      el.style.right=pos.right||'auto';
+      el.style.bottom=`${Math.random()*40}px`;
+      el.style.background=colors[Math.floor(Math.random()*colors.length)];
+      el.style.animationDuration=`${1.5+Math.random()*2}s`;
+      el.style.animationDelay=`${Math.random()*1.5}s`;
+      el.style.width=`${6+Math.random()*8}px`;
+      el.style.height=`${6+Math.random()*8}px`;
+      document.body.appendChild(el);
+      el.addEventListener('animationend',()=>el.remove());
+    }
+  });
+}
+
+function afficherBanniereZouzous(){
+  if(!isMercredi())return;
+  if(document.getElementById('zouzousBanner'))return;
+  const b=document.createElement('div');
+  b.id='zouzousBanner';
+  b.className='zouzous-banner';
+  b.innerHTML=`<div class="zz-title">🎉 Mercredi des Zouzous</div><div class="zz-pct">-10%</div><div class="zz-sub">sur toute la carte aujourd'hui !</div>`;
+  document.body.appendChild(b);
+  lancerConfettis();
+}
+
 /* ══════════════════════════════════════════════
    TRACKING ACTIVITÉ
 ══════════════════════════════════════════════ */
@@ -894,7 +941,7 @@ document.addEventListener('click', e => {
 });
 
 async function loadQuotaConfig(){
-  const configs=await sb('parametres?cle=in.(quota_cdd_viande,quota_cdd_patates,quota_cdi_viande,quota_cdi_patates,prime_quota_cdd,prime_quota_cdi)')||[];
+  const configs=await sb('parametres?cle=in.(quota_cdd_viande,quota_cdd_patates,quota_cdi_viande,quota_cdi_patates,prime_quota_cdd,prime_quota_cdi,quota_cdd_actif,quota_cdi_actif)')||[];
   configs.forEach(c=>{
     if(c.cle==='quota_cdd_viande')quotaConfig.cdd_quota_viande=parseFloat(c.valeur)||100;
     if(c.cle==='quota_cdd_patates')quotaConfig.cdd_quota_patates=parseFloat(c.valeur)||50;
@@ -902,6 +949,8 @@ async function loadQuotaConfig(){
     if(c.cle==='quota_cdi_patates')quotaConfig.cdi_quota_patates=parseFloat(c.valeur)||100;
     if(c.cle==='prime_quota_cdd')quotaConfig.cdd_prime=parseFloat(c.valeur)||500;
     if(c.cle==='prime_quota_cdi')quotaConfig.cdi_prime=parseFloat(c.valeur)||800;
+    if(c.cle==='quota_cdd_actif')quotaConfig.cdd_actif=c.valeur==='true';
+    if(c.cle==='quota_cdi_actif')quotaConfig.cdi_actif=c.valeur==='true';
   });
 }
 
@@ -1370,6 +1419,11 @@ function buildPages(){
         <div class="g2">
           <div class="form-group"><label class="form-label">Prime 100% CDD ($)</label><input class="form-input" id="gPrimeCDD" type="number" placeholder="500"></div>
           <div class="form-group"><label class="form-label">Prime 100% CDI ($)</label><input class="form-input" id="gPrimeCDI" type="number" placeholder="800"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Activer les quotas par contrat</div>
+        <div class="g2">
+          <div class="form-group"><label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="gQuotaCDDActif" style="accent-color:var(--red);width:16px;height:16px;"> Quota actif pour les CDD</label></div>
+          <div class="form-group"><label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="gQuotaCDIActif" style="accent-color:var(--red);width:16px;height:16px;"> Quota actif pour les CDI</label></div>
         </div>
         <button class="btn btn-primary" onclick="saveQuotaConfig()">💾 Sauvegarder</button>
       </div>
@@ -1887,6 +1941,7 @@ function calcCmd(){
   }
   
   let r=0;
+  if(isMercredi())r=Math.max(r,10); // Mercredi des Zouzous
   if(clientActif?.pass){const pt=passTypes.find(p=>p.nom===clientActif.pass);if(pt?.reduction>0)r=Math.max(r,parseFloat(pt.reduction));}
   if(contratActif)r=Math.max(r,contratActif.pct);
   const montantR=Math.round(brut*r/100);
@@ -2983,6 +3038,11 @@ async function loadQuotaPage(){
   el.innerHTML='<div class="loading"><div class="spin"></div></div>';
   const empData=await sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=*`);
   const emp=empData?.[0];
+  const quotaActif=emp?.contrat==='CDI'?quotaConfig.cdi_actif:quotaConfig.cdd_actif;
+  if(quotaActif===false){
+    el.innerHTML=`<div class="card"><div class="alert alert-warn" style="margin:20px;">⏸️ Les quotas sont désactivés pour les contrats ${emp.contrat} cette semaine.</div></div>`;
+    return;
+  }
   if(!emp){el.innerHTML='<div class="alert alert-warn">⚠️ Profil employé non configuré.</div>';return;}
   const qMaxV=emp.contrat==='CDI'?quotaConfig.cdi_quota_viande:quotaConfig.cdd_quota_viande;
   const qMaxP=emp.contrat==='CDI'?quotaConfig.cdi_quota_patates:quotaConfig.cdd_quota_patates;
@@ -3541,7 +3601,8 @@ async function loadGestion(){
     if(c.cle==='quota_cdi_viande')setVal('gQuotaCDIViande',c.valeur);
     if(c.cle==='quota_cdi_patates')setVal('gQuotaCDIPatates',c.valeur);
     if(c.cle==='prime_quota_cdd')setVal('gPrimeCDD',c.valeur);
-    if(c.cle==='prime_quota_cdi')setVal('gPrimeCDI',c.valeur);
+    if(c.cle==='quota_cdd_actif'){const el=document.getElementById('gQuotaCDDActif');if(el)el.checked=c.valeur==='true';}
+  if(c.cle==='quota_cdi_actif'){const el=document.getElementById('gQuotaCDIActif');if(el)el.checked=c.valeur==='true';}
   });
   await loadQuotaTickets();await loadCoffreComplet();await loadPrimesTable();await loadLivraisons();
   await loadSoldeInitial();
@@ -3585,6 +3646,14 @@ async function loadQuotaTickets(){
 
 async function saveQuotaConfig(){
   const vals=[['quota_cdd_viande','gQuotaCDDViande'],['quota_cdd_patates','gQuotaCDDPatates'],['quota_cdi_viande','gQuotaCDIViande'],['quota_cdi_patates','gQuotaCDIPatates'],['prime_quota_cdd','gPrimeCDD'],['prime_quota_cdi','gPrimeCDI']];
+  // Flags actif
+  const cddActif=document.getElementById('gQuotaCDDActif')?.checked;
+  const cdiActif=document.getElementById('gQuotaCDIActif')?.checked;
+  for(const[cle,val]of[['quota_cdd_actif',String(cddActif)],['quota_cdi_actif',String(cdiActif)]]){
+    const ex=await sb(`parametres?cle=eq.${cle}`);
+    if(ex?.[0])await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});
+    else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});
+}
   for(const[cle,elId]of vals){const val=document.getElementById(elId)?.value;if(!val)continue;const ex=await sb(`parametres?cle=eq.${cle}`);if(ex?.[0])await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});}
   const alertEl=document.getElementById('alertGestion');if(alertEl)alertEl.innerHTML='<div class="alert alert-ok">✅ Sauvegardé !</div>';
   await loadQuotaConfig();
