@@ -309,6 +309,7 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 @keyframes zouzousPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
 .confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;opacity:0;pointer-events:none;z-index:8999;animation:confettiFall linear forwards;}
 @keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(-80vh) rotate(720deg);}}
+@keyframes confettiTombe{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(100vh) rotate(720deg);}}
 </script>
 </head>
 <body>
@@ -758,27 +759,24 @@ console.log('✅ Patch v2 chargé — inserts corrigés');
 function isMercredi(){return new Date().getDay()===3;}
 
 function lancerConfettis(){
-  if(sessionStorage.getItem('zz_confettis'))return;
-  sessionStorage.setItem('zz_confettis','1');
-  const colors=['#e74c3c','#e67e22','#f1c40f','#27ae60','#3498db','#9b59b6'];
-  const positions=[{left:'5px',bottom:'0'},{right:'5px',bottom:'0'}];
-  positions.forEach(pos=>{
-    for(let i=0;i<18;i++){
-      const el=document.createElement('div');
-      el.className='confetti-piece';
-      el.style.cssText=Object.entries(pos).map(([k,v])=>`${k}:${v}`).join(';');
-      el.style.left=pos.left||'auto';
-      el.style.right=pos.right||'auto';
-      el.style.bottom=`${Math.random()*40}px`;
-      el.style.background=colors[Math.floor(Math.random()*colors.length)];
-      el.style.animationDuration=`${1.5+Math.random()*2}s`;
-      el.style.animationDelay=`${Math.random()*1.5}s`;
-      el.style.width=`${6+Math.random()*8}px`;
-      el.style.height=`${6+Math.random()*8}px`;
-      document.body.appendChild(el);
-      el.addEventListener('animationend',()=>el.remove());
-    }
-  });
+  const colors=['#e74c3c','#e67e22','#f1c40f','#27ae60','#3498db','#9b59b6','#fff'];
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left=`${Math.random()*100}vw`;
+    el.style.top=`-10px`;
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.width=`${6+Math.random()*8}px`;
+    el.style.height=`${6+Math.random()*8}px`;
+    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    el.style.position='fixed';
+    el.style.zIndex='8999';
+    el.style.pointerEvents='none';
+    el.style.opacity='1';
+    el.style.animation=`confettiTombe ${2+Math.random()*3}s ${Math.random()*2}s linear forwards`;
+    document.body.appendChild(el);
+    el.addEventListener('animationend',()=>el.remove());
+  }
 }
 
 function afficherBanniereZouzous(){
@@ -786,8 +784,8 @@ function afficherBanniereZouzous(){
   if(document.getElementById('zouzousBanner'))return;
   const b=document.createElement('div');
   b.id='zouzousBanner';
-  b.style.cssText='position:fixed;right:20px;top:160px;z-index:9000;cursor:pointer;animation:zouzousPulse 2s ease-in-out infinite;';
-  b.innerHTML=`<img src="https://upload.redstartrp.fr/uploads/photo-1781005432-e026a2279949.png" style="height:180px;object-fit:contain;filter:drop-shadow(0 8px 24px rgba(0,0,0,.5));" alt="Mercredi des Zouzous">`;
+  b.style.cssText='position:fixed;top:114px;left:50%;transform:translateX(-50%) rotate(-2deg);z-index:9000;pointer-events:none;animation:zouzousPulse 2s ease-in-out infinite;';
+  b.innerHTML=`<img src="https://upload.redstartrp.fr/uploads/photo-1781005432-e026a2279949.png" style="height:110px;object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.6));" alt="Mercredi des Zouzous">`;
   document.body.appendChild(b);
   lancerConfettis();
 }
@@ -942,7 +940,7 @@ document.addEventListener('click', e => {
 });
 
 async function loadQuotaConfig(){
-  const configs=await sb('parametres?cle=in.(quota_cdd_viande,quota_cdd_patates,quota_cdi_viande,quota_cdi_patates,prime_quota_cdd,prime_quota_cdi,quota_cdd_actif,quota_cdi_actif)')||[];
+  const configs=await sb('parametres?cle=in.(quota_cdd_viande,quota_cdd_patates,quota_cdi_viande,quota_cdi_patates,prime_quota_cdd,prime_quota_cdi,quota_cdd_viande_actif,quota_cdd_patates_actif,quota_cdi_viande_actif,quota_cdi_patates_actif)')||[];
   configs.forEach(c=>{
     if(c.cle==='quota_cdd_viande')quotaConfig.cdd_quota_viande=parseFloat(c.valeur)||100;
     if(c.cle==='quota_cdd_patates')quotaConfig.cdd_quota_patates=parseFloat(c.valeur)||50;
@@ -950,8 +948,10 @@ async function loadQuotaConfig(){
     if(c.cle==='quota_cdi_patates')quotaConfig.cdi_quota_patates=parseFloat(c.valeur)||100;
     if(c.cle==='prime_quota_cdd')quotaConfig.cdd_prime=parseFloat(c.valeur)||500;
     if(c.cle==='prime_quota_cdi')quotaConfig.cdi_prime=parseFloat(c.valeur)||800;
-    if(c.cle==='quota_cdd_actif')quotaConfig.cdd_actif=c.valeur==='true';
-    if(c.cle==='quota_cdi_actif')quotaConfig.cdi_actif=c.valeur==='true';
+    if(c.cle==='quota_cdd_viande_actif')quotaConfig.cdd_viande_actif=c.valeur==='true';
+    if(c.cle==='quota_cdd_patates_actif')quotaConfig.cdd_patates_actif=c.valeur==='true';
+    if(c.cle==='quota_cdi_viande_actif')quotaConfig.cdi_viande_actif=c.valeur==='true';
+    if(c.cle==='quota_cdi_patates_actif')quotaConfig.cdi_patates_actif=c.valeur==='true';
   });
 }
 
@@ -1421,10 +1421,18 @@ function buildPages(){
           <div class="form-group"><label class="form-label">Prime 100% CDD ($)</label><input class="form-input" id="gPrimeCDD" type="number" placeholder="500"></div>
           <div class="form-group"><label class="form-label">Prime 100% CDI ($)</label><input class="form-input" id="gPrimeCDI" type="number" placeholder="800"></div>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Activer les quotas par contrat</div>
-        <div class="g2">
-          <div class="form-group"><label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="gQuotaCDDActif" style="accent-color:var(--red);width:16px;height:16px;"> Quota actif pour les CDD</label></div>
-          <div class="form-group"><label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="gQuotaCDIActif" style="accent-color:var(--red);width:16px;height:16px;"> Quota actif pour les CDI</label></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Types de produits à déclarer</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">CDD</div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;"><input type="checkbox" id="gQuotaCDDViande_actif" style="accent-color:var(--red);width:16px;height:16px;"> 🥩 Viande obligatoire</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="gQuotaCDDPatates_actif" style="accent-color:var(--orange);width:16px;height:16px;"> 🥔 Patates obligatoires</label>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">CDI</div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;"><input type="checkbox" id="gQuotaCDIViande_actif" style="accent-color:var(--red);width:16px;height:16px;"> 🥩 Viande obligatoire</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="checkbox" id="gQuotaCDIPatates_actif" style="accent-color:var(--orange);width:16px;height:16px;"> 🥔 Patates obligatoires</label>
+          </div>
         </div>
         <button class="btn btn-primary" onclick="saveQuotaConfig()">💾 Sauvegarder</button>
       </div>
@@ -3119,21 +3127,31 @@ async function loadQuotaPage(){
 }
 
 function ouvrirQuotaForm(contrat, qMaxV, qDoneV, qMaxP, qDoneP, primeMax) {
-  document.getElementById('quotaFormInfo').innerHTML=`
-    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <div><span style="color:var(--muted);">Contrat</span> <strong>${contrat}</strong></div>
-      <div><span style="color:var(--muted);">🥩 Viande validée</span> <strong>${qDoneV}/${qMaxV}</strong></div>
-      <div><span style="color:var(--muted);">🥔 Patates validées</span> <strong>${qDoneP}/${qMaxP}</strong></div>
-      <div><span style="color:var(--muted);">Prime si 100%</span> <strong style="color:var(--success);">${primeMax.toLocaleString('fr-FR')}$</strong></div>
-    </div>`;
+  const viandeActif = contrat==='CDI' ? (quotaConfig.cdi_viande_actif!==false) : (quotaConfig.cdd_viande_actif!==false);
+  const patatActif  = contrat==='CDI' ? (quotaConfig.cdi_patates_actif!==false) : (quotaConfig.cdd_patates_actif!==false);
+
+  let infoLines = `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div><span style="color:var(--muted);">Contrat</span> <strong>${contrat}</strong></div>
+    ${viandeActif?`<div><span style="color:var(--muted);">🥩 Viande validée</span> <strong>${qDoneV}/${qMaxV}</strong></div>`:''}
+    ${patatActif?`<div><span style="color:var(--muted);">🥔 Patates validées</span> <strong>${qDoneP}/${qMaxP}</strong></div>`:''}
+    <div><span style="color:var(--muted);">Prime si 100%</span> <strong style="color:var(--success);">${primeMax.toLocaleString('fr-FR')}$</strong></div>
+  </div>`;
+  document.getElementById('quotaFormInfo').innerHTML = infoLines;
   window._quotaFormData = { contrat, qMaxV, qDoneV, qMaxP, qDoneP, primeMax };
+
   document.getElementById('quotaPlaque').value = '';
-  document.getElementById('quotaQteViande').value = '';
-  document.getElementById('quotaQteViande').disabled = false;
-  document.getElementById('quotaQtePatates').value = '';
-  document.getElementById('quotaQtePatates').disabled = false;
   document.getElementById('quotaNotes').value = '';
   document.getElementById('quotaPreview').style.display = 'none';
+
+  const vRow = document.getElementById('quotaQteViande')?.closest('.form-group');
+  const pRow = document.getElementById('quotaQtePatates')?.closest('.form-group');
+  document.getElementById('quotaQteViande').value = '';
+  document.getElementById('quotaQteViande').disabled = !viandeActif;
+  if(vRow){ vRow.style.display = viandeActif ? '' : 'none'; }
+  document.getElementById('quotaQtePatates').value = '';
+  document.getElementById('quotaQtePatates').disabled = !patatActif;
+  if(pRow){ pRow.style.display = patatActif ? '' : 'none'; }
+
   openOverlay('ovQuota');
 }
 
@@ -3591,16 +3609,20 @@ function renderHeatmap(cmds){
    GESTION
 ══════════════════════════════════════════════ */
 async function loadGestion(){
-  const configs=await sb('parametres?cle=in.(quota_cdd_viande,quota_cdd_patates,quota_cdi_viande,quota_cdi_patates,prime_quota_cdd,prime_quota_cdi)')||[];
+  const configs=await sb('parametres?cle=in.(quota_cdd_viande,quota_cdd_patates,quota_cdi_viande,quota_cdi_patates,prime_quota_cdd,prime_quota_cdi,quota_cdd_viande_actif,quota_cdd_patates_actif,quota_cdi_viande_actif,quota_cdi_patates_actif)')||[];
   const setVal=(id,val)=>{const el=document.getElementById(id);if(el&&val!==undefined)el.value=val;};
+  const setCheck=(id,val)=>{const el=document.getElementById(id);if(el)el.checked=val==='true';};
   configs.forEach(c=>{
     if(c.cle==='quota_cdd_viande')setVal('gQuotaCDDViande',c.valeur);
     if(c.cle==='quota_cdd_patates')setVal('gQuotaCDDPatates',c.valeur);
     if(c.cle==='quota_cdi_viande')setVal('gQuotaCDIViande',c.valeur);
     if(c.cle==='quota_cdi_patates')setVal('gQuotaCDIPatates',c.valeur);
     if(c.cle==='prime_quota_cdd')setVal('gPrimeCDD',c.valeur);
-    if(c.cle==='quota_cdd_actif'){const el=document.getElementById('gQuotaCDDActif');if(el)el.checked=c.valeur==='true';}
-  if(c.cle==='quota_cdi_actif'){const el=document.getElementById('gQuotaCDIActif');if(el)el.checked=c.valeur==='true';}
+    if(c.cle==='prime_quota_cdi')setVal('gPrimeCDI',c.valeur);
+    if(c.cle==='quota_cdd_viande_actif')setCheck('gQuotaCDDViande_actif',c.valeur);
+    if(c.cle==='quota_cdd_patates_actif')setCheck('gQuotaCDDPatates_actif',c.valeur);
+    if(c.cle==='quota_cdi_viande_actif')setCheck('gQuotaCDIViande_actif',c.valeur);
+    if(c.cle==='quota_cdi_patates_actif')setCheck('gQuotaCDIPatates_actif',c.valeur);
   });
   await loadQuotaTickets();await loadCoffreComplet();await loadPrimesTable();await loadLivraisons();
   await loadSoldeInitial();
@@ -3644,15 +3666,9 @@ async function loadQuotaTickets(){
 
 async function saveQuotaConfig(){
   const vals=[['quota_cdd_viande','gQuotaCDDViande'],['quota_cdd_patates','gQuotaCDDPatates'],['quota_cdi_viande','gQuotaCDIViande'],['quota_cdi_patates','gQuotaCDIPatates'],['prime_quota_cdd','gPrimeCDD'],['prime_quota_cdi','gPrimeCDI']];
-  // Flags actif
-  const cddActif=document.getElementById('gQuotaCDDActif')?.checked;
-  const cdiActif=document.getElementById('gQuotaCDIActif')?.checked;
-  for(const[cle,val]of[['quota_cdd_actif',String(cddActif)],['quota_cdi_actif',String(cdiActif)]]){
-    const ex=await sb(`parametres?cle=eq.${cle}`);
-    if(ex?.[0])await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});
-    else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});
-}
-  for(const[cle,elId]of vals){const val=document.getElementById(elId)?.value;if(!val)continue;const ex=await sb(`parametres?cle=eq.${cle}`);if(ex?.[0])await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});}
+  const checks=[['quota_cdd_viande_actif','gQuotaCDDViande_actif'],['quota_cdd_patates_actif','gQuotaCDDPatates_actif'],['quota_cdi_viande_actif','gQuotaCDIViande_actif'],['quota_cdi_patates_actif','gQuotaCDIPatates_actif']];
+  for(const[cle,elId]of vals){const val=document.getElementById(elId)?.value;if(val===undefined||val==='')continue;const ex=await sb(`parametres?cle=eq.${cle}`);if(ex?.[0])await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});}
+  for(const[cle,elId]of checks){const val=String(document.getElementById(elId)?.checked||false);const ex=await sb(`parametres?cle=eq.${cle}`);if(ex?.[0])await sb(`parametres?cle=eq.${cle}`,{method:'PATCH',body:JSON.stringify({valeur:val})});else await sb('parametres',{method:'POST',body:JSON.stringify({cle,valeur:val})});}
   const alertEl=document.getElementById('alertGestion');if(alertEl)alertEl.innerHTML='<div class="alert alert-ok">✅ Sauvegardé !</div>';
   await loadQuotaConfig();
 }
