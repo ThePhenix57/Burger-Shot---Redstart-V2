@@ -766,7 +766,7 @@ function afficherBanniereZouzous(){
   if(document.getElementById('zouzousBanner'))return;
   const b=document.createElement('div');
   b.id='zouzousBanner';
-  b.style.cssText='position:fixed;top:30px;left:42%;transform:translateX(-50%) rotate(-3deg);z-index:9000;pointer-events:none;animation:zouzousPulse 2s ease-in-out infinite;';
+  b.style.cssText='position:fixed;top:14px;right:320px;z-index:9000;pointer-events:none;animation:zouzousPulse 2s ease-in-out infinite;';
   b.innerHTML=`<img src="https://upload.redstartrp.fr/uploads/photo-1781005432-e026a2279949.png" style="height:90px;object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.6));" alt="Mercredi des Zouzous">`;
   document.body.appendChild(b);
   lancerConfettis();
