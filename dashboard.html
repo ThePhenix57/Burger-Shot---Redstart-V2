@@ -309,7 +309,7 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
 @keyframes zouzousPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
 .confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;opacity:0;pointer-events:none;z-index:8999;animation:confettiFall linear forwards;}
 @keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(-80vh) rotate(720deg);}}
-@keyframes confettiTombe{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(100vh) rotate(720deg);}}
+@keyframes confettiTombe{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(110vh) rotate(720deg);}}
 </script>
 </head>
 <body>
@@ -762,18 +762,19 @@ function lancerConfettis(){
   const colors=['#e74c3c','#e67e22','#f1c40f','#27ae60','#3498db','#9b59b6','#fff'];
   for(let i=0;i<60;i++){
     const el=document.createElement('div');
-    el.className='confetti-piece';
-    el.style.left=`${Math.random()*100}vw`;
-    el.style.top=`-10px`;
-    el.style.background=colors[Math.floor(Math.random()*colors.length)];
-    el.style.width=`${6+Math.random()*8}px`;
-    el.style.height=`${6+Math.random()*8}px`;
-    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
-    el.style.position='fixed';
-    el.style.zIndex='8999';
-    el.style.pointerEvents='none';
-    el.style.opacity='1';
-    el.style.animation=`confettiTombe ${2+Math.random()*3}s ${Math.random()*2}s linear forwards`;
+    el.style.cssText=[
+      'position:fixed',
+      `left:${Math.random()*100}vw`,
+      'top:-20px',
+      `background:${colors[Math.floor(Math.random()*colors.length)]}`,
+      `width:${6+Math.random()*8}px`,
+      `height:${6+Math.random()*8}px`,
+      `border-radius:${Math.random()>0.5?'50%':'2px'}`,
+      'z-index:8999',
+      'pointer-events:none',
+      'opacity:1',
+      `animation:confettiTombe ${2+Math.random()*3}s ${Math.random()*2}s linear forwards`
+    ].join(';');
     document.body.appendChild(el);
     el.addEventListener('animationend',()=>el.remove());
   }
@@ -976,7 +977,7 @@ async function loadQuotaConfig(){
   const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0), 0);
   const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0),0);
   const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0), 0);
-  const impots = Math.round(calcImpot(caVentes));
+  const impots = Math.round(calcImpot(caVentes + caLiv));
   const soldeFinal = Math.round(soldeDepart + caVentes + caLiv - totalPrimes - totalDep - impots);
 
   const color = soldeFinal >= soldeDepart ? 'rgba(39,174,96,.1)' : 'rgba(192,57,43,.1)';
@@ -2051,8 +2052,17 @@ async function confirmerCommande(avecApercu=false){
     const tauxData=await sb(`taux_primes?poste=eq.${encodeURIComponent(emp.poste)}&limit=1`);
     const tauxPoste={'Patron':.4,'Co-Patron':.35,'Manager':.25,'Responsable':.20,"Chef d'équipe":.15,'Employé':.10};
     const taux=tauxData?.[0]?.taux||tauxPoste[emp.poste]||.10;
-    const primeCmd=Math.round(c.net*taux);
-    if(primeCmd>0)await sb('primes',{method:'POST',body:JSON.stringify({employe_id:emp.id||null,employe_discord:USER.id,montant:primeCmd,semaine,verse:false,type:'vente'})});
+    
+    // Plafonds par grade
+    const PLAFONDS = {'Patron':100000,'Co-Patron':100000,'Manager':100000,'Responsable':70000};
+    const plafond = PLAFONDS[emp.poste] || 50000;
+    
+    // Cumul primes semaine pour cet employé
+    const primesExist = await sb(`primes?employe_discord=eq.${USER.id}&semaine=eq.${semaine}&verse=eq.false`);
+    const cumulActuel = (primesExist||[]).reduce((a,p)=>a+p.montant,0);
+    
+    const primeCmd = Math.min(Math.round(c.net*taux), Math.max(0, plafond - cumulActuel));
+    if(primeCmd>0) await sb('primes',{method:'POST',body:JSON.stringify({employe_id:emp.id||null,employe_discord:USER.id,montant:primeCmd,semaine,verse:false,type:'vente'})});
   }
   const caData=await sb('parametres?cle=eq.ca_semaine');
   const caActuel=parseFloat(caData?.[0]?.valeur||0)||0;
@@ -3266,7 +3276,14 @@ async function validerQuotaTicket(ticketId,discordId,quantite,type){
         if(pV>=100&&pP>=100){
           const primeMax=u.contrat==='CDI'?quotaConfig.cdi_prime:quotaConfig.cdd_prime;
           const existPrime=await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&type=eq.quota`);
-          if(!existPrime?.length)await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primeMax,semaine:getSemaine(),verse:false,type:'quota'})});
+          if(!existPrime?.length){
+          const PLAFONDS = {'Patron':100000,'Co-Patron':100000,'Manager':100000,'Responsable':70000};
+          const plafond = PLAFONDS[u.poste] || 50000;
+          const primesDejaLa = await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&verse=eq.false`);
+          const cumulActuel = (primesDejaLa||[]).reduce((a,p)=>a+p.montant,0);
+          const primePlafonnee = Math.min(primeMax, Math.max(0, plafond - cumulActuel));
+          if(primePlafonnee > 0) await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primePlafonnee,semaine:getSemaine(),verse:false,type:'quota'})});
+        }
           alert(`✅ Quota validé ! Les 2 quotas sont complets → Prime de ${primeMax.toLocaleString('fr-FR')}$ attribuée !`);return;
         }
       }
@@ -4163,7 +4180,7 @@ async function executerCloture() {
   const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0),0);
   const totalPrimes = (primesData||[]).reduce((a,p)=>a+(p.montant||0),0);
   const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0),0);
-  const impots = Math.round(calcImpot(caVentes));
+  const impots = Math.round(calcImpot(caVentes + caLiv));
   const benefice = caVentes + caLiv - totalDep - impots;
   const soldeFinal = soldeDepart + benefice;
 
@@ -4314,7 +4331,7 @@ async function loadCoffreComplet() {
   const caVentes = parseFloat(caData?.[0]?.valeur || 0);
   const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0),0);
   const totalDep = (depData||[]).reduce((a,d)=>a+(d.montant||0),0);
-  const impots = Math.round(calcImpot(caVentes));
+  const impots = Math.round(calcImpot(caVentes + caLiv));
   const benefice = caVentes + caLiv - totalDep - impots;
   const soldeFinal = soldeDepart + benefice;
 
@@ -5104,22 +5121,16 @@ async function handleFileSelect(file) {
   }
 
 async function verserPrime(id) {
-    await sb(`primes?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ verse: true }) });
-  
-    // Récupère le discord_id lié à cette prime
-    const primeData = await sb(`primes?id=eq.${id}&select=employe_discord`);
-    const discordId = primeData?.[0]?.employe_discord;
-  
-    if (discordId) {
-      // Remet les quotas à 0
-      await sb(`comptes_dashboard?discord_id=eq.${discordId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          quota_viande_validee: 0,
-          quota_patates_validee: 0
-        })
-      });
-    }
+  await sb(`primes?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ verse: true }) });
+
+  // On NE remet PAS les quotas à 0 ici — le reset se fait à la clôture de semaine
+  // Rafraîchit selon la page active
+  loadPrimesTable();
+  if (document.getElementById('page-employes')?.classList.contains('active')) loadEmployes();
+  if (document.getElementById('page-quota')?.classList.contains('active')) loadQuotaPage();
+
+  alert('✅ Prime versée !');
+}
   
     // Supprime visuellement la ligne dans l'overlay détail
     const row = document.querySelector(`[onclick*="verserPrime('${id}')"]`);
@@ -5240,7 +5251,7 @@ async function verserPrime(id) {
   
     // Impôts (calculé)
     const caVentes = (cmdsData||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
-    const impots = Math.round(calcImpot(caVentes));
+    const impots = Math.round(calcImpot(caVentes + caLiv));
     if (impots > 0) {
       lignes.push({
         date: new Date().toISOString(),
