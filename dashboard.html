@@ -2634,7 +2634,7 @@ async function loadEmployes() {
     sb(base),
     sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
     sb('commandes?select=employe_discord_id,total_apres_reduction,total'),
-    sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
+    sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false&type=neq.quota`),
   ]);
  
   if (!Array.isArray(data) || !data.length) {
