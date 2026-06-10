@@ -516,7 +516,7 @@ tr.blacklisted td:first-child::before{content:'⛔ ';font-size:11px;}
     <div class="popup-title">🚗 Enregistrer un véhicule</div>
     <div id="alertVehicule"></div>
     <input type="hidden" id="vehId">
-    <div class="form-group"><label class="form-label">Plaque d'immatriculation</label><input class="form-input" id="vehPlaque" placeholder="ABCD-1234" oninput="this.value=this.value.toUpperCase()" maxlength="9">
+    <div class="form-group"><label class="form-label">Plaque d'immatriculation</label><input class="form-input" id="vehPlaque" placeholder="ABCD-1234" oninput="this.value=this.value.toUpperCase()" maxlength="9"></div>
     <div class="form-group"><label class="form-label">Image URL du véhicule</label><input class="form-input" id="vehImg" placeholder="https://..."></div>
     <div class="form-group"><label class="form-label">Attribué à (Discord ID employé)</label><input class="form-input" id="vehEmpDiscord" placeholder="Ex: 123456789012345678"></div>
     <div style="display:flex;gap:10px;">
@@ -3706,7 +3706,7 @@ async function loadLivraisons(){
   const total=data.reduce((a,l)=>a+(l.montant||0),0);
   el.innerHTML=`<div style="margin-bottom:10px;font-weight:700;color:var(--success);">Total semaine : ${total.toLocaleString('fr-FR')}$</div>`+
   `<table><thead><tr><th>Montant</th><th>Notes</th><th>Date</th></tr></thead><tbody>`+
-  data.map(l=>`<tr><td><strong style="color:var(--success);">+${l.montant.toLocaleString('fr-FR')}$</strong></td><td>${l.notes||'—'}</td><td>${new Date(d.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</td></tr>`).join('')+
+  data.map(l=>`<tr><td><strong style="color:var(--success);">+${l.montant.toLocaleString('fr-FR')}$</strong></td><td>${l.notes||'—'}</td><td>${new Date(l.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</td></tr>`).join('')+
   '</tbody></table>';
 }
 
@@ -3870,7 +3870,7 @@ function showPage(id) {
 
   if (loaders[id]) loaders[id]();
   localStorage.setItem('bs_last_page', id);
-}  // ← showPage se ferme ici  // ← showPage se ferme ici
+}
 
 async function loadEmployesReadonly() {
   const el = document.getElementById('empReadonlyGrid');
@@ -5123,26 +5123,15 @@ async function handleFileSelect(file) {
 async function verserPrime(id) {
   await sb(`primes?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ verse: true }) });
 
-  // On NE remet PAS les quotas à 0 ici — le reset se fait à la clôture de semaine
-  // Rafraîchit selon la page active
+  const row = document.querySelector(`[onclick*="verserPrime('${id}')"]`);
+  if (row) row.closest('div[style*="border-bottom"]')?.remove();
+
   loadPrimesTable();
   if (document.getElementById('page-employes')?.classList.contains('active')) loadEmployes();
   if (document.getElementById('page-quota')?.classList.contains('active')) loadQuotaPage();
 
   alert('✅ Prime versée !');
 }
-  
-    // Supprime visuellement la ligne dans l'overlay détail
-    const row = document.querySelector(`[onclick*="verserPrime('${id}')"]`);
-    if (row) row.closest('div[style*="border-bottom"]')?.remove();
-  
-    // Rafraîchit selon la page active
-    loadPrimesTable();
-    if (document.getElementById('page-employes')?.classList.contains('active')) loadEmployes();
-    if (document.getElementById('page-quota')?.classList.contains('active')) loadQuotaPage();
-  
-    alert('✅ Prime versée et quota remis à zéro !');
-  }
   /* ══════════════════════════════════════════════
    REGISTRE COMPTABLE
 ══════════════════════════════════════════════ */
@@ -5251,6 +5240,7 @@ async function verserPrime(id) {
   
     // Impôts (calculé)
     const caVentes = (cmdsData||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
+    const caLiv = (livrData||[]).reduce((a,l)=>a+(l.montant||0),0);
     const impots = Math.round(calcImpot(caVentes + caLiv));
     if (impots > 0) {
       lignes.push({
