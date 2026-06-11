@@ -1998,19 +1998,28 @@ async function validerQuota(ticketId,discordId,quantite,type){
         const pV=Math.min(100,Math.round((+(u.quota_viande_validee||0)/maxV)*100));
         const pP=Math.min(100,Math.round((+(u.quota_patates_validee||0)/maxP)*100));
         if(pV>=100&&pP>=100){
-          const primeMax=u.contrat==='CDI'?quotaCfg.cdi_prime:quotaCfg.cdd_prime;
-          const existPrime=await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&type=eq.quota`);
-          if(!existPrime?.length){
-            // Appliquer le plafond de prime (le quota compte comme prime de type quota)
-            const plafond=PLAFOND_PRIME[u.poste]??50000;
-            const primesVente=await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&type=eq.vente`);
-            const cumulVente=(primesVente||[]).reduce((a,p)=>a+p.montant,0);
-            const primeQuota=Math.min(primeMax,Math.max(0,plafond-cumulVente));
-            if(primeQuota>0) await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primeQuota,semaine:getSemaine(),verse:false,type:'quota'})});
-            alert(`✅ Quota validé ! Prime quota de ${fmtMoney(primeQuota)} attribuée.`);
-            return;
-          }
-        }
+        const primeMax=u.contrat==='CDI'?quotaCfg.cdi_prime:quotaCfg.cdd_prime;
+        // Supprimer l'ancienne prime quota non versée si elle existe
+        // et en recréer une propre pour CETTE semaine
+        await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&type=eq.quota&verse=eq.false`,{method:'DELETE'});
+        // Calculer plafond
+        const plafond=PLAFOND_PRIME[emp.poste]??50000;
+        const primesVente=await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&type=eq.vente`);
+        const cumulVente=(primesVente||[]).reduce((a,p)=>a+p.montant,0);
+        const primeQuota=Math.min(primeMax,Math.max(0,plafond-cumulVente));
+        if(primeQuota>0){
+          await sb('primes',{method:'POST',body:JSON.stringify({
+            employe_discord:discordId,
+            montant:primeQuota,
+            semaine:getSemaine(),
+            verse:false,
+            type:'quota'
+          })});
+          alert(`✅ Quota validé ! Prime quota de ${fmtMoney(primeQuota)} attribuée.`);
+          loadQuotaPage();
+          return;
+         }
+       }
       }
     }
   }
