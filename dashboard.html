@@ -602,12 +602,11 @@ async function webhook(payload) {
 ══════════════════════════════════════════ */
 function getSemaine() {
   const d = new Date();
-  const day = d.getDay();
-  // Samedi = début de semaine
+  const day = d.getDay(); // 0=dim, 1=lun... 6=sam
   const sam = new Date(d);
+  // Reculer jusqu'au samedi précédent (ou aujourd'hui si samedi)
   sam.setDate(d.getDate() - (day === 6 ? 0 : day + 1));
   sam.setHours(0,0,0,0);
-  // Format : "2026-06-06" (date du samedi = identifiant unique de la semaine)
   const y = sam.getFullYear();
   const m = String(sam.getMonth()+1).padStart(2,'0');
   const j = String(sam.getDate()).padStart(2,'0');
@@ -616,7 +615,12 @@ function getSemaine() {
 
 function getLabelSemaine(cle) {
   if (!cle) cle = getSemaine();
-  const sam = new Date(cle);
+  // Si ancien format W
+  if (cle.includes('-W')) {
+    const sam = new Date(cle.replace('-W','W') + '-6');
+    cle = `${sam.getFullYear()}-${String(sam.getMonth()+1).padStart(2,'0')}-${String(sam.getDate()).padStart(2,'0')}`;
+  }
+  const sam = new Date(cle + 'T00:00:00');
   const ven = new Date(sam);
   ven.setDate(sam.getDate() + 6);
   const M = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
