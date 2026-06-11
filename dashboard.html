@@ -2309,7 +2309,7 @@ async function _loadStatsCore(cardsId,cmdsId,finId,heatId,paliersId){
   if(finEl)finEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">
     <div style="display:flex;justify-content:space-between;padding:10px;background:var(--card2);border-radius:7px"><span>CA brut</span><strong>${fmtMoney(ca)}</strong></div>
     <div style="display:flex;justify-content:space-between;padding:10px;background:var(--card2);border-radius:7px"><span>Livraisons</span><strong style="color:var(--orange)">+${fmtMoney(caLiv)}</strong></div>
-    <div style="display:flex;justify-content:space-between;padding:10px;background:var(--card2);border-radius:7px"><span>Taux impôt</span><strong style="color:var(--red)">${tauxImpot(ca)}</strong></div>
+    <div style="display:flex;justify-content:space-between;padding:10px;background:var(--card2);border-radius:7px"><span>Taux impôt</span><strong style="color:var(--red)">${tauxImpot(ca+caLiv)}</strong></div>
     <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(192,57,43,.07);border-radius:7px;border:1px solid rgba(192,57,43,.18)"><span>Impôts estimés</span><strong style="color:var(--red)">${fmtMoney(imp)}</strong></div>
   </div>`;
   if(heatId){const hEl=document.getElementById(heatId);if(hEl)renderHeatmap(cmds,hEl);}
