@@ -603,29 +603,23 @@ async function webhook(payload) {
 function getSemaine() {
   const d = new Date();
   const day = d.getDay();
+  // Samedi = début de semaine
   const sam = new Date(d);
   sam.setDate(d.getDate() - (day === 6 ? 0 : day + 1));
   sam.setHours(0,0,0,0);
-  const utc = new Date(Date.UTC(sam.getFullYear(), sam.getMonth(), sam.getDate()));
-  const ys = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
-  const wk = Math.ceil((((utc - ys) / 86400000) + 1) / 7);
-  return `${utc.getUTCFullYear()}-W${String(wk).padStart(2,'0')}`;
+  // Format : "2026-06-06" (date du samedi = identifiant unique de la semaine)
+  const y = sam.getFullYear();
+  const m = String(sam.getMonth()+1).padStart(2,'0');
+  const j = String(sam.getDate()).padStart(2,'0');
+  return `${y}-${m}-${j}`;
 }
 
 function getLabelSemaine(cle) {
   if (!cle) cle = getSemaine();
-  let sam;
-  if (cle.includes('-W')) {
-    const [y, w] = cle.split('-W');
-    const jan4 = new Date(Date.UTC(+y, 0, 4));
-    const lun1 = new Date(jan4); lun1.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay()||7)-1));
-    sam = new Date(lun1); sam.setUTCDate(lun1.getUTCDate() + (+w-1)*7 - 2);
-  } else {
-    const d = new Date(); const day = d.getDay();
-    sam = new Date(d); sam.setDate(d.getDate()-(day===6?0:day+1)); sam.setHours(0,0,0,0);
-  }
-  const ven = new Date(sam); ven.setDate(sam.getDate()+6);
-  const M=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  const sam = new Date(cle);
+  const ven = new Date(sam);
+  ven.setDate(sam.getDate() + 6);
+  const M = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
   const f = dt => `${String(dt.getDate()).padStart(2,'0')} ${M[dt.getMonth()]}`;
   return `${f(sam)} → ${f(ven)} ${sam.getFullYear()}`;
 }
