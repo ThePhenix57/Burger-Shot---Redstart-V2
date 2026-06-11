@@ -22,7 +22,7 @@
   --text:#111; --muted:#777; --border:rgba(0,0,0,.08);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html{font-size:16px;}
+html{font-size:20px;}
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 a{text-decoration:none;color:inherit;}
 button,input,select,textarea{font-family:'Barlow',sans-serif;}
@@ -53,7 +53,7 @@ button,input,select,textarea{font-family:'Barlow',sans-serif;}
 /* ══════════════════════════════════════════
    NAV
 ══════════════════════════════════════════ */
-.nav{background:var(--red);min-height:36px;display:flex;align-items:center;flex-wrap:wrap;position:relative;z-index:200;}
+.nav{background:var(--red);min-height:36px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;position:relative;z-index:200;}
 .nav-item{padding:8px 14px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.8);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:.12s;display:flex;align-items:center;gap:5px;}
 .nav-item:hover{color:#fff;background:rgba(0,0,0,.15);}
 .nav-item.active{color:#fff;background:rgba(0,0,0,.2);border-bottom-color:#fff;}
@@ -806,13 +806,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Dropdown nav
   document.addEventListener('click', e => {
-    document.querySelectorAll('.nav-drop-menu').forEach(m => {
-      if (!e.target.closest('.nav-drop')) m.classList.remove('open');
-    });
     const drop = e.target.closest('.nav-drop');
+    document.querySelectorAll('.nav-drop-menu').forEach(m => m.classList.remove('open'));
     if (drop && e.target.closest('.nav-drop > .nav-item')) {
       const menu = drop.querySelector('.nav-drop-menu');
-      if (menu) menu.classList.toggle('open');
+      if (menu) menu.classList.add('open');
     }
   });
 
@@ -1668,7 +1666,7 @@ async function enregistrerPrimeVente(discordId, montantCA, semaine) {
   const taux = TAUX_PRIME[emp.poste] ?? 0.10;
   const plafond = PLAFOND_PRIME[emp.poste] ?? 50000;
   // Cumul primes vente semaine actuelle
-  const primesExist = await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${semaine}&type=eq.vente&verse=eq.false`);
+  const primesExist = await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${semaine}&type=eq.vente`);
   const cumul = (primesExist||[]).reduce((a,p)=>a+p.montant,0);
   const restePlafond = Math.max(0, plafond - cumul);
   const primeBrute = Math.round(montantCA * taux);
@@ -2007,7 +2005,7 @@ async function validerQuota(ticketId,discordId,quantite,type){
           if(!existPrime?.length){
             // Appliquer le plafond de prime (le quota compte comme prime de type quota)
             const plafond=PLAFOND_PRIME[u.poste]??50000;
-            const primesVente=await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&verse=eq.false&type=eq.vente`);
+            const primesVente=await sb(`primes?employe_discord=eq.${discordId}&semaine=eq.${getSemaine()}&type=eq.vente`);
             const cumulVente=(primesVente||[]).reduce((a,p)=>a+p.montant,0);
             const primeQuota=Math.min(primeMax,Math.max(0,plafond-cumulVente));
             if(primeQuota>0) await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant:primeQuota,semaine:getSemaine(),verse:false,type:'quota'})});
