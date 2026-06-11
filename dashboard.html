@@ -1384,7 +1384,7 @@ async function loadAccueil() {
   if (!el.innerHTML.trim()) el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
   const semaine = getSemaine();
   const today = new Date().toISOString().split('T')[0];
-  const [clients, employes, cmdSem, cmdJour, cmdPerso, livrSem] = await Promise.all([const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
+  const [clients, employes, cmdSem, cmdJour, cmdPerso, livrSem] = await Promise.all([
     sb('clients?select=id'),
     sb('comptes_dashboard?select=id&actif=eq.true&role=neq.gouvernement'),
     sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}`),
@@ -1392,6 +1392,7 @@ async function loadAccueil() {
     sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}&employe_discord_id=eq.${USER.id}`),
     sb(`livraisons?select=montant&semaine=eq.${semaine}`)
   ]);
+  const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
   const caSem = (cmdSem||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const caJour = (cmdJour||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const caPerso = (cmdPerso||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
@@ -2284,7 +2285,7 @@ async function loadStatsRO(){await _loadStatsCore('statsCardsRo','statsCmdsRo','
 
 async function _loadStatsCore(cardsId,cmdsId,finId,heatId,paliersId){
   const semaine=getSemaine();
-  const [clients, employes, cmdSem, cmdJour, cmdPerso, livrSem] = await Promise.all([
+  const [cmds, clients, employes, caData, livr] = await Promise.all([
     sb(`commandes?select=*&semaine=eq.${semaine}`),
     sb('clients?select=id'),
     sb('comptes_dashboard?select=id&actif=eq.true&role=neq.gouvernement'),
@@ -2292,7 +2293,7 @@ async function _loadStatsCore(cardsId,cmdsId,finId,heatId,paliersId){
     sb(`livraisons?select=montant&semaine=eq.${semaine}`)
   ]);
   const ca=+(caData?.[0]?.valeur||0);
-  const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
+  const caLiv=(livr||[]).reduce((a,l)=>a+(l.montant||0),0);
   const imp=Math.round(calcImpot(ca+caLiv));
   const cardsEl=document.getElementById(cardsId);
   if(cardsEl)cardsEl.innerHTML=[
