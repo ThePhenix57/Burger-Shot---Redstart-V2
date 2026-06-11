@@ -2316,7 +2316,7 @@ async function _loadStatsCore(cardsId,cmdsId,finId,heatId,paliersId){
   if(paliersId){
     const pEl=document.getElementById(paliersId);
     const paliers=[{min:0,max:199999,t:'0%'},{min:200000,max:399999,t:'5%'},{min:400000,max:599999,t:'8%'},{min:600000,max:799999,t:'11%'},{min:800000,max:999999,t:'14%'},{min:1000000,max:2499999,t:'17%'},{min:2500000,max:Infinity,t:'19%'}];
-    if(pEl)pEl.innerHTML=`<table><thead><tr><th>Tranche</th><th>Taux</th><th></th></tr></thead><tbody>`+paliers.map(p=>`<tr><td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td><td><span class="badge badge-blue">${p.t}</span></td><td>${ca>=p.min&&ca<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td></tr>`).join('')+'</tbody></table>';
+    if(pEl)pEl.innerHTML=`<table><thead><tr><th>Tranche</th><th>Taux</th><th></th></tr></thead><tbody>`+paliers.map(p=>`<tr><td>${p.min.toLocaleString('fr-FR')}$ — ${p.max===Infinity?'+∞':p.max.toLocaleString('fr-FR')+'$'}</td><td><span class="badge badge-blue">${p.t}</span></td><td>${(ca+caLiv)>=p.min&&(ca+caLiv)<=(p.max===Infinity?Infinity:p.max)?'<span class="badge badge-orange">📍 Votre tranche</span>':''}</td></tr>`).join('')+'</tbody></table>';
   }
 }
 
