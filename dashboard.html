@@ -1384,12 +1384,13 @@ async function loadAccueil() {
   if (!el.innerHTML.trim()) el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
   const semaine = getSemaine();
   const today = new Date().toISOString().split('T')[0];
-  const [clients, employes, cmdSem, cmdJour, cmdPerso] = await Promise.all([
+  const [clients, employes, cmdSem, cmdJour, cmdPerso, livrSem] = await Promise.all([const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
     sb('clients?select=id'),
     sb('comptes_dashboard?select=id&actif=eq.true&role=neq.gouvernement'),
     sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}`),
     sb(`commandes?select=total,total_apres_reduction&created_at=gte.${today}T00:00:00`),
-    sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}&employe_discord_id=eq.${USER.id}`)
+    sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}&employe_discord_id=eq.${USER.id}`),
+    sb(`livraisons?select=montant&semaine=eq.${semaine}`)
   ]);
   const caSem = (cmdSem||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const caJour = (cmdJour||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
@@ -1467,8 +1468,8 @@ async function loadAccueil() {
   </div>${quotaHtml}` : `<div class="g4" style="margin-bottom:18px">
     <div class="stat"><div class="stat-icon">👥</div><div class="stat-label">Clients</div><div class="stat-val">${(clients||[]).length}</div></div>
     <div class="stat" style="--accent:var(--green)"><div class="stat-icon">📊</div><div class="stat-label">Commandes sem.</div><div class="stat-val">${(cmdSem||[]).length}</div></div>
-    <div class="stat" style="--accent:var(--orange)"><div class="stat-icon">🏛️</div><div class="stat-label">Taux impôt</div><div class="stat-val">${tauxImpot(caSem)}</div></div>
-    <div class="stat" style="--accent:var(--red-l)"><div class="stat-icon">🔥</div><div class="stat-label">Impôts estimés</div><div class="stat-val">${fmtMoney(calcImpot(caSem))}</div></div>
+    <div class="stat" style="--accent:var(--orange)"><div class="stat-icon">🏛️</div><div class="stat-label">Taux impôt</div><div class="stat-val">${tauxImpot(caSem+caLiv)}</div></div>
+    <div class="stat" style="--accent:var(--red-l)"><div class="stat-icon">🔥</div><div class="stat-label">Impôts estimés</div><div class="stat-val">${fmtMoney(calcImpot(caSem+caLiv))}</div></div>
   </div>`}`;
 }
 
@@ -2283,7 +2284,7 @@ async function loadStatsRO(){await _loadStatsCore('statsCardsRo','statsCmdsRo','
 
 async function _loadStatsCore(cardsId,cmdsId,finId,heatId,paliersId){
   const semaine=getSemaine();
-  const[cmds,clients,employes,caData,livr]=await Promise.all([
+  const [clients, employes, cmdSem, cmdJour, cmdPerso, livrSem] = await Promise.all([
     sb(`commandes?select=*&semaine=eq.${semaine}`),
     sb('clients?select=id'),
     sb('comptes_dashboard?select=id&actif=eq.true&role=neq.gouvernement'),
@@ -2291,8 +2292,8 @@ async function _loadStatsCore(cardsId,cmdsId,finId,heatId,paliersId){
     sb(`livraisons?select=montant&semaine=eq.${semaine}`)
   ]);
   const ca=+(caData?.[0]?.valeur||0);
-  const caLiv=(livr||[]).reduce((a,l)=>a+(l.montant||0),0);
-  const imp=Math.round(calcImpot(ca));
+  const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
+  const imp=Math.round(calcImpot(ca+caLiv));
   const cardsEl=document.getElementById(cardsId);
   if(cardsEl)cardsEl.innerHTML=[
     {label:'Commandes',val:(cmds||[]).length,icon:'📦',accent:'var(--blue)'},
