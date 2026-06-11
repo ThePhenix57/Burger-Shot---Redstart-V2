@@ -1216,6 +1216,7 @@ function buildPages() {
       <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Clôture les caisses, calcule les primes, remet les quotas à zéro.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-orange" onclick="calculerPrimes()">🔄 Calculer primes</button>
+        <button class="btn btn-success" onclick="attribuerPrimesQuota()">🏆 Attribuer primes quota</button>
         <button class="btn btn-primary" onclick="cloturerSemaine()">🔒 Clôturer la semaine</button>
       </div>
       <div id="primesTable" style="margin-top:14px"></div>
@@ -1819,78 +1820,136 @@ async function confirmerPass(){if(!passClientActif){alert('Sélectionner un clie
 /* ══════════════════════════════════════════
    QUOTA PAGE
 ══════════════════════════════════════════ */
+async function getQuotaSemaine(discordId, semaine) {
+  const tickets = await sb(
+    `quotas_tickets?employe_discord_id=eq.${discordId}&semaine=eq.${semaine}&statut=eq.valide&select=type,quantite`
+  );
+  const viande  = (tickets||[]).filter(t=>t.type==='viande').reduce((a,t)=>a+t.quantite,0);
+  const patates = (tickets||[]).filter(t=>t.type==='patates').reduce((a,t)=>a+t.quantite,0);
+  return { viande, patates };
+}
+/* ──────────────────────────────────────────
+   PAGE QUOTA (vue employé + chef d'équipe)
+────────────────────────────────────────── */
 async function loadQuotaPage() {
-  const el=document.getElementById('quotaContent');if(!el)return;
-  el.innerHTML='<div class="loading"><div class="spin"></div></div>';
-  const empD=await sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=*`);
-  const emp=empD?.[0];
-  if(!emp){el.innerHTML='<div class="alert alert-err">Profil non configuré.</div>';return;}
-  const maxV=emp.contrat==='CDI'?quotaCfg.cdi_viande:quotaCfg.cdd_viande;
-  const maxP=emp.contrat==='CDI'?quotaCfg.cdi_patates:quotaCfg.cdd_patates;
-  const primeMax=emp.contrat==='CDI'?quotaCfg.cdi_prime:quotaCfg.cdd_prime;
-  const qV=+emp.quota_viande_validee||0,qP=+emp.quota_patates_validee||0;
-  const pV=Math.min(100,Math.round(qV/maxV*100)),pP=Math.min(100,Math.round(qP/maxP*100));
-  const done=pV>=100&&pP>=100;
-  const tickets=await sb(`quotas_tickets?employe_discord_id=eq.${USER.id}&semaine=eq.${getSemaine()}&order=created_at.desc`);
-  const pendV=(tickets||[]).some(t=>t.statut==='en_attente'&&t.type==='viande');
-  const pendP=(tickets||[]).some(t=>t.statut==='en_attente'&&t.type==='patates');
-  const canVal=ROLE==='direction'||USER_NIVEAU>=1;
-  let pendingTickets=[];
-  if(canVal) pendingTickets=await sb('quotas_tickets?statut=eq.en_attente&order=created_at.desc')||[];
-
-  el.innerHTML=`
+  const el = document.getElementById('quotaContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+ 
+  const semaine = getSemaine();
+  const empD = await sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=*`);
+  const emp = empD?.[0];
+  if (!emp) { el.innerHTML = '<div class="alert alert-err">Profil non configuré.</div>'; return; }
+ 
+  const maxV = emp.contrat==='CDI' ? quotaCfg.cdi_viande  : quotaCfg.cdd_viande;
+  const maxP = emp.contrat==='CDI' ? quotaCfg.cdi_patates : quotaCfg.cdd_patates;
+  const primeMax = emp.contrat==='CDI' ? quotaCfg.cdi_prime : quotaCfg.cdd_prime;
+ 
+  // Lire depuis les tickets validés (source de vérité)
+  const [qSem, ticketsSem, primeSem] = await Promise.all([
+    getQuotaSemaine(USER.id, semaine),
+    sb(`quotas_tickets?employe_discord_id=eq.${USER.id}&semaine=eq.${semaine}&order=created_at.desc`),
+    sb(`primes?employe_discord=eq.${USER.id}&semaine=eq.${semaine}&type=eq.quota`)
+  ]);
+ 
+  const qV = qSem.viande, qP = qSem.patates;
+  const pV = maxV > 0 ? Math.min(100, Math.round(qV/maxV*100)) : 0;
+  const pP = maxP > 0 ? Math.min(100, Math.round(qP/maxP*100)) : 0;
+  const done = pV >= 100 && pP >= 100;
+ 
+  const pendV = (ticketsSem||[]).some(t=>t.statut==='en_attente' && t.type==='viande');
+  const pendP = (ticketsSem||[]).some(t=>t.statut==='en_attente' && t.type==='patates');
+ 
+  // Prime quota de cette semaine ?
+  const primeQuotaSem = primeSem?.[0];
+ 
+  el.innerHTML = `
   <div class="quota-hero">
     <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div>
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Quota semaine — ${emp.contrat}</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">
+          Quota semaine ${getLabelSemaine(semaine)} — ${emp.contrat}
+        </div>
         <span class="badge ${done?'badge-green':'badge-orange'}">${done?'✅ Quota complet !':'En cours...'}</span>
       </div>
       <div style="text-align:right">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:2px">Prime si 100%+100%</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:2px">Prime si 100% + 100%</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green)">${fmtMoney(primeMax)}</div>
       </div>
     </div>
+ 
     <div class="g2">
       <div>
         <div style="font-size:11px;font-weight:700;margin-bottom:5px">🥩 Viande — ${pV}%</div>
-        <div class="quota-bar-bg" style="height:10px"><div class="quota-bar-fill" style="width:${pV}%"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px">
-          <span style="color:var(--muted)">${qV}/${maxV} unités</span>
-          <span style="color:${pV>=100?'var(--green)':'var(--red)'}">${pV>=100?'✅ OK':`${maxV-qV} restantes`}</span>
+        <div class="quota-bar-bg" style="height:10px">
+          <div class="quota-bar-fill" style="width:${pV}%"></div>
         </div>
-        ${pendV?`<div class="badge badge-orange" style="margin-top:8px">⏳ En attente validation</div>`:''}
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px">
+          <span style="color:var(--muted)">${qV} / ${maxV} unités</span>
+          <span style="color:${pV>=100?'var(--green)':'var(--red)'}">
+            ${pV>=100 ? '✅ OK' : `${maxV-qV} restantes`}
+          </span>
+        </div>
+        ${pendV ? `<div class="badge badge-orange" style="margin-top:8px">⏳ En attente validation</div>` : ''}
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;margin-bottom:5px">🥔 Patates — ${pP}%</div>
-        <div class="quota-bar-bg" style="height:10px"><div class="quota-bar-fill" style="width:${pP}%;background:linear-gradient(90deg,var(--orange),var(--warn))"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px">
-          <span style="color:var(--muted)">${qP}/${maxP} unités</span>
-          <span style="color:${pP>=100?'var(--green)':'var(--orange)'}">${pP>=100?'✅ OK':`${maxP-qP} restantes`}</span>
+        <div class="quota-bar-bg" style="height:10px">
+          <div class="quota-bar-fill" style="width:${pP}%;background:linear-gradient(90deg,var(--orange),var(--warn))"></div>
         </div>
-        ${pendP?`<div class="badge badge-orange" style="margin-top:8px">⏳ En attente validation</div>`:''}
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px">
+          <span style="color:var(--muted)">${qP} / ${maxP} unités</span>
+          <span style="color:${pP>=100?'var(--green)':'var(--orange)'}">
+            ${pP>=100 ? '✅ OK' : `${maxP-qP} restantes`}
+          </span>
+        </div>
+        ${pendP ? `<div class="badge badge-orange" style="margin-top:8px">⏳ En attente validation</div>` : ''}
       </div>
     </div>
-    ${(!pendV&&pV<100)||(!pendP&&pP<100)?`<div style="margin-top:14px"><button class="btn btn-primary" onclick="ouvrirQuotaForm('${emp.contrat}',${maxV},${qV},${maxP},${qP},${primeMax})">🚚 Déclarer mon quota</button></div>`:''}
+ 
+    ${primeQuotaSem ? `
+    <div style="margin-top:12px;padding:10px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.28);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;font-weight:700">💰 Prime quota attribuée</span>
+      <div>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green)">${fmtMoney(primeQuotaSem.montant)}</span>
+        <span class="badge ${primeQuotaSem.verse?'badge-green':'badge-orange'}" style="margin-left:8px">${primeQuotaSem.verse?'Versée':'En attente'}</span>
+      </div>
+    </div>` : done ? `
+    <div style="margin-top:12px;padding:10px;background:rgba(241,196,15,.08);border:1px solid rgba(241,196,15,.25);border-radius:8px;font-size:12px;color:var(--warn)">
+      ⏳ Quota complet ! La direction attribuera la prime en fin de semaine.
+    </div>` : ''}
+ 
+    <div style="margin-top:14px">
+      <button class="btn btn-primary" onclick="ouvrirQuotaForm('${emp.contrat}',${maxV},${qV},${maxP},${qP},${primeMax})">
+        🚚 Déclarer un remplissage
+      </button>
+    </div>
   </div>
+ 
   <div class="card" style="margin-bottom:16px">
-    <div class="card-title">📋 Mes déclarations</div>
-    ${(tickets||[]).length?(tickets).map(t=>`<div class="quota-ticket ${t.statut}">
+    <div class="card-title">📋 Mes déclarations — ${getLabelSemaine(semaine)}</div>
+    ${!(ticketsSem||[]).length
+      ? '<p style="color:var(--muted)">Aucune déclaration cette semaine.</p>'
+      : (ticketsSem||[]).map(t=>`
+    <div class="quota-ticket ${t.statut}">
       <div style="display:flex;justify-content:space-between;align-items:start">
         <div>
-          <div style="font-weight:700;font-size:13px">${t.type==='viande'?'🥩 Viande':'🥔 Patates'} — 🚚 ${t.plaque} — ${t.quantite} unités</div>
-          <div style="font-size:11px;color:var(--muted)">${new Date(t.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</div>
+          <div style="font-weight:700;font-size:13px">
+            ${t.type==='viande'?'🥩 Viande':'🥔 Patates'} — 🚚 ${t.plaque} — ${t.quantite} unités
+          </div>
+          <div style="font-size:11px;color:var(--muted)">
+            ${new Date(t.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}
+          </div>
           ${t.notes?`<div style="font-size:11px;color:var(--muted)">${t.notes}</div>`:''}
         </div>
-        <span class="badge ${t.statut==='valide'?'badge-green':t.statut==='refuse'?'badge-red':'badge-orange'}">${t.statut==='valide'?'✅ Validé':t.statut==='refuse'?'❌ Refusé':'⏳ En attente'}</span>
+        <span class="badge ${t.statut==='valide'?'badge-green':t.statut==='refuse'?'badge-red':'badge-orange'}">
+          ${t.statut==='valide'?'✅ Validé':t.statut==='refuse'?'❌ Refusé':'⏳ En attente'}
+        </span>
       </div>
-    </div>`).join(''):'<p style="color:var(--muted)">Aucune déclaration.</p>'}
-  </div>
-  ${canVal&&pendingTickets.length?`<div class="card"><div class="card-title">🔔 Tickets à valider (${pendingTickets.length})</div><div id="quotaValidList"></div></div>`:''}`;
-  if(canVal&&pendingTickets.length){
-    const listEl=document.getElementById('quotaValidList');
-    if(listEl) listEl.innerHTML=await renderQuotaTickets(pendingTickets);
-  }
-  if(ROLE==='employe') trackActivity();
+    </div>`).join('')}
+  </div>`;
+ 
+  if (ROLE === 'employe') trackActivity();
 }
 
 function ouvrirQuotaForm(contrat,maxV,doneV,maxP,doneP,primeMax){
@@ -1995,8 +2054,10 @@ async function validerQuota(ticketId,discordId,quantite,type){
       if(u){
         const maxV=u.contrat==='CDI'?quotaCfg.cdi_viande:quotaCfg.cdd_viande;
         const maxP=u.contrat==='CDI'?quotaCfg.cdi_patates:quotaCfg.cdd_patates;
-        const pV=Math.min(100,Math.round((+(u.quota_viande_validee||0)/maxV)*100));
-        const pP=Math.min(100,Math.round((+(u.quota_patates_validee||0)/maxP)*100));
+        // Lire depuis les tickets validés cette semaine (source fiable)
+        const qSemCheck = await getQuotaSemaine(discordId, getSemaine());
+        const pV = maxV > 0 ? Math.min(100, Math.round(qSemCheck.viande/maxV*100)) : 0;
+        const pP = maxP > 0 ? Math.min(100, Math.round(qSemCheck.patates/maxP*100)) : 0;
         if(pV>=100&&pP>=100){
         const primeMax=u.contrat==='CDI'?quotaCfg.cdi_prime:quotaCfg.cdd_prime;
         // Supprimer l'ancienne prime quota non versée si elle existe
@@ -2029,7 +2090,35 @@ async function validerQuota(ticketId,discordId,quantite,type){
 }
 
 async function refuserQuota(id){await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});const el=document.getElementById(`qt-${id}`);if(el)el.remove();loadQuotaPage();}
-
+async function attribuerPrimesQuota() {
+  const semaine = getSemaine();
+  const employes = await sb('comptes_dashboard?select=*&actif=eq.true&role=neq.gouvernement');
+  if (!employes?.length) { alert('Aucun employé actif.'); return; }
+  let count = 0;
+  for (const emp of employes) {
+    if (!emp.discord_id) continue;
+    const maxV = emp.contrat==='CDI' ? quotaCfg.cdi_viande  : quotaCfg.cdd_viande;
+    const maxP = emp.contrat==='CDI' ? quotaCfg.cdi_patates : quotaCfg.cdd_patates;
+    const primeMax = emp.contrat==='CDI' ? quotaCfg.cdi_prime : quotaCfg.cdd_prime;
+    const qSem = await getQuotaSemaine(emp.discord_id, semaine);
+    const pV = maxV > 0 ? Math.min(100, Math.round(qSem.viande/maxV*100))  : 0;
+    const pP = maxP > 0 ? Math.min(100, Math.round(qSem.patates/maxP*100)) : 0;
+    if (pV < 100 || pP < 100) continue;
+    const plafond = PLAFOND_PRIME[emp.poste] ?? 50000;
+    const primesVente = await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.vente`);
+    const cumulVente = (primesVente||[]).reduce((a,p) => a+p.montant, 0);
+    const primeQuota = Math.min(primeMax, Math.max(0, plafond - cumulVente));
+    if (primeQuota <= 0) continue;
+    await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.quota&verse=eq.false`, { method:'DELETE' });
+    await sb('primes', { method:'POST', body: JSON.stringify({
+      employe_discord: emp.discord_id, montant: primeQuota,
+      semaine, verse: false, type: 'quota'
+    })});
+    count++;
+  }
+  alert(`✅ Primes quota attribuées pour ${count} employé(s) !`);
+  await loadPrimesTable();
+}
 /* ══════════════════════════════════════════
    STOCK
 ══════════════════════════════════════════ */
