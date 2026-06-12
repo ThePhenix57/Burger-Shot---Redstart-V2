@@ -3627,7 +3627,7 @@ async function ctEnvoyerSignature() {
 
   const res = await sb('contrats_travail', { method:'POST', body: JSON.stringify(payload) });
   if (!res) {
-    aEl.innerHTML = '<div class="alert alert-err">❌ Erreur lors de l\\'envoi.</div>';
+    aEl.innerHTML = '<div class="alert alert-err">❌ Erreur lors de l'envoi.</div>';
     return;
   }
 
@@ -3646,7 +3646,7 @@ async function ctEnvoyerSignature() {
         { name: '📅 Référence', value: data.reference, inline: true }
       ],
       timestamp: new Date().toISOString(),
-      footer: { text: 'En attente de signature de l\\'employé(e)' }
+      footer: { text: 'En attente de signature de l'employé(e)' }
     }]
   });
 
