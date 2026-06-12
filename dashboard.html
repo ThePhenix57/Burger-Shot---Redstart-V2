@@ -821,6 +821,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   verifierClotureVendredi();
   enregistrerEvolutionJour();
+  ctVerifierContratsEnAttente();
 });
 
 async function loadQuotaCfg() {
@@ -885,6 +886,7 @@ function buildNav() {
           <div class="nav-item" id="nav-stock" onclick="showPage('stock')">📦 Stock</div>
           <div class="nav-item" id="nav-vehicules" onclick="showPage('vehicules')">🚗 Véhicules</div>
           <div class="nav-item" id="nav-contrats" onclick="showPage('contrats')">📄 Contrats</div>
+          <div class="nav-item" id="nav-contrats_travail" onclick="showPage('contrats_travail')">📑 Contrats Travail</div>
           <div class="nav-item" id="nav-gestion" onclick="showPage('gestion')">⚙️ Admin <span class="nav-badge" id="quota-badge"></span></div>
           <div class="nav-item" id="nav-benefices" onclick="showPage('benefices')">💹 Bénéfices</div>
           <div class="nav-item" id="nav-depenses" onclick="showPage('depenses')">💸 Dépenses</div>
@@ -1144,8 +1146,9 @@ function buildPages() {
     </div>
     <div id="vehGrid" class="veh-grid"></div></div>`;
 
-    // CONTRATS
-    html += `<div class="page" id="page-contrats"><div class="red-line"></div>
+    // CONTRATS DE TRAVAIL
+    html += `<div class="page" id="page-contrats_travail"><div class="red-line"></div>
+    <div id="ctTravailContent"><div class="loading"><div class="spin"></div></div></div></div>`;
     <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
       <div class="card" style="min-width:280px;flex-shrink:0">
         <div class="card-title">Nouveau contrat</div>
@@ -1358,6 +1361,7 @@ function showPage(id) {
     'vehicules': loadVehicules,
     'vehicules_ro': loadVehiculesRO,
     'contrats': loadContrats,
+    'contrats_travail': loadContratsTravail,
     'gestion': loadGestion,
     'gouvernement': loadGouvernement,
     'depenses': loadDepenses,
