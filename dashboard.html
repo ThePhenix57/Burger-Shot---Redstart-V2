@@ -2353,12 +2353,12 @@ async function loadEmployes(){
   if(filt==='actif')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.actif&actif=eq.true&order=created_at.desc';
   else if(filt==='absent')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.absent&actif=eq.true&order=created_at.desc';
   else if(filt==='inactif')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
-  const [data,cmds,primesData]=await Promise.all([sb(base),sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`)]);
+  const [data,cmds,primesData,contratsData]=await Promise.all([sb(base),sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),sb('contrats_travail?select=employe_discord_id,statut')]);
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>';return;}
   data.sort((a,b)=>(NIVEAU[b.poste]||0)-(NIVEAU[a.poste]||0));
   const caMap={},primesMap={},cntMap={};
   (cmds||[]).forEach(c=>{caMap[c.employe_discord_id]=(caMap[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);cntMap[c.employe_discord_id]=(cntMap[c.employe_discord_id]||0)+1;});
-  (primesData||[]).forEach(p=>{primesMap[p.employe_discord]=(primesMap[p.employe_discord]||0)+p.montant;});
+  const contratsSet=new Set((contratsData||[]).filter(c=>c.statut==='signe'||c.statut==='en_attente').map(c=>c.employe_discord_id));
   el.innerHTML=data.map(e=>{
     const init=`${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
     const prime=primesMap[e.discord_id]||0;
@@ -2375,6 +2375,7 @@ async function loadEmployes(){
           <div style="display:flex;align-items:center;gap:6px">
             <div class="emp-nm">${e.prenom} ${e.nom}</div>
             <button class="btn-info" onclick="voirFicheEmp('${e.id}','${e.prenom} ${e.nom}')">ℹ</button>
+            ${!contratsSet.has(e.discord_id)?'<span class="badge badge-red" title="Aucun contrat de travail">⚠️ Pas de contrat</span>':''}
           </div>
           <div class="emp-disc">${e.discord_id||'—'}</div>
           <div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap">
@@ -2481,6 +2482,9 @@ async function voirFicheEmp(empId, nom){
   const e=data?.[0];if(!e){el.innerHTML='<p style="color:var(--muted)">Introuvable.</p>';return;}
   let age='—';if(e.date_naissance){const diff=Date.now()-new Date(e.date_naissance).getTime();age=Math.floor(diff/(1000*60*60*24*365.25))+' ans';}
   let anc='—';if(e.date_embauche){const diff=Date.now()-new Date(e.date_embauche).getTime();const j=Math.floor(diff/(1000*60*60*24));anc=j<30?`${j}j`:j<365?`${Math.floor(j/30)} mois`:`${Math.floor(j/365)} an(s)`;}
+  const dateEmbaucheStr=e.date_embauche?new Date(e.date_embauche).toLocaleDateString('fr-FR'):'—';
+  const contratsEmp=await sb(`contrats_travail?employe_discord_id=eq.${e.discord_id}&order=created_at.desc&limit=1`);
+  const contratActuel=contratsEmp?.[0];
   let docs=[];try{const raw=e.documents;docs=typeof raw==='string'?JSON.parse(raw):(raw||[]);}catch{}
   const init=`${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
   el.innerHTML=`
@@ -2508,11 +2512,18 @@ async function voirFicheEmp(empId, nom){
     <div class="g2" style="gap:8px">
       <div style="background:var(--card2);border-radius:8px;padding:11px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">🎂 Âge</div><div style="font-weight:700">${age}</div></div>
       <div style="background:var(--card2);border-radius:8px;padding:11px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">📞 Téléphone</div><div style="font-weight:700">${fmtTelDisplay(e.telephone)}</div></div>
-      <div style="background:var(--card2);border-radius:8px;padding:11px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">📅 Ancienneté</div><div style="font-weight:700">${anc}</div></div>
-      <div style="background:var(--card2);border-radius:8px;padding:11px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">🎮 Discord</div><div style="font-weight:700;font-size:11px">${e.discord_id||'—'}</div></div>
+      <div style="background:var(--card2);border-radius:8px;padding:11px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">📅 Embauche</div><div style="font-weight:700">${dateEmbaucheStr}</div></div>
+      <div style="background:var(--card2);border-radius:8px;padding:11px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">📆 Ancienneté</div><div style="font-weight:700">${anc}</div></div>
+      <div style="background:var(--card2);border-radius:8px;padding:11px;grid-column:span 2"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">🎮 Discord</div><div style="font-weight:700;font-size:11px">${e.discord_id||'—'}</div></div>
     </div>
     <div style="margin-top:10px;padding:10px;background:${e.reglement_signe?'rgba(39,174,96,.08)':'rgba(243,156,18,.08)'};border:1px solid ${e.reglement_signe?'rgba(39,174,96,.22)':'rgba(243,156,18,.22)'};border-radius:8px;font-size:12px">
       ${e.reglement_signe?`✅ Règlement signé${e.reglement_signe_le?` le ${new Date(e.reglement_signe_le).toLocaleDateString('fr-FR')}`:''}` : '⚠️ Règlement non signé'}
+    </div>
+    <div style="margin-top:10px;padding:10px;background:${contratActuel?(contratActuel.statut==='signe'?'rgba(39,174,96,.08)':'rgba(243,156,18,.08)'):'rgba(192,57,43,.08)'};border:1px solid ${contratActuel?(contratActuel.statut==='signe'?'rgba(39,174,96,.22)':'rgba(243,156,18,.22)'):'rgba(192,57,43,.22)'};border-radius:8px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <span>${contratActuel
+        ? (contratActuel.statut==='signe'?`✅ Contrat ${contratActuel.type_contrat} signé (${contratActuel.reference})`:contratActuel.statut==='en_attente'?`⏳ Contrat en attente de signature (${contratActuel.reference})`:`❌ Dernier contrat refusé (${contratActuel.reference})`)
+        : '⚠️ Aucun contrat de travail'}</span>
+      <button class="btn btn-primary btn-sm" onclick="closeOv('ovDocs');ctPreremplirDepuisEmploye('${e.discord_id}')">➕ ${contratActuel?'Nouveau contrat':'Ajouter un contrat'}</button>
     </div>
   </div>
   <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--red);margin-bottom:10px">📎 Documents (${docs.length})</div>
@@ -3560,6 +3571,17 @@ function ctBuildHTML(data) {
   </body></html>`;
 }
 
+function ctPreremplirDepuisEmploye(discordId) {
+  showPage('contrats_travail');
+  setTimeout(() => {
+    const sel = document.getElementById('ctEmploye');
+    if (!sel) return;
+    sel.value = discordId;
+    ctOnEmployeChange();
+    document.querySelector('#page-contrats_travail .card')?.scrollIntoView({behavior:'smooth'});
+  }, 200);
+}
+   
 /* ══════════════════════════════════════════
    COLLECTE DES DONNÉES DEPUIS LE FORMULAIRE
 ══════════════════════════════════════════ */
