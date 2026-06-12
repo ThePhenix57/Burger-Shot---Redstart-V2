@@ -1203,14 +1203,20 @@ function buildPages() {
       </div>
     </div>
     <div class="card" style="margin-bottom:18px">
-      <div class="card-title">🚚 Livraisons externes</div>
-      <div class="g2" style="margin-bottom:12px">
-        <div class="form-group"><label class="form-label">Montant ($)</label><input class="form-input" id="livMontant" type="number"></div>
-        <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="livNotes"></div>
-      </div>
-      <button class="btn btn-orange" onclick="saveLivraison()">📦 Enregistrer</button>
-      <div id="livraisonsHisto" style="margin-top:14px"></div>
-    </div>
+     <div class="card-title">🚚 Livraisons & 🧹 Ménage</div>
+     <div class="g2" style="margin-bottom:12px">
+       <div class="form-group"><label class="form-label">Type</label>
+         <select class="form-select" id="livType">
+           <option value="livraison">🚚 Livraison</option>
+           <option value="menage">🧹 Ménage</option>
+         </select>
+       </div>
+       <div class="form-group"><label class="form-label">Montant ($)</label><input class="form-input" id="livMontant" type="number"></div>
+     </div>
+     <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="livNotes"></div>
+     <button class="btn btn-orange" onclick="saveLivraison()">📦 Enregistrer</button>
+     <div id="livraisonsHisto" style="margin-top:14px"></div>
+   </div>
     <div class="card" style="margin-bottom:18px">
       <div class="card-title">🔒 Clôture de semaine</div>
       <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Clôture les caisses, calcule les primes, remet les quotas à zéro.</p>
@@ -2634,22 +2640,30 @@ async function loadQuotaTicketsList(){
    LIVRAISONS
 ══════════════════════════════════════════ */
 async function saveLivraison(){
+  const type=document.getElementById('livType').value;
   const montant=+document.getElementById('livMontant').value,notes=document.getElementById('livNotes').value.trim();
   if(!montant||montant<=0){alert('Montant invalide.');return;}
-  await sb('livraisons',{method:'POST',body:JSON.stringify({montant,notes:notes||null,semaine:getSemaine(),enregistre_par:USER.id})});
+  await sb('livraisons',{method:'POST',body:JSON.stringify({montant,notes:notes||null,semaine:getSemaine(),enregistre_par:USER.id,type})});
   document.getElementById('livMontant').value='';document.getElementById('livNotes').value='';
-  alert('✅ Livraison enregistrée !');
+  alert(type==='menage'?'✅ Ménage enregistré !':'✅ Livraison enregistrée !');
   await loadLivraisons();
 }
 
 async function loadLivraisons(){
   const el=document.getElementById('livraisonsHisto');if(!el)return;
   const data=await sb(`livraisons?select=*&semaine=eq.${getSemaine()}&order=created_at.desc`);
-  if(!data?.length){el.innerHTML='<p style="color:var(--muted);font-size:12px">Aucune livraison cette semaine.</p>';return;}
-  const total=data.reduce((a,l)=>a+(l.montant||0),0);
-  el.innerHTML=`<div style="font-weight:700;color:var(--green);margin-bottom:8px">Total : ${fmtMoney(total)}</div>`+
-  `<table><thead><tr><th>Montant</th><th>Notes</th><th>Date</th></tr></thead><tbody>`+
-  data.map(l=>`<tr><td><strong style="color:var(--green)">+${fmtMoney(l.montant)}</strong></td><td>${l.notes||'—'}</td><td style="font-size:11px">${new Date(l.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</td></tr>`).join('')+'</tbody></table>';
+  if(!data?.length){el.innerHTML='<p style="color:var(--muted);font-size:12px">Aucune livraison/ménage cette semaine.</p>';return;}
+  const livr=(data||[]).filter(l=>(l.type||'livraison')==='livraison');
+  const menage=(data||[]).filter(l=>l.type==='menage');
+  const totLivr=livr.reduce((a,l)=>a+(l.montant||0),0);
+  const totMenage=menage.reduce((a,l)=>a+(l.montant||0),0);
+  el.innerHTML=`<div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+    <div style="font-weight:700;color:var(--green)">🚚 Livraisons : ${fmtMoney(totLivr)}</div>
+    <div style="font-weight:700;color:var(--blue)">🧹 Ménage : ${fmtMoney(totMenage)}</div>
+    <div style="font-weight:700">Total : ${fmtMoney(totLivr+totMenage)}</div>
+  </div>`+
+  `<table><thead><tr><th>Type</th><th>Montant</th><th>Notes</th><th>Date</th></tr></thead><tbody>`+
+  data.map(l=>`<tr><td>${l.type==='menage'?'🧹 Ménage':'🚚 Livraison'}</td><td><strong style="color:var(--green)">+${fmtMoney(l.montant)}</strong></td><td>${l.notes||'—'}</td><td style="font-size:11px">${new Date(l.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</td></tr>`).join('')+'</tbody></table>';
 }
 
 /* ══════════════════════════════════════════
