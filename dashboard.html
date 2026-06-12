@@ -3419,36 +3419,36 @@ function ctBuildHTML(data) {
     : `CDD du ${ctFmtDate(dateDebut)} au ${ctFmtDate(dateFin)}`;
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-   @page { size: A4; margin: 0; }
-   * { margin:0; padding:0; box-sizing:border-box; }
-   html, body { background:#888; }
-   body { font-family: 'Times New Roman', Times, serif; color:#1a1a1a; font-size:13px; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:10px; }
-   .page { position:relative; width:210mm; min-height:297mm; padding:18mm 16mm; background:#fff; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.3); flex-shrink:0; }
-   .filigrane { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:380px; opacity:.07; z-index:0; pointer-events:none; }
-   .content { position:relative; z-index:1; }
-   .ct-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-   .ct-header img { height:60px; object-fit:contain; }
-   .ct-title { font-size:18px; font-weight:bold; letter-spacing:1px; text-align:center; flex:1; }
-   .ct-ref { font-weight:bold; margin-bottom:14px; }
-   .ct-section { margin-bottom:14px; }
-   .ct-section b { font-weight:bold; }
-   .ct-article-title { font-weight:bold; font-style:italic; margin-bottom:6px; margin-top:16px; }
-   ul.ct-list { margin:6px 0 6px 22px; }
-   ul.ct-list li { margin-bottom:4px; }
-   .ct-signatures { display:flex; justify-content:space-between; margin-top:40px; align-items:flex-end; }
-   .ct-sig-block { text-align:center; width:45%; position:relative; min-height:90px; }
-   .ct-sig-label { font-weight:bold; margin-bottom:6px; }
-   .ct-sig-img { max-height:70px; object-fit:contain; }
-   .ct-tampon-wrap { position:relative; display:inline-block; }
-   .ct-tampon-wrap img.tampon { width:90px; opacity:.9; }
-   .ct-tampon-wrap img.sig-patron { position:absolute; top:-18px; left:14px; width:100px; transform:rotate(-6deg); }
-   .ct-footer-doc { text-align:center; font-size:10px; color:#999; margin-top:30px; }
-   @media print {
-     html, body { background:#fff; padding:0; gap:0; }
-     .page { box-shadow:none; page-break-after:always; }
-     .page:last-child { page-break-after:auto; }
-   }
-   </style></head><body>`;
+  @page { size: A4; margin: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { background:#888; }
+  body { font-family: 'Times New Roman', Times, serif; color:#1a1a1a; font-size:13px; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:10px; }
+  .page { position:relative; width:210mm; min-height:297mm; padding:18mm 16mm; background:#fff; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.3); flex-shrink:0; }
+  .filigrane { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:380px; opacity:.07; z-index:0; pointer-events:none; }
+  .content { position:relative; z-index:1; }
+  .ct-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .ct-header img { height:60px; object-fit:contain; }
+  .ct-title { font-size:18px; font-weight:bold; letter-spacing:1px; text-align:center; flex:1; }
+  .ct-ref { font-weight:bold; margin-bottom:14px; }
+  .ct-section { margin-bottom:14px; }
+  .ct-section b { font-weight:bold; }
+  .ct-article-title { font-weight:bold; font-style:italic; margin-bottom:6px; margin-top:16px; }
+  ul.ct-list { margin:6px 0 6px 22px; }
+  ul.ct-list li { margin-bottom:4px; }
+  .ct-signatures { display:flex; justify-content:space-between; margin-top:40px; align-items:flex-end; }
+  .ct-sig-block { text-align:center; width:45%; position:relative; min-height:90px; }
+  .ct-sig-label { font-weight:bold; margin-bottom:6px; }
+  .ct-sig-img { max-height:70px; object-fit:contain; }
+  .ct-tampon-wrap { position:relative; display:inline-block; }
+  .ct-tampon-wrap img.tampon { width:90px; opacity:.9; }
+  .ct-tampon-wrap img.sig-patron { position:absolute; top:-18px; left:14px; width:100px; transform:rotate(-6deg); }
+  .ct-footer-doc { text-align:center; font-size:10px; color:#999; margin-top:30px; }
+  @media print {
+    html, body { background:#fff; padding:0; gap:0; }
+    .page { box-shadow:none; page-break-after:always; }
+    .page:last-child { page-break-after:auto; }
+  }
+  </style></head><body>
 
   <!-- PAGE 1 -->
   <div class="page">
