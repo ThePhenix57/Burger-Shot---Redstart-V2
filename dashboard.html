@@ -3235,6 +3235,621 @@ async function sauvegarderCompte(){
 async function changerStatutCompte(id,statut){await sb(`comptes_dashboard?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut,actif:statut==='actif'})});await loadComptes();}
 async function supprimerCompte(id,nom){if(!confirm(`Supprimer ${nom} ?`))return;await sb(`comptes_dashboard?id=eq.${id}`,{method:'DELETE'});await loadComptes();}
 
+/* ══════════════════════════════════════════════════════════════
+   SYSTÈME DE CONTRATS DE TRAVAIL
+   ══════════════════════════════════════════════════════════════ */
+
+// URLs des assets du contrat
+const CT_LOGO_DOJ   = 'https://upload.redstartrp.fr/uploads/photo-1781288360-e995cf5bc944.png';
+const CT_LOGO_BS    = 'https://upload.redstartrp.fr/uploads/photo-1781288378-217fc4495a29.png';
+const CT_FILIGRANE  = 'https://upload.redstartrp.fr/uploads/photo-1781288412-74f269f72851.png';
+const CT_TAMPON     = 'https://upload.redstartrp.fr/uploads/photo-1781288439-200415b594d0.png';
+const CT_SIGNATURE_PATRON = 'https://upload.redstartrp.fr/uploads/photo-1781288459-39f7b057e68b.png';
+
+/* ──────────────────────────────────────────
+   UTILS DATES
+────────────────────────────────────────── */
+function ctFmtDate(d) {
+  if (!d) return '';
+  const dt = typeof d === 'string' ? new Date(d + 'T00:00:00') : d;
+  return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+}
+function ctTodayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function ctAddDays(isoDate, days) {
+  const d = new Date(isoDate + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ══════════════════════════════════════════
+   PAGE CONTRATS (DIRECTION) — ajout section génération
+══════════════════════════════════════════ */
+async function loadContratsTravail() {
+  const el = document.getElementById('ctTravailContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+
+  const employes = await sb('comptes_dashboard?select=*&actif=eq.true&role=neq.gouvernement&order=nom.asc') || [];
+  const historique = await sb('contrats_travail?select=*&order=created_at.desc&limit=30') || [];
+
+  const empOptions = employes.map(e =>
+    `<option value="${e.discord_id}" data-nom="${e.nom}" data-prenom="${e.prenom}" data-poste="${e.poste||''}" data-contrat="${e.contrat||'CDD'}" data-embauche="${e.date_embauche||''}">${e.prenom} ${e.nom} — ${e.poste||'—'} (${e.contrat||'CDD'})</option>`
+  ).join('');
+
+  el.innerHTML = `
+  <div class="g2" style="align-items:start;margin-bottom:18px">
+    <div class="card">
+      <div class="card-title">📄 Générer un contrat de travail</div>
+      <div id="alertCT"></div>
+
+      <div class="form-group">
+        <label class="form-label">Employé</label>
+        <select class="form-select" id="ctEmploye" onchange="ctOnEmployeChange()">
+          <option value="">— Sélectionner —</option>
+          ${empOptions}
+        </select>
+      </div>
+
+      <div class="g2">
+        <div class="form-group"><label class="form-label">Référence</label><input class="form-input" id="ctReference"></div>
+        <div class="form-group"><label class="form-label">Type de contrat</label>
+          <select class="form-select" id="ctType" onchange="ctOnTypeChange()">
+            <option value="CDD">CDD</option>
+            <option value="CDI">CDI</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="form-group"><label class="form-label">Date de début</label><input class="form-input" id="ctDateDebut" type="date" onchange="ctRecalcDates()"></div>
+        <div class="form-group" id="ctDateFinGroup"><label class="form-label">Date de fin</label><input class="form-input" id="ctDateFin" type="date"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Poste / Fonction</label>
+        <input class="form-input" id="ctPoste">
+      </div>
+
+      <div class="g2">
+        <div class="form-group"><label class="form-label">Temps hebdomadaire</label><input class="form-input" id="ctTemps" value="6 heures RP"></div>
+        <div class="form-group"><label class="form-label">Rémunération</label><input class="form-input" id="ctRemuneration"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Identifiant citoyen (ID)</label>
+        <input class="form-input" id="ctIdCitoyen" placeholder="Numéro Discord par défaut">
+      </div>
+
+      <button class="btn btn-primary" onclick="ctApercu()">👁️ Aperçu</button>
+      <button class="btn btn-success" onclick="ctEnvoyerSignature()">📤 Envoyer pour signature</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Historique des contrats</div>
+      <div id="ctHistorique">${ctRenderHistorique(historique)}</div>
+    </div>
+  </div>
+
+  <div id="ctApercuWrap" style="display:none">
+    <div class="card">
+      <div class="card-title">👁️ Aperçu du contrat</div>
+      <div id="ctApercuContent" style="background:#fff;border-radius:7px;overflow:hidden;max-height:80vh;overflow-y:auto"></div>
+    </div>
+  </div>`;
+}
+
+function ctRenderHistorique(list) {
+  if (!list?.length) return '<p style="color:var(--muted)">Aucun contrat généré.</p>';
+  return `<table><thead><tr><th>Référence</th><th>Employé</th><th>Type</th><th>Statut</th><th>Date</th><th></th></tr></thead><tbody>` +
+    list.map(c => `<tr>
+      <td><strong>${c.reference}</strong></td>
+      <td>${c.employe_prenom} ${c.employe_nom}</td>
+      <td><span class="badge badge-blue">${c.type_contrat}</span></td>
+      <td><span class="badge ${c.statut==='signe'?'badge-green':c.statut==='refuse'?'badge-red':'badge-orange'}">${c.statut==='signe'?'✅ Signé':c.statut==='refuse'?'❌ Refusé':'⏳ En attente'}</span></td>
+      <td style="font-size:11px">${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="ctVoirContrat('${c.id}')">👁️</button></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+function ctOnEmployeChange() {
+  const sel = document.getElementById('ctEmploye');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt.value) return;
+
+  const contrat = opt.dataset.contrat || 'CDD';
+  const poste = opt.dataset.poste || '';
+  const embauche = opt.dataset.embauche || ctTodayISO();
+
+  document.getElementById('ctReference').value = `CT-BS-${ctFmtDate(ctTodayISO()).replace(/\//g,'/')}`;
+  document.getElementById('ctType').value = contrat;
+  document.getElementById('ctPoste').value = poste;
+  document.getElementById('ctDateDebut').value = embauche;
+  document.getElementById('ctIdCitoyen').value = opt.value;
+
+  // Rémunération par défaut selon contrat
+  document.getElementById('ctRemuneration').value = contrat === 'CDI'
+    ? 'Quota + Prime de vente'
+    : '$50.000/quota';
+
+  ctOnTypeChange();
+  ctRecalcDates();
+}
+
+function ctOnTypeChange() {
+  const type = document.getElementById('ctType').value;
+  const finGroup = document.getElementById('ctDateFinGroup');
+  finGroup.style.display = type === 'CDI' ? 'none' : '';
+  if (type === 'CDI') document.getElementById('ctDateFin').value = '';
+  ctRecalcDates();
+}
+
+function ctRecalcDates() {
+  const type = document.getElementById('ctType').value;
+  const debut = document.getElementById('ctDateDebut').value;
+  if (!debut) return;
+  if (type === 'CDD') {
+    document.getElementById('ctDateFin').value = ctAddDays(debut, 7);
+  }
+}
+
+/* ══════════════════════════════════════════
+   GÉNÉRATION DU HTML DU CONTRAT
+══════════════════════════════════════════ */
+function ctBuildHTML(data) {
+  const {
+    reference, employeurNom, entreprise, adresseEntreprise,
+    salarieNom, salarieAdresse, idCitoyen,
+    poste, typeContrat, dateDebut, dateFin, datePriseEffet,
+    tempsHebdo, remuneration, dateSignature,
+    signatureEmployeDataURL
+  } = data;
+
+  const dureeTexte = typeContrat === 'CDI'
+    ? `CDI à compter du ${ctFmtDate(dateDebut)}`
+    : `CDD du ${ctFmtDate(dateDebut)} au ${ctFmtDate(dateFin)}`;
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+  @page { size: A4; margin: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Times New Roman', Times, serif; color:#1a1a1a; font-size:13px; }
+  .page { position:relative; width:210mm; min-height:297mm; padding:18mm 16mm; page-break-after:always; background:#fff; overflow:hidden; }
+  .page:last-child { page-break-after:auto; }
+  .filigrane { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:380px; opacity:.07; z-index:0; pointer-events:none; }
+  .content { position:relative; z-index:1; }
+  .ct-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .ct-header img { height:60px; object-fit:contain; }
+  .ct-title { font-size:18px; font-weight:bold; letter-spacing:1px; text-align:center; flex:1; }
+  .ct-ref { font-weight:bold; margin-bottom:14px; }
+  .ct-section { margin-bottom:14px; }
+  .ct-section b { font-weight:bold; }
+  .ct-article-title { font-weight:bold; font-style:italic; margin-bottom:6px; margin-top:16px; }
+  ul.ct-list { margin:6px 0 6px 22px; }
+  ul.ct-list li { margin-bottom:4px; }
+  .ct-signatures { display:flex; justify-content:space-between; margin-top:40px; align-items:flex-end; }
+  .ct-sig-block { text-align:center; width:45%; position:relative; min-height:90px; }
+  .ct-sig-label { font-weight:bold; margin-bottom:6px; }
+  .ct-sig-img { max-height:70px; object-fit:contain; }
+  .ct-tampon-wrap { position:relative; display:inline-block; }
+  .ct-tampon-wrap img.tampon { width:90px; opacity:.9; }
+  .ct-tampon-wrap img.sig-patron { position:absolute; top:-18px; left:14px; width:100px; transform:rotate(-6deg); }
+  .ct-footer-doc { text-align:center; font-size:10px; color:#999; margin-top:30px; }
+  </style></head><body>
+
+  <!-- PAGE 1 -->
+  <div class="page">
+    <img class="filigrane" src="${CT_FILIGRANE}" alt="">
+    <div class="content">
+      <div class="ct-header">
+        <img src="${CT_LOGO_BS}" alt="Burger Shot">
+        <div class="ct-title">CONTRAT DE TRAVAIL</div>
+        <img src="${CT_LOGO_DOJ}" alt="DOJ">
+      </div>
+
+      <div class="ct-ref">Référence : ${reference}</div>
+
+      <div class="ct-section">
+        <b>ENTRE :</b><br>
+        <b>Employeur :</b> ${employeurNom}<br>
+        <b>Entreprise :</b> ${entreprise}<br>
+        <b>Adresse professionnelle :</b> ${adresseEntreprise}
+      </div>
+
+      <div class="ct-section">
+        <b>ET :</b><br>
+        <b>Salarié(e) :</b> ${salarieNom}<br>
+        <b>Adresse :</b> ${salarieAdresse}<br>
+        <b>Identifiant citoyen (ID) :</b> ${idCitoyen}
+      </div>
+
+      <div class="ct-article-title">Article 1 - Fonction</div>
+      <div>Le/la salarié(e) est engagé(e) au poste de :</div>
+      <div style="margin-top:6px"><b>${poste}</b></div>
+      <div style="margin-top:6px">Il/Elle exercera ses missions conformément aux consignes de l'entreprise.</div>
+
+      <div class="ct-article-title">Article 2 - Durée du contrat</div>
+      <div style="margin-left:18px">${dureeTexte}</div>
+      <div style="margin-top:8px">Prise d'effet : ${ctFmtDate(datePriseEffet)}</div>
+
+      <div class="ct-article-title">Article 3 - Temps de travail</div>
+      <div>Temps hebdomadaire : <b>${tempsHebdo}</b><br>
+      Horaires adaptables selon les besoins opérationnels.</div>
+
+      <div class="ct-article-title">Article 4 - Rémunération</div>
+      <div>Salaire : <b>${remuneration}</b></div>
+      <div style="margin-top:10px">Mode de paiement :</div>
+      <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ccc">Paiement entreprise</div>
+    </div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page">
+    <img class="filigrane" src="${CT_FILIGRANE}" alt="">
+    <div class="content">
+      <div class="ct-article-title" style="margin-top:0">Article 5 - Obligations du salarié</div>
+      <ul class="ct-list">
+        <li>Respect du règlement intérieur</li>
+        <li>Représentation professionnelle de l'entreprise</li>
+        <li>Respect de la hiérarchie et des procédures internes</li>
+      </ul>
+
+      <div class="ct-article-title">Article 6 - Obligations de l'employeur</div>
+      <ul class="ct-list">
+        <li>Fournir les moyens nécessaires au travail</li>
+        <li>Garantir un environnement sain et sécurisé</li>
+        <li>Rémunérer dans les délais convenus</li>
+      </ul>
+
+      <div class="ct-article-title">Article 7 - Rupture</div>
+      <div>Préavis : 48h, sauf faute grave.</div>
+
+      <div style="margin-top:30px">
+        <b>Date :</b> ${ctFmtDate(dateSignature)}<br>
+        <b>Signatures :</b>
+      </div>
+
+      <div class="ct-signatures">
+        <div class="ct-sig-block">
+          <div class="ct-sig-label">Employeur</div>
+          <div class="ct-tampon-wrap">
+            <img class="tampon" src="${CT_TAMPON}" alt="">
+            <img class="sig-patron" src="${CT_SIGNATURE_PATRON}" alt="">
+          </div>
+        </div>
+        <div class="ct-sig-block">
+          <div class="ct-sig-label">Salarié(e)</div>
+          ${signatureEmployeDataURL ? `<img class="ct-sig-img" src="${signatureEmployeDataURL}" alt="">` : '<div style="color:#aaa;font-style:italic;margin-top:20px">En attente de signature</div>'}
+        </div>
+      </div>
+
+      <div class="ct-footer-doc">Document rédigé en coopération avec le barreau de Los Santos</div>
+    </div>
+  </div>
+
+  </body></html>`;
+}
+
+/* ══════════════════════════════════════════
+   COLLECTE DES DONNÉES DEPUIS LE FORMULAIRE
+══════════════════════════════════════════ */
+function ctCollectData(signatureDataURL) {
+  return {
+    reference: document.getElementById('ctReference').value.trim(),
+    employeurNom: USER.displayName,
+    entreprise: 'Burger Shot',
+    adresseEntreprise: 'Power Street & Hawking Avenue',
+    salarieNom: (() => {
+      const sel = document.getElementById('ctEmploye');
+      const opt = sel.options[sel.selectedIndex];
+      return `${opt.dataset.prenom} ${opt.dataset.nom}`.toUpperCase().includes(opt.dataset.nom.toUpperCase())
+        ? `${opt.dataset.prenom} ${opt.dataset.nom.toUpperCase()}`
+        : `${opt.dataset.prenom} ${opt.dataset.nom}`;
+    })(),
+    salarieAdresse: 'Los Santos',
+    idCitoyen: document.getElementById('ctIdCitoyen').value.trim(),
+    poste: document.getElementById('ctPoste').value.trim(),
+    typeContrat: document.getElementById('ctType').value,
+    dateDebut: document.getElementById('ctDateDebut').value,
+    dateFin: document.getElementById('ctDateFin').value || null,
+    datePriseEffet: document.getElementById('ctDateDebut').value,
+    tempsHebdo: document.getElementById('ctTemps').value.trim(),
+    remuneration: document.getElementById('ctRemuneration').value.trim(),
+    dateSignature: ctTodayISO(),
+    signatureEmployeDataURL: signatureDataURL || null
+  };
+}
+
+function ctValidateForm() {
+  const required = ['ctEmploye','ctReference','ctDateDebut','ctPoste','ctTemps','ctRemuneration','ctIdCitoyen'];
+  for (const id of required) {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) {
+      document.getElementById('alertCT').innerHTML = '<div class="alert alert-err">⚠️ Tous les champs sont obligatoires.</div>';
+      el.focus();
+      return false;
+    }
+  }
+  if (document.getElementById('ctType').value === 'CDD' && !document.getElementById('ctDateFin').value) {
+    document.getElementById('alertCT').innerHTML = '<div class="alert alert-err">⚠️ Date de fin obligatoire pour un CDD.</div>';
+    return false;
+  }
+  return true;
+}
+
+/* ══════════════════════════════════════════
+   APERÇU
+══════════════════════════════════════════ */
+function ctApercu() {
+  if (!ctValidateForm()) return;
+  const data = ctCollectData(null);
+  const html = ctBuildHTML(data);
+  document.getElementById('ctApercuWrap').style.display = 'block';
+  document.getElementById('ctApercuContent').innerHTML = `<iframe style="width:100%;height:900px;border:none" srcdoc="${html.replace(/"/g,'&quot;')}"></iframe>`;
+  document.getElementById('ctApercuWrap').scrollIntoView({behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   ENVOI POUR SIGNATURE
+══════════════════════════════════════════ */
+async function ctEnvoyerSignature() {
+  if (!ctValidateForm()) return;
+  const sel = document.getElementById('ctEmploye');
+  const opt = sel.options[sel.selectedIndex];
+  const aEl = document.getElementById('alertCT');
+  aEl.innerHTML = '<div class="alert alert-warn">⏳ Envoi en cours...</div>';
+
+  const data = ctCollectData(null);
+
+  const payload = {
+    reference: data.reference,
+    employe_discord_id: opt.value,
+    employe_nom: opt.dataset.nom,
+    employe_prenom: opt.dataset.prenom,
+    employe_id_citoyen: data.idCitoyen,
+    poste: data.poste,
+    type_contrat: data.typeContrat,
+    date_debut: data.dateDebut,
+    date_fin: data.dateFin,
+    remuneration: data.remuneration,
+    temps_hebdo: data.tempsHebdo,
+    statut: 'en_attente',
+    cree_par: USER.id
+  };
+
+  const res = await sb('contrats_travail', { method:'POST', body: JSON.stringify(payload) });
+  if (!res) {
+    aEl.innerHTML = '<div class="alert alert-err">❌ Erreur lors de l\\'envoi.</div>';
+    return;
+  }
+
+  aEl.innerHTML = '<div class="alert alert-ok">✅ Contrat envoyé pour signature !</div>';
+
+  await webhook({
+    username: 'Burger Shot — Contrats',
+    avatar_url: CT_LOGO_BS,
+    embeds: [{
+      title: '📄 Nouveau contrat de travail',
+      color: 0x3498db,
+      fields: [
+        { name: '👤 Salarié(e)', value: `${opt.dataset.prenom} ${opt.dataset.nom}`, inline: true },
+        { name: '📋 Type', value: data.typeContrat, inline: true },
+        { name: '💼 Poste', value: data.poste, inline: true },
+        { name: '📅 Référence', value: data.reference, inline: true }
+      ],
+      timestamp: new Date().toISOString(),
+      footer: { text: 'En attente de signature de l\\'employé(e)' }
+    }]
+  });
+
+  await loadContratsTravail();
+}
+
+/* ══════════════════════════════════════════
+   VOIR UN CONTRAT (depuis historique)
+══════════════════════════════════════════ */
+async function ctVoirContrat(id) {
+  const data = await sb(`contrats_travail?id=eq.${id}&select=*`);
+  const c = data?.[0];
+  if (!c) return;
+
+  const html = ctBuildHTML({
+    reference: c.reference,
+    employeurNom: 'DelaVega Juan',
+    entreprise: 'Burger Shot',
+    adresseEntreprise: 'Power Street & Hawking Avenue',
+    salarieNom: `${c.employe_prenom} ${c.employe_nom}`,
+    salarieAdresse: 'Los Santos',
+    idCitoyen: c.employe_id_citoyen,
+    poste: c.poste,
+    typeContrat: c.type_contrat,
+    dateDebut: c.date_debut,
+    dateFin: c.date_fin,
+    datePriseEffet: c.date_debut,
+    tempsHebdo: c.temps_hebdo,
+    remuneration: c.remuneration,
+    dateSignature: c.signature_date ? c.signature_date.split('T')[0] : c.created_at.split('T')[0],
+    signatureEmployeDataURL: c.signature_employe
+  });
+
+  document.getElementById('ovFactureContent').innerHTML = `<iframe style="width:100%;height:780px;border:none" srcdoc="${html.replace(/"/g,'&quot;')}"></iframe>`;
+  document.querySelector('#ovFacture .popup-title').textContent = `📄 ${c.reference}`;
+  factureHTML = html;
+  openOv('ovFacture');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CÔTÉ EMPLOYÉ — SIGNATURE DU CONTRAT
+   ══════════════════════════════════════════════════════════════ */
+
+/* Vérification au chargement : contrat en attente pour cet utilisateur */
+async function ctVerifierContratsEnAttente() {
+  if (!USER?.id) return;
+  const data = await sb(`contrats_travail?employe_discord_id=eq.${USER.id}&statut=eq.en_attente&order=created_at.desc&limit=1`);
+  const c = data?.[0];
+  if (!c) return;
+  ctAfficherPopupSignature(c);
+}
+
+function ctAfficherPopupSignature(c) {
+  const html = ctBuildHTML({
+    reference: c.reference,
+    employeurNom: 'DelaVega Juan',
+    entreprise: 'Burger Shot',
+    adresseEntreprise: 'Power Street & Hawking Avenue',
+    salarieNom: `${c.employe_prenom} ${c.employe_nom}`,
+    salarieAdresse: 'Los Santos',
+    idCitoyen: c.employe_id_citoyen,
+    poste: c.poste,
+    typeContrat: c.type_contrat,
+    dateDebut: c.date_debut,
+    dateFin: c.date_fin,
+    datePriseEffet: c.date_debut,
+    tempsHebdo: c.temps_hebdo,
+    remuneration: c.remuneration,
+    dateSignature: ctTodayISO(),
+    signatureEmployeDataURL: null
+  });
+
+  // Créer l'overlay dynamiquement
+  let ov = document.getElementById('ovContratSign');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'ovContratSign';
+    ov.className = 'overlay';
+    document.body.appendChild(ov);
+  }
+  ov.style.display = 'flex';
+  ov.innerHTML = `
+    <div class="popup" style="width:760px">
+      <div class="popup-title">📄 Contrat de travail à signer — ${c.reference}</div>
+      <div class="alert alert-warn">Merci de lire attentivement le contrat ci-dessous avant de le signer.</div>
+      <div style="background:#fff;border-radius:7px;overflow:hidden;margin-bottom:14px">
+        <iframe id="ctSignFrame" style="width:100%;height:420px;border:none" srcdoc="${html.replace(/"/g,'&quot;')}"></iframe>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Votre signature (dessinez avec la souris)</label>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:7px;touch-action:none">
+          <canvas id="ctSignCanvas" width="600" height="150" style="width:100%;height:150px;cursor:crosshair;display:block"></canvas>
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="ctClearSignature()">🗑️ Effacer</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-danger" onclick="ctRefuserContrat('${c.id}')">❌ Refuser</button>
+        <button class="btn btn-success" onclick="ctSignerContrat('${c.id}')">✅ Signer et valider</button>
+      </div>
+    </div>`;
+
+  ctInitCanvas();
+}
+
+let ctCanvasCtx = null, ctDrawing = false, ctHasDrawn = false;
+
+function ctInitCanvas() {
+  const canvas = document.getElementById('ctSignCanvas');
+  if (!canvas) return;
+  // Adapter résolution réelle au display size
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+  ctCanvasCtx = canvas.getContext('2d');
+  ctCanvasCtx.scale(ratio, ratio);
+  ctCanvasCtx.lineWidth = 2;
+  ctCanvasCtx.lineCap = 'round';
+  ctCanvasCtx.strokeStyle = '#1a1a1a';
+  ctHasDrawn = false;
+
+  const getPos = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - r.left, y: clientY - r.top };
+  };
+
+  const start = (e) => { ctDrawing = true; ctHasDrawn = true; const p = getPos(e); ctCanvasCtx.beginPath(); ctCanvasCtx.moveTo(p.x, p.y); e.preventDefault(); };
+  const move = (e) => { if (!ctDrawing) return; const p = getPos(e); ctCanvasCtx.lineTo(p.x, p.y); ctCanvasCtx.stroke(); e.preventDefault(); };
+  const end = () => { ctDrawing = false; };
+
+  canvas.onmousedown = start; canvas.onmousemove = move; canvas.onmouseup = end; canvas.onmouseleave = end;
+  canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = end;
+}
+
+function ctClearSignature() {
+  const canvas = document.getElementById('ctSignCanvas');
+  if (!canvas || !ctCanvasCtx) return;
+  ctCanvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+  ctHasDrawn = false;
+}
+
+async function ctSignerContrat(contratId) {
+  if (!ctHasDrawn) { alert('⚠️ Merci de signer dans la zone prévue avant de valider.'); return; }
+  const canvas = document.getElementById('ctSignCanvas');
+  const signatureDataURL = canvas.toDataURL('image/png');
+
+  await sb(`contrats_travail?id=eq.${contratId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ statut: 'signe', signature_employe: signatureDataURL, signature_date: new Date().toISOString() })
+  });
+
+  const data = await sb(`contrats_travail?id=eq.${contratId}&select=*`);
+  const c = data?.[0];
+
+  // Marquer le règlement signé si pas déjà fait (optionnel, cohérence)
+  await sb(`comptes_dashboard?discord_id=eq.${USER.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({})
+  });
+
+  document.getElementById('ovContratSign').style.display = 'none';
+  alert('✅ Contrat signé avec succès !');
+
+  if (c) {
+    await webhook({
+      username: 'Burger Shot — Contrats',
+      avatar_url: CT_LOGO_BS,
+      embeds: [{
+        title: '✅ Contrat signé',
+        color: 0x27ae60,
+        fields: [
+          { name: '👤 Salarié(e)', value: `${c.employe_prenom} ${c.employe_nom}`, inline: true },
+          { name: '📋 Type', value: c.type_contrat, inline: true },
+          { name: '📅 Référence', value: c.reference, inline: true }
+        ],
+        timestamp: new Date().toISOString(),
+        footer: { text: 'Contrat validé par le/la salarié(e)' }
+      }]
+    });
+  }
+}
+
+async function ctRefuserContrat(contratId) {
+  if (!confirm('Êtes-vous sûr de vouloir refuser ce contrat ?')) return;
+  await sb(`contrats_travail?id=eq.${contratId}`, { method:'PATCH', body: JSON.stringify({ statut:'refuse' }) });
+
+  const data = await sb(`contrats_travail?id=eq.${contratId}&select=*`);
+  const c = data?.[0];
+
+  document.getElementById('ovContratSign').style.display = 'none';
+  alert('❌ Contrat refusé. La direction a été notifiée.');
+
+  if (c) {
+    await webhook({
+      username: 'Burger Shot — Contrats',
+      avatar_url: CT_LOGO_BS,
+      embeds: [{
+        title: '❌ Contrat refusé',
+        color: 0xc0392b,
+        fields: [
+          { name: '👤 Salarié(e)', value: `${c.employe_prenom} ${c.employe_nom}`, inline: true },
+          { name: '📅 Référence', value: c.reference, inline: true }
+        ],
+        timestamp: new Date().toISOString()
+      }]
+    });
+  }
+}
 </script>
 </body>
 </html>
