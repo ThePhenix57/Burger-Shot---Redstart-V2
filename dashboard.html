@@ -1146,9 +1146,8 @@ function buildPages() {
     </div>
     <div id="vehGrid" class="veh-grid"></div></div>`;
 
-    // CONTRATS DE TRAVAIL
-    html += `<div class="page" id="page-contrats_travail"><div class="red-line"></div>
-    <div id="ctTravailContent"><div class="loading"><div class="spin"></div></div></div></div>`;
+    // CONTRATS
+    html += `<div class="page" id="page-contrats"><div class="red-line"></div>
     <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
       <div class="card" style="min-width:280px;flex-shrink:0">
         <div class="card-title">Nouveau contrat</div>
@@ -1165,6 +1164,10 @@ function buildPages() {
       </div>
       <div class="card" style="flex:1"><div class="card-title">Contrats actifs</div><div id="contratsTable"></div></div>
     </div></div>`;
+
+    // CONTRATS DE TRAVAIL
+    html += `<div class="page" id="page-contrats_travail"><div class="red-line"></div>
+    <div id="ctTravailContent"><div class="loading"><div class="spin"></div></div></div></div>`;
 
     // GESTION / ADMIN
     html += `<div class="page" id="page-gestion"><div class="red-line"></div>
