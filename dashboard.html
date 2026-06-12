@@ -3751,11 +3751,11 @@ function ctAfficherPopupSignature(c) {
   }
   ov.style.display = 'flex';
   ov.innerHTML = `
-    <div class="popup" style="width:760px;max-width:95vw">
+    <div class="popup" style="width:760px;max-width:95vw;max-height:85vh;overflow-y:auto;box-sizing:border-box">
       <div class="popup-title">📄 Contrat de travail à signer — ${c.reference}</div>
       <div class="alert alert-warn">Merci de lire attentivement le contrat ci-dessous avant de le signer.</div>
       <div style="background:#fff;border-radius:7px;overflow:hidden;margin-bottom:14px">
-        <iframe id="ctSignFrame" style="width:100%;height:min(420px,50vh);border:none" srcdoc="${html.replace(/"/g,'&quot;')}"></iframe>
+        <iframe id="ctSignFrame" style="width:100%;height:min(380px,40vh);border:none" srcdoc="${html.replace(/"/g,'&quot;')}"></iframe>
       </div>
       <div class="form-group">
         <label class="form-label">Votre signature (dessinez avec la souris)</label>
