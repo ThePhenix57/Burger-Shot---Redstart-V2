@@ -2525,11 +2525,36 @@ async function ouvrirDocsAjout(empId,nom){
   const data=await sb(`comptes_dashboard?id=eq.${empId}&select=documents`);
   let docs=[];try{const raw=data?.[0]?.documents;docs=typeof raw==='string'?JSON.parse(raw):(raw||[]);}catch{}
   el.innerHTML=`<div style="margin-bottom:16px">
-    <div class="g2"><div class="form-group"><label class="form-label">Type</label><select class="form-select" id="docType"><option>Visite médicale</option><option>Permis de conduire</option><option>Contrat de travail</option><option>Autre</option></select></div>
-    <div class="form-group"><label class="form-label">URL</label><input class="form-input" id="docUrl" placeholder="https://..."></div></div>
+    <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="docType"><option>Visite médicale</option><option>Permis de conduire</option><option>Contrat de travail</option><option>Autre</option></select></div>
+    <div class="form-group">
+      <label class="form-label">Document</label>
+      <div class="upload-zone" id="docUploadZone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDocDrop(event,'${empId}')">
+        <input type="file" id="docFile" accept="image/*,.pdf" onchange="handleDocFile(this.files[0],'${empId}')">
+        <div id="docUploadInner"><div style="font-size:26px;margin-bottom:5px">📎</div><div style="font-size:11px;color:var(--muted)">Glisser ou cliquer · Image ou PDF</div></div>
+      </div>
+      <input class="form-input" id="docUrl" placeholder="ou coller une URL https://..." style="font-size:11px">
+    </div>
     <button class="btn btn-primary btn-sm" onclick="ajouterDoc('${empId}')">➕ Ajouter</button>
   </div>
   ${docs.length?docs.map((d,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px;background:var(--card2);border-radius:7px;margin-bottom:6px"><div><strong>${d.type}</strong><button class="btn btn-outline btn-sm" style="margin-left:7px" onclick="window.open('${d.url}','_blank')">👁️</button></div><button class="btn btn-danger btn-sm" onclick="suppDoc('${empId}',${i})">🗑️</button></div>`).join(''):'<p style="color:var(--muted);font-size:12px">Aucun document.</p>'}`;
+}
+
+   function handleDocDrop(e,empId){e.preventDefault();document.getElementById('docUploadZone')?.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleDocFile(f,empId);}
+async function handleDocFile(file,empId){
+  if(!file)return;
+  const inner=document.getElementById('docUploadInner');
+  if(inner)inner.innerHTML='<div style="font-size:11px;color:var(--muted)">⏳ Upload...</div>';
+  const ext=file.name.split('.').pop();
+  const fn=`doc_${empId}_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+  try{
+    const res=await fetch(`${SB_URL}/storage/v1/object/produits/${fn}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':file.type,'x-upsert':'true'},body:file});
+    if(!res.ok)throw new Error();
+    const url=`${SB_URL}/storage/v1/object/public/produits/${fn}`;
+    const inp=document.getElementById('docUrl');if(inp)inp.value=url;
+    if(inner)inner.innerHTML=`<div style="font-size:11px;color:var(--green)">✅ Fichier uploadé !</div>`;
+  }catch{
+    if(inner)inner.innerHTML='<div style="font-size:11px;color:var(--red)">❌ Erreur upload</div>';
+  }
 }
 
 async function ajouterDoc(empId){const type=document.getElementById('docType').value,url=document.getElementById('docUrl').value.trim();if(!url){alert('URL obligatoire.');return;}const data=await sb(`comptes_dashboard?id=eq.${empId}&select=documents`);let docs=[];try{const raw=data?.[0]?.documents;docs=typeof raw==='string'?JSON.parse(raw):(raw||[]);}catch{}docs.push({type,url});await sb(`comptes_dashboard?id=eq.${empId}`,{method:'PATCH',body:JSON.stringify({documents:JSON.stringify(docs)})});closeOv('ovDocs');loadEmployes();alert('✅ Document ajouté !');}
