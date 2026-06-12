@@ -3426,16 +3426,14 @@ function ctBuildHTML(data) {
   .page { position:relative; width:210mm; min-height:297mm; padding:18mm 16mm; background:#fff; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.3); flex-shrink:0; }
   .filigrane { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:380px; opacity:.07; z-index:0; pointer-events:none; }
   .content { position:relative; z-index:1; }
-  .ct-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-  .ct-header img { height:60px; object-fit:contain; }
-  .ct-title { font-size:18px; font-weight:bold; letter-spacing:1px; text-align:center; flex:1; }
-  .ct-ref { font-weight:bold; margin-bottom:14px; }
-  .ct-section { margin-bottom:14px; }
-  .ct-section b { font-weight:bold; }
-  .ct-article-title { font-weight:bold; font-style:italic; margin-bottom:6px; margin-top:16px; }
-  ul.ct-list { margin:6px 0 6px 22px; }
-  ul.ct-list li { margin-bottom:4px; }
-  .ct-signatures { display:flex; justify-content:space-between; margin-top:40px; align-items:flex-end; }
+  .ct-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .ct-header img { height:50px; object-fit:contain; }
+  .ct-ref { font-weight:bold; margin-bottom:8px; }
+  .ct-section { margin-bottom:8px; }
+  .ct-article-title { font-weight:bold; font-style:italic; margin-bottom:4px; margin-top:10px; }
+  ul.ct-list { margin:4px 0 4px 22px; }
+  ul.ct-list li { margin-bottom:2px; }
+  .ct-signatures { display:flex; justify-content:space-between; margin-top:25px; align-items:flex-end; }
   .ct-sig-block { text-align:center; width:45%; position:relative; min-height:90px; }
   .ct-sig-label { font-weight:bold; margin-bottom:6px; }
   .ct-sig-img { max-height:70px; object-fit:contain; }
@@ -3452,93 +3450,87 @@ function ctBuildHTML(data) {
 
   <!-- PAGE 1 -->
   <div class="page">
-    <img class="filigrane" src="${CT_FILIGRANE}" alt="">
-    <div class="content">
-      <div class="ct-header">
-        <img src="${CT_LOGO_BS}" alt="Burger Shot">
-        <div class="ct-title">CONTRAT DE TRAVAIL</div>
-        <img src="${CT_LOGO_DOJ}" alt="DOJ">
-      </div>
-
-      <div class="ct-ref">Référence : ${reference}</div>
-
-      <div class="ct-section">
-        <b>ENTRE :</b><br>
-        <b>Employeur :</b> ${employeurNom}<br>
-        <b>Entreprise :</b> ${entreprise}<br>
-        <b>Adresse professionnelle :</b> ${adresseEntreprise}
-      </div>
-
-      <div class="ct-section">
-        <b>ET :</b><br>
-        <b>Salarié(e) :</b> ${salarieNom}<br>
-        <b>Adresse :</b> ${salarieAdresse}<br>
-        <b>Identifiant citoyen (ID) :</b> ${idCitoyen}
-      </div>
-
-      <div class="ct-article-title">Article 1 - Fonction</div>
-      <div>Le/la salarié(e) est engagé(e) au poste de :</div>
-      <div style="margin-top:6px"><b>${poste}</b></div>
-      <div style="margin-top:6px">Il/Elle exercera ses missions conformément aux consignes de l'entreprise.</div>
-
-      <div class="ct-article-title">Article 2 - Durée du contrat</div>
-      <div style="margin-left:18px">${dureeTexte}</div>
-      <div style="margin-top:8px">Prise d'effet : ${ctFmtDate(datePriseEffet)}</div>
-
-      <div class="ct-article-title">Article 3 - Temps de travail</div>
-      <div>Temps hebdomadaire : <b>${tempsHebdo}</b><br>
-      Horaires adaptables selon les besoins opérationnels.</div>
-
-      <div class="ct-article-title">Article 4 - Rémunération</div>
-      <div>Salaire : <b>${remuneration}</b></div>
-      <div style="margin-top:10px">Mode de paiement :</div>
-      <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ccc">Paiement entreprise</div>
-    </div>
-  </div>
-
-  <!-- PAGE 2 -->
-  <div class="page">
-    <img class="filigrane" src="${CT_FILIGRANE}" alt="">
-    <div class="content">
-      <div class="ct-article-title" style="margin-top:0">Article 5 - Obligations du salarié</div>
-      <ul class="ct-list">
-        <li>Respect du règlement intérieur</li>
-        <li>Représentation professionnelle de l'entreprise</li>
-        <li>Respect de la hiérarchie et des procédures internes</li>
-      </ul>
-
-      <div class="ct-article-title">Article 6 - Obligations de l'employeur</div>
-      <ul class="ct-list">
-        <li>Fournir les moyens nécessaires au travail</li>
-        <li>Garantir un environnement sain et sécurisé</li>
-        <li>Rémunérer dans les délais convenus</li>
-      </ul>
-
-      <div class="ct-article-title">Article 7 - Rupture</div>
-      <div>Préavis : 48h, sauf faute grave.</div>
-
-      <div style="margin-top:30px">
-        <b>Date :</b> ${ctFmtDate(dateSignature)}<br>
-        <b>Signatures :</b>
-      </div>
-
-      <div class="ct-signatures">
-        <div class="ct-sig-block">
-          <div class="ct-sig-label">Employeur</div>
-          <div class="ct-tampon-wrap">
-            <img class="tampon" src="${CT_TAMPON}" alt="">
-            <img class="sig-patron" src="${CT_SIGNATURE_PATRON}" alt="">
-          </div>
-        </div>
-        <div class="ct-sig-block">
-          <div class="ct-sig-label">Salarié(e)</div>
-          ${signatureEmployeDataURL ? `<img class="ct-sig-img" src="${signatureEmployeDataURL}" alt="">` : '<div style="color:#aaa;font-style:italic;margin-top:20px">En attente de signature</div>'}
-        </div>
-      </div>
-
-      <div class="ct-footer-doc">Document rédigé en coopération avec le barreau de Los Santos</div>
-    </div>
-  </div>
+     <img class="filigrane" src="${CT_FILIGRANE}" alt="">
+     <div class="content">
+       <div class="ct-header">
+         <img src="${CT_LOGO_BS}" alt="Burger Shot">
+         <div class="ct-title">CONTRAT DE TRAVAIL</div>
+         <img src="${CT_LOGO_DOJ}" alt="DOJ">
+       </div>
+   
+       <div class="ct-ref">Référence : ${reference}</div>
+   
+       <div class="ct-section">
+         <b>ENTRE :</b><br>
+         <b>Employeur :</b> ${employeurNom}<br>
+         <b>Entreprise :</b> ${entreprise}<br>
+         <b>Adresse professionnelle :</b> ${adresseEntreprise}
+       </div>
+   
+       <div class="ct-section">
+         <b>ET :</b><br>
+         <b>Salarié(e) :</b> ${salarieNom}<br>
+         <b>Adresse :</b> ${salarieAdresse}<br>
+         <b>Identifiant citoyen (ID) :</b> ${idCitoyen}
+       </div>
+   
+       <div class="ct-article-title">Article 1 - Fonction</div>
+       <div>Le/la salarié(e) est engagé(e) au poste de :</div>
+       <div style="margin-top:4px"><b>${poste}</b></div>
+       <div style="margin-top:4px">Il/Elle exercera ses missions conformément aux consignes de l'entreprise.</div>
+   
+       <div class="ct-article-title">Article 2 - Durée du contrat</div>
+       <div style="margin-left:18px">${dureeTexte}</div>
+       <div style="margin-top:4px">Prise d'effet : ${ctFmtDate(datePriseEffet)}</div>
+   
+       <div class="ct-article-title">Article 3 - Temps de travail</div>
+       <div>Temps hebdomadaire : <b>${tempsHebdo}</b><br>
+       Horaires adaptables selon les besoins opérationnels.</div>
+   
+       <div class="ct-article-title">Article 4 - Rémunération</div>
+       <div>Salaire : <b>${remuneration}</b></div>
+       <div style="margin-top:4px">Mode de paiement :</div>
+       <div style="margin-top:4px;padding-top:4px;border-top:1px solid #ccc">Paiement entreprise</div>
+   
+       <div class="ct-article-title">Article 5 - Obligations du salarié</div>
+       <ul class="ct-list">
+         <li>Respect du règlement intérieur</li>
+         <li>Représentation professionnelle de l'entreprise</li>
+         <li>Respect de la hiérarchie et des procédures internes</li>
+       </ul>
+   
+       <div class="ct-article-title">Article 6 - Obligations de l'employeur</div>
+       <ul class="ct-list">
+         <li>Fournir les moyens nécessaires au travail</li>
+         <li>Garantir un environnement sain et sécurisé</li>
+         <li>Rémunérer dans les délais convenus</li>
+       </ul>
+   
+       <div class="ct-article-title">Article 7 - Rupture</div>
+       <div>Préavis : 48h, sauf faute grave.</div>
+   
+       <div style="margin-top:20px">
+         <b>Date :</b> ${ctFmtDate(dateSignature)}<br>
+         <b>Signatures :</b>
+       </div>
+   
+       <div class="ct-signatures">
+         <div class="ct-sig-block">
+           <div class="ct-sig-label">Employeur</div>
+           <div class="ct-tampon-wrap">
+             <img class="tampon" src="${CT_TAMPON}" alt="">
+             <img class="sig-patron" src="${CT_SIGNATURE_PATRON}" alt="">
+           </div>
+         </div>
+         <div class="ct-sig-block">
+           <div class="ct-sig-label">Salarié(e)</div>
+           ${signatureEmployeDataURL ? `<img class="ct-sig-img" src="${signatureEmployeDataURL}" alt="">` : '<div style="color:#aaa;font-style:italic;margin-top:20px">En attente de signature</div>'}
+         </div>
+       </div>
+   
+       <div class="ct-footer-doc">Document rédigé en coopération avec le barreau de Los Santos</div>
+     </div>
+   </div>
 
   </body></html>`;
 }
