@@ -2988,18 +2988,61 @@ async function enregistrerEvolutionJour(){
 async function loadDepenses(){
   const el=document.getElementById('depContent');if(!el)return;
   el.innerHTML='<div class="loading"><div class="spin"></div></div>';
-  const data=await sb(`depenses?semaine=eq.${getSemaine()}&order=created_at.desc`);
+ 
+  // Récupérer toutes les semaines disponibles
+  const [historique, depSemaines] = await Promise.all([
+    sb('comptes_rendus?select=semaine,semaine_label&order=created_at.desc&limit=20'),
+    sb('depenses?select=semaine&order=created_at.desc')
+  ]);
+ 
+  const semaineCour = getSemaine();
+  // Construire la liste unique de semaines (comptes_rendus + semaine courante + semaines des dépenses)
+  const toutesSemaines = [...new Set([
+    semaineCour,
+    ...(historique||[]).map(h=>h.semaine),
+    ...(depSemaines||[]).map(d=>d.semaine).filter(Boolean)
+  ])].sort((a,b)=>b.localeCompare(a));
+ 
+  const selId = 'depSemSel';
+  const semaineFiltre = document.getElementById(selId)?.value || semaineCour;
+ 
+  const data = await sb(`depenses?semaine=eq.${semaineFiltre}&order=created_at.desc`);
   const total=(data||[]).reduce((a,d)=>a+(d.montant||0),0);
-  el.innerHTML=`<div class="stat" style="--accent:var(--red);max-width:260px;margin-bottom:16px"><div class="stat-icon">💸</div><div class="stat-label">Total dépenses semaine</div><div class="stat-val">${fmtMoney(total)}</div></div>`+
-  (!data?.length?'<p style="color:var(--muted)">Aucune dépense cette semaine.</p>':
-  `<table><thead><tr><th>Libellé</th><th>Montant</th><th>Preuve</th><th>Date</th>${ROLE==='direction'?'<th></th>':''}</tr></thead><tbody>`+
-  (data||[]).map(d=>`<tr>
-    <td><strong>${d.libelle}</strong></td>
-    <td style="color:var(--red);font-weight:700">-${fmtMoney(d.montant||0)}</td>
-    <td>${d.preuve_url?`<a href="${d.preuve_url}" target="_blank" class="btn btn-blue btn-sm">🖼️</a>`:'—'}</td>
-    <td style="font-size:11px">${new Date(d.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</td>
-    ${ROLE==='direction'?`<td><button class="btn btn-danger btn-sm" onclick="delDep('${d.id}')">🗑️</button></td>`:''}
-  </tr>`).join('')+'</tbody></table>');
+ 
+  const selectHtml = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--red)">💸 Dépenses</div>
+      <select class="form-select" id="${selId}" onchange="loadDepenses()" style="max-width:220px;margin-left:auto">
+        ${toutesSemaines.map(s=>`<option value="${s}"${s===semaineFiltre?' selected':''}>${s===semaineCour?'📍 ':''}Sem. ${getLabelSemaine(s)}</option>`).join('')}
+      </select>
+    </div>`;
+ 
+  el.innerHTML = selectHtml +
+    `<div class="stat" style="--accent:var(--red);max-width:260px;margin-bottom:16px">
+      <div class="stat-icon">💸</div>
+      <div class="stat-label">Total dépenses — ${getLabelSemaine(semaineFiltre)}</div>
+      <div class="stat-val">${fmtMoney(total)}</div>
+    </div>` +
+    (!data?.length
+      ? '<p style="color:var(--muted)">Aucune dépense pour cette semaine.</p>'
+      : `<table><thead><tr>
+          <th>Libellé</th><th>Montant</th><th>Preuve</th><th>Date</th>
+          ${ROLE==='direction'?'<th></th>':''}
+        </tr></thead><tbody>`+
+        (data||[]).map(d=>`<tr>
+          <td><strong>${d.libelle}</strong></td>
+          <td style="color:var(--red);font-weight:700">-${fmtMoney(d.montant||0)}</td>
+          <td>${d.preuve_url?`<a href="${d.preuve_url}" target="_blank" class="btn btn-blue btn-sm">🖼️</a>`:'—'}</td>
+          <td style="font-size:11px">${new Date(d.created_at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</td>
+          ${ROLE==='direction'
+            ? `<td>${semaineFiltre===semaineCour
+                ? `<button class="btn btn-danger btn-sm" onclick="delDep('${d.id}')">🗑️</button>`
+                : '—'
+              }</td>`
+            : ''}
+        </tr>`).join('')+
+        '</tbody></table>'
+    );
 }
 async function saveDep(){
   const libelle=document.getElementById('depLibelle')?.value.trim(),montant=+document.getElementById('depMontant')?.value,preuve=document.getElementById('depPreuve')?.value.trim();
