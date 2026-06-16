@@ -1579,7 +1579,11 @@ function calcCmd() {
       r = Math.max(0, r - 10); // annule le -10% mercredi
     } else {
       r = Math.max(r, contratActif.pct);
+    }
   }
+  const montantR = Math.round(brut*r/100);
+  const net = brut-montantR;
+  return { brut, r, montantR, net, tvx:Math.round(net*TVX) };
 }
 
 function calcPts() {
