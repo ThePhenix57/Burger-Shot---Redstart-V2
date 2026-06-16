@@ -2393,7 +2393,7 @@ async function loadEmployes(){
           <div class="emp-stat"><div class="emp-stat-v" style="font-size:13px;color:var(--green)">${fmtMoney(prime)}</div><div class="emp-stat-l">Prime</div></div>
         </div>
         <div class="emp-prime-row">
-          <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Prime vente (${Math.round((TAUX_PRIME[e.poste]||.10)*100)}%) · plaf. ${fmtMoney(PLAFOND_PRIME[e.poste]||50000)}</div><div class="emp-prime-val">${fmtMoney(prime)}</div></div>
+          <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">${e.contrat==='CDI'?`Prime vente (${Math.round((TAUX_PRIME[e.poste]||.10)*100)}%) · Plaf. ${fmtMoney(PLAFOND_PRIME[e.poste]||50000)}`:`Plafond ${fmtMoney(PLAFOND_PRIME[e.poste]||50000)}`}</div><div class="emp-prime-val">${fmtMoney(prime)}</div></div>
           <div style="display:flex;gap:5px">
             <button class="btn btn-outline btn-sm" onclick="voirPrimes('${e.discord_id}','${e.prenom} ${e.nom}')">💰</button>
             <button class="btn btn-orange btn-sm" onclick="ouvrirPrimeExcep('${e.discord_id}','${e.prenom} ${e.nom}')">🎁</button>
