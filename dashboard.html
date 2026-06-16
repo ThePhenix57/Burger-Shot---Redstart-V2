@@ -2358,6 +2358,7 @@ async function loadEmployes(){
   data.sort((a,b)=>(NIVEAU[b.poste]||0)-(NIVEAU[a.poste]||0));
   const caMap={},primesMap={},cntMap={};
   (cmds||[]).forEach(c=>{caMap[c.employe_discord_id]=(caMap[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);cntMap[c.employe_discord_id]=(cntMap[c.employe_discord_id]||0)+1;});
+  (primesData||[]).forEach(p=>{primesMap[p.employe_discord]=(primesMap[p.employe_discord]||0)+p.montant;});
   const contratsSet=new Set((contratsData||[]).filter(c=>c.statut==='signe'||c.statut==='en_attente').map(c=>c.employe_discord_id));
   el.innerHTML=data.map(e=>{
     const init=`${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
@@ -2843,7 +2844,13 @@ async function cloturerSemaine(){
 }
 
 async function executerCloture(){
-  const semaine=getSemaine();
+  const semaine = getSemaine();
+  // VÉRIF ANTI-BOUCLE
+  const deja = await sb(`comptes_rendus?semaine=eq.${semaine}`);
+  if (deja?.length) {
+    console.log('Semaine déjà clôturée, skip.');
+    return null;
+  }
   const dates=getDatesSemaine();
   const[coffreD,caD,livrD,primesD,depD,cmdsD,empsD]=await Promise.all([
     sb('coffre_solde?limit=1'),
@@ -2935,27 +2942,721 @@ async function loadHistoriqueCompteRendus(){
   </tr>`).join('')+'</tbody></table>';
 }
 
-async function genererPDF(cr){
-  if(typeof cr==='string')try{cr=JSON.parse(cr);}catch{return;}
-  const sign=cr.benefice_net>=0?'+':'';
-  const now=new Date();
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@page{size:A4;margin:20mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;color:#111;padding:20px}.hdr{display:flex;justify-content:space-between;border-bottom:3px solid #c0392b;padding-bottom:14px;margin-bottom:24px}.brand{font-size:24px;font-weight:900;color:#c0392b;letter-spacing:2px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}.box{background:#f5f5f5;border-radius:7px;padding:12px;border-left:3px solid #c0392b}.box-l{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:3px}.box-v{font-size:16px;font-weight:900}.green{color:#27ae60}.red{color:#c0392b}.blue{color:#3498db}.tot{background:#1a1a1a;color:#fff;border-radius:9px;padding:14px;margin:14px 0;display:flex;justify-content:space-between;align-items:center}.tot-v{font-size:26px;font-weight:900;color:${cr.benefice_net>=0?'#27ae60':'#e74c3c'}}.foot{text-align:center;font-size:10px;color:#aaa;margin-top:24px;border-top:1px solid #eee;padding-top:10px}</style></head><body>
-  <div class="hdr"><div><div class="brand">🍔 BURGER SHOT</div><div style="font-size:10px;color:#888;letter-spacing:2px;text-transform:uppercase">Comptabilité • Los Santos</div></div><div style="font-size:11px;color:#888;text-align:right">Généré le ${now.toLocaleString('fr-FR')}</div></div>
-  <h2 style="text-align:center;color:#c0392b;margin-bottom:6px">COMPTE RENDU HEBDOMADAIRE</h2>
-  <p style="text-align:center;color:#666;font-size:13px;margin-bottom:20px">${cr.semaine_label||cr.semaine} — ${cr.nb_commandes} commandes</p>
-  <div class="grid">
-    <div class="box"><div class="box-l">🏦 Solde départ</div><div class="box-v blue">${fmtMoney(cr.solde_depart)}</div></div>
-    <div class="box"><div class="box-l">🧾 CA Ventes</div><div class="box-v green">+${fmtMoney(cr.ca_ventes)}</div></div>
-    <div class="box"><div class="box-l">🚚 Livraisons</div><div class="box-v green">+${fmtMoney(cr.ca_livraisons)}</div></div>
-    <div class="box"><div class="box-l">👥 Primes</div><div class="box-v red">-${fmtMoney(cr.total_primes)}</div></div>
-    <div class="box"><div class="box-l">💸 Dépenses</div><div class="box-v red">-${fmtMoney(cr.total_depenses)}</div></div>
-    <div class="box"><div class="box-l">🏛️ Impôts</div><div class="box-v red">-${fmtMoney(cr.total_impots)}</div></div>
+async function genererPDF(cr) {
+  if (typeof cr === 'string') try { cr = JSON.parse(cr); } catch { return; }
+
+  // Charger les données détaillées depuis Supabase
+  const semaine = cr.semaine;
+
+  const [cmdsD, livrD, primesD, depD, empsD] = await Promise.all([
+    sb(`commandes?select=*&semaine=eq.${semaine}&order=created_at.asc`),
+    sb(`livraisons?select=*&semaine=eq.${semaine}&order=created_at.asc`),
+    sb(`primes?select=*&semaine=eq.${semaine}&order=created_at.asc`),
+    sb(`depenses?select=*&semaine=eq.${semaine}&order=created_at.asc`),
+    sb('comptes_dashboard?select=discord_id,nom,prenom,poste,contrat&actif=eq.true&role=neq.gouvernement')
+  ]);
+
+  const cmds = cmdsD || [], livr = livrD || [], primes = primesD || [], dep = depD || [], emps = empsD || [];
+
+  // Map employés
+  const empMap = {};
+  emps.forEach(e => empMap[e.discord_id] = e);
+
+  // CA par employé
+  const caEmpMap = {};
+  cmds.filter(c => !c.paye_en_points).forEach(c => {
+    const id = c.employe_discord_id;
+    if (!id) return;
+    if (!caEmpMap[id]) caEmpMap[id] = { ca: 0, cmds: 0 };
+    caEmpMap[id].ca += c.total_apres_reduction || c.total || 0;
+    caEmpMap[id].cmds++;
+  });
+
+  // Top produits
+  const prodMap = {};
+  cmds.filter(c => !c.paye_en_points).forEach(c => {
+    let items = []; try { items = JSON.parse(c.items || '[]'); } catch {}
+    items.forEach(it => {
+      if (!prodMap[it.nom]) prodMap[it.nom] = { nom: it.nom, qte: 0, ca: 0, cout: 0 };
+      prodMap[it.nom].qte += it.qte;
+      prodMap[it.nom].ca += (it.prix || 0) * it.qte;
+      prodMap[it.nom].cout += (it.cout_achat || 0) * it.qte;
+    });
+  });
+  const topProduits = Object.values(prodMap).sort((a, b) => b.ca - a.ca);
+
+  // Calculs
+  const totalLivr = livr.filter(l => (l.type || 'livraison') === 'livraison').reduce((a, l) => a + (l.montant || 0), 0);
+  const totalMenage = livr.filter(l => l.type === 'menage').reduce((a, l) => a + (l.montant || 0), 0);
+  const primesVersees = primes.filter(p => p.verse).reduce((a, p) => a + p.montant, 0);
+  const primesAttente = primes.filter(p => !p.verse).reduce((a, p) => a + p.montant, 0);
+  const caNet = cr.ca_ventes || 0;
+  const caBrut = cr.ca_brut || caNet;
+  const reductions = caBrut - caNet;
+  const coutAchat = cr.cout_achat_total || 0;
+  const margeBrute = caNet - coutAchat;
+  const caGlobal = caNet + (cr.ca_livraisons || 0);
+  const sign = (n) => n >= 0 ? '+' : '';
+  const fmt = (n) => Math.round(n).toLocaleString('fr-FR') + '$';
+  const pct = (a, b) => b > 0 ? Math.round(a / b * 100) + '%' : '0%';
+  const now = new Date();
+
+  // Classement employés
+  const empRanking = Object.entries(caEmpMap)
+    .map(([id, d]) => ({ ...d, emp: empMap[id] || { nom: '?', prenom: '', poste: '—' } }))
+    .sort((a, b) => b.ca - a.ca);
+
+  // Primes par employé
+  const primesEmpMap = {};
+  primes.forEach(p => {
+    if (!primesEmpMap[p.employe_discord]) primesEmpMap[p.employe_discord] = { total: 0, verse: 0 };
+    primesEmpMap[p.employe_discord].total += p.montant;
+    if (p.verse) primesEmpMap[p.employe_discord].verse += p.montant;
+  });
+
+  // Palier impôt actuel
+  const paliers = [
+    { min: 0, max: 199999, t: '0%' },
+    { min: 200000, max: 399999, t: '5%' },
+    { min: 400000, max: 599999, t: '8%' },
+    { min: 600000, max: 799999, t: '11%' },
+    { min: 800000, max: 999999, t: '14%' },
+    { min: 1000000, max: 2499999, t: '17%' },
+    { min: 2500000, max: Infinity, t: '19%' }
+  ];
+  const palierActuel = paliers.find(p => caGlobal >= p.min && caGlobal <= (p.max === Infinity ? Infinity : p.max));
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap');
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #fff; color: #1a1a2e; font-size: 11px; }
+
+  /* ── PAGE ── */
+  .page {
+    width: 210mm; min-height: 297mm;
+    padding: 0;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ── HEADER GLOBAL ── */
+  .page-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 18px 28px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 4px solid #c0392b;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,.2);
+    flex-shrink: 0;
+  }
+  .header-logo img { width: 100%; height: 100%; object-fit: cover; }
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+  .brand-sub { font-size: 9px; color: rgba(255,255,255,.5); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .header-meta { text-align: right; }
+  .header-meta .doc-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .header-meta .doc-ref { font-size: 9px; color: rgba(255,255,255,.5); margin-top: 3px; }
+
+  /* ── PAGE BODY ── */
+  .page-body { padding: 22px 28px; }
+
+  /* ── PAGE INDICATOR ── */
+  .page-indicator {
+    position: absolute;
+    bottom: 14px;
+    right: 28px;
+    font-size: 9px;
+    color: #aaa;
+    letter-spacing: 1px;
+  }
+  .page-footer {
+    position: absolute;
+    bottom: 14px;
+    left: 28px;
+    font-size: 9px;
+    color: #aaa;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c0392b;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  /* ── HERO SEMAINE (page 1) ── */
+  .hero-semaine {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d1b3d 100%);
+    border-radius: 10px;
+    padding: 20px 24px;
+    color: #fff;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-semaine::before {
+    content: 'BURGER SHOT';
+    position: absolute;
+    right: -10px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 60px;
+    color: rgba(255,255,255,.04);
+    letter-spacing: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .hero-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 4px; }
+  .hero-period { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+  .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .hero-stat { background: rgba(255,255,255,.07); border-radius: 7px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.1); }
+  .hero-stat-label { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 4px; }
+  .hero-stat-val { font-size: 16px; font-weight: 800; color: #fff; }
+  .hero-stat-sub { font-size: 9px; color: rgba(255,255,255,.4); margin-top: 2px; }
+  .hero-stat.green .hero-stat-val { color: #2ecc71; }
+  .hero-stat.red .hero-stat-val { color: #e74c3c; }
+  .hero-stat.orange .hero-stat-val { color: #f39c12; }
+
+  /* ── GRILLE RÉSUMÉ ── */
+  .resume-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .resume-block { background: #f8f9fa; border-radius: 9px; padding: 14px 16px; border: 1px solid #eee; }
+  .resume-block-title { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #888; margin-bottom: 10px; }
+  .resume-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+  .resume-row:last-child { border-bottom: none; }
+  .resume-row-label { font-size: 10px; color: #555; }
+  .resume-row-val { font-size: 11px; font-weight: 700; }
+  .resume-row-val.green { color: #27ae60; }
+  .resume-row-val.red { color: #c0392b; }
+  .resume-row-val.blue { color: #2980b9; }
+  .resume-row-val.orange { color: #e67e22; }
+  .resume-total { margin-top: 8px; padding-top: 8px; border-top: 2px solid #1a1a2e; display: flex; justify-content: space-between; }
+  .resume-total-label { font-size: 11px; font-weight: 800; }
+  .resume-total-val { font-size: 14px; font-weight: 900; }
+
+  /* ── BILAN FINAL PAGE 1 ── */
+  .bilan-final {
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .bilan-item { text-align: center; }
+  .bilan-label { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 5px; }
+  .bilan-val { font-size: 18px; font-weight: 900; }
+  .bilan-val.green { color: #2ecc71; }
+  .bilan-val.white { color: #fff; }
+  .bilan-sep { width: 1px; background: rgba(255,255,255,.1); margin: 0 auto; }
+
+  /* ── TABLES ── */
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  .data-table thead tr { background: #1a1a2e; color: #fff; }
+  .data-table thead th { padding: 8px 10px; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-align: left; }
+  .data-table thead th:last-child { text-align: right; }
+  .data-table tbody tr { border-bottom: 1px solid #f0f0f0; }
+  .data-table tbody tr:nth-child(even) { background: #fafafa; }
+  .data-table tbody td { padding: 7px 10px; font-size: 10px; }
+  .data-table tbody td:last-child { text-align: right; font-weight: 700; }
+  .data-table tfoot tr { background: #f0f0f0; }
+  .data-table tfoot td { padding: 8px 10px; font-size: 11px; font-weight: 800; }
+  .data-table tfoot td:last-child { text-align: right; color: #c0392b; }
+
+  /* ── BADGE ── */
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 9px; font-weight: 700; }
+  .badge-green { background: #e8f8f0; color: #27ae60; }
+  .badge-red { background: #fdeaea; color: #c0392b; }
+  .badge-orange { background: #fef5e7; color: #e67e22; }
+  .badge-blue { background: #eaf3fb; color: #2980b9; }
+  .badge-grey { background: #f0f0f0; color: #888; }
+  .badge-gold { background: #fef9e7; color: #f39c12; border: 1px solid #f39c12; }
+
+  /* ── PALIER ── */
+  .palier-box {
+    background: #fff8e1;
+    border: 2px solid #f39c12;
+    border-radius: 9px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .palier-label { font-size: 10px; color: #888; margin-bottom: 3px; }
+  .palier-val { font-size: 18px; font-weight: 900; color: #e67e22; }
+  .palier-desc { font-size: 10px; color: #555; text-align: right; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bg { background: #f0f0f0; border-radius: 4px; height: 6px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #c0392b, #e67e22); }
+
+  /* ── RANK ── */
+  .rank-num { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .rank-1 { background: #f1c40f; }
+  .rank-2 { background: #95a5a6; }
+  .rank-3 { background: #e67e22; }
+  .rank-n { background: #bdc3c7; }
+
+  /* ── INFO BOXES ── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .info-box { background: #f8f9fa; border-radius: 8px; padding: 12px; border-left: 3px solid #c0392b; text-align: center; }
+  .info-box-val { font-size: 20px; font-weight: 900; color: #1a1a2e; }
+  .info-box-label { font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: #888; margin-top: 3px; }
+
+  /* ── DETAIL LIGNE ── */
+  .detail-ligne { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f5f5f5; font-size: 10px; }
+  .detail-ligne:last-child { border-bottom: none; }
+  .detail-ligne .label { color: #555; }
+  .detail-ligne .val { font-weight: 700; }
+  .detail-ligne .val.green { color: #27ae60; }
+  .detail-ligne .val.red { color: #c0392b; }
+  .detail-ligne .val.orange { color: #e67e22; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     PAGE 1 — RÉSUMÉ EXÉCUTIF
+════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <img src="https://upload.redstartrp.fr/uploads/photo-1780754345-d3f296c2e7e4.png" alt="BS">
+      </div>
+      <div>
+        <div class="brand-name">Burger Shot</div>
+        <div class="brand-sub">Los Santos · Hawick Avenue</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="doc-title">Compte Rendu Hebdomadaire</div>
+      <div class="doc-ref">Généré le ${now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' })} · ${now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })}</div>
+    </div>
   </div>
-  <div class="tot"><span style="font-size:15px;font-weight:700">📊 Bénéfice net</span><span class="tot-v">${sign}${fmtMoney(cr.benefice_net)}</span></div>
-  <div class="tot" style="background:#0d3b1e"><span style="font-size:15px;font-weight:700">💰 Nouveau solde coffre</span><span style="font-size:26px;font-weight:900;color:#27ae60">${fmtMoney(cr.solde_final)}</span></div>
-  ${cr.total_primes>0?`<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:7px;padding:10px;margin:14px 0;font-size:12px">💳 <strong>Virements primes :</strong> ${fmtMoney(cr.total_primes)} — prévus le samedi/dimanche suivant la clôture.</div>`:''}
-  <div class="foot">Burger Shot © ${now.getFullYear()} — Los Santos — Document confidentiel</div></body></html>`;
-  const w=window.open('','_blank');w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),500);
+
+  <div class="page-body">
+
+    <!-- Hero période -->
+    <div class="hero-semaine">
+      <div class="hero-label">Période comptable</div>
+      <div class="hero-period">${cr.semaine_label || cr.semaine}</div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-label">Commandes</div>
+          <div class="hero-stat-val">${cr.nb_commandes || 0}</div>
+          <div class="hero-stat-sub">cette semaine</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Employés actifs</div>
+          <div class="hero-stat-val">${cr.nb_employes || 0}</div>
+          <div class="hero-stat-sub">sur le terrain</div>
+        </div>
+        <div class="hero-stat green">
+          <div class="hero-stat-label">CA Global</div>
+          <div class="hero-stat-val">${fmt(caGlobal)}</div>
+          <div class="hero-stat-sub">ventes + livraisons</div>
+        </div>
+        <div class="hero-stat ${(cr.benefice_net || 0) >= 0 ? 'green' : 'red'}">
+          <div class="hero-stat-label">Bénéfice Net</div>
+          <div class="hero-stat-val">${sign(cr.benefice_net || 0)}${fmt(cr.benefice_net || 0)}</div>
+          <div class="hero-stat-sub">après charges</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grille résumé -->
+    <div class="resume-grid">
+
+      <!-- Entrées -->
+      <div class="resume-block">
+        <div class="resume-block-title">📈 Entrées</div>
+        <div class="detail-ligne"><span class="label">CA Brut (avant réductions)</span><span class="val blue">${fmt(caBrut)}</span></div>
+        <div class="detail-ligne"><span class="label">Réductions accordées</span><span class="val red">-${fmt(reductions)}</span></div>
+        <div class="detail-ligne"><span class="label">CA Net ventes</span><span class="val green">+${fmt(caNet)}</span></div>
+        <div class="detail-ligne"><span class="label">Livraisons</span><span class="val green">+${fmt(totalLivr)}</span></div>
+        <div class="detail-ligne"><span class="label">Ménage</span><span class="val green">+${fmt(totalMenage)}</span></div>
+        <div class="detail-ligne" style="margin-top:6px;padding-top:6px;border-top:2px solid #1a1a2e">
+          <span style="font-weight:800">Total Entrées</span>
+          <span class="val green" style="font-size:13px">+${fmt(caGlobal)}</span>
+        </div>
+      </div>
+
+      <!-- Sorties -->
+      <div class="resume-block">
+        <div class="resume-block-title">📉 Sorties & Charges</div>
+        <div class="detail-ligne"><span class="label">Coût importation produits</span><span class="val red">-${fmt(coutAchat)}</span></div>
+        <div class="detail-ligne"><span class="label">Primes versées</span><span class="val red">-${fmt(primesVersees)}</span></div>
+        <div class="detail-ligne"><span class="label">Primes en attente</span><span class="val orange">(${fmt(primesAttente)})</span></div>
+        <div class="detail-ligne"><span class="label">Dépenses opérationnelles</span><span class="val red">-${fmt(cr.total_depenses || 0)}</span></div>
+        <div class="detail-ligne"><span class="label">Impôts (${palierActuel?.t || '19%'})</span><span class="val red">-${fmt(cr.total_impots || 0)}</span></div>
+        <div class="detail-ligne" style="margin-top:6px;padding-top:6px;border-top:2px solid #1a1a2e">
+          <span style="font-weight:800">Total Sorties</span>
+          <span class="val red" style="font-size:13px">-${fmt((coutAchat) + primesVersees + (cr.total_depenses || 0) + (cr.total_impots || 0))}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bilan final -->
+    <div class="bilan-final">
+      <div class="bilan-item">
+        <div class="bilan-label">Solde de départ</div>
+        <div class="bilan-val white">${fmt(cr.solde_depart || 0)}</div>
+      </div>
+      <div class="bilan-item">
+        <div class="bilan-label">Bénéfice net</div>
+        <div class="bilan-val ${(cr.benefice_net || 0) >= 0 ? 'green' : 'red'}">${sign(cr.benefice_net || 0)}${fmt(cr.benefice_net || 0)}</div>
+      </div>
+      <div class="bilan-item">
+        <div class="bilan-label">Nouveau solde coffre</div>
+        <div class="bilan-val green">${fmt(cr.solde_final || 0)}</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">Burger Shot © ${now.getFullYear()} — Document confidentiel — Los Santos</div>
+  <div class="page-indicator">1 / 4</div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 2 — DÉTAIL COMPTABLE
+════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <img src="https://upload.redstartrp.fr/uploads/photo-1780754345-d3f296c2e7e4.png" alt="BS">
+      </div>
+      <div>
+        <div class="brand-name">Burger Shot</div>
+        <div class="brand-sub">${cr.semaine_label || cr.semaine}</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="doc-title">Détail Comptable</div>
+      <div class="doc-ref">Analyse financière détaillée</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Palier imposition -->
+    <div class="palier-box">
+      <div>
+        <div class="palier-label">Palier d'imposition atteint</div>
+        <div class="palier-val">${palierActuel?.t || '19%'}</div>
+      </div>
+      <div class="palier-desc">
+        <div>CA imposable : <strong>${fmt(caGlobal)}</strong></div>
+        <div style="margin-top:3px">Impôts dus : <strong style="color:#c0392b">${fmt(cr.total_impots || 0)}</strong></div>
+        <div style="margin-top:3px">Marge brute : <strong style="color:#27ae60">${fmt(margeBrute)}</strong> (${pct(margeBrute, caNet)})</div>
+      </div>
+    </div>
+
+    <!-- Détail ventes vs livraisons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+
+      <div>
+        <div class="section-title">🧾 Détail Ventes</div>
+        <div class="resume-block" style="margin-bottom:0">
+          <div class="detail-ligne"><span class="label">Nb commandes</span><span class="val">${cmds.length}</span></div>
+          <div class="detail-ligne"><span class="label">CA Brut</span><span class="val blue">${fmt(caBrut)}</span></div>
+          <div class="detail-ligne"><span class="label">Réductions</span><span class="val red">-${fmt(reductions)}</span></div>
+          <div class="detail-ligne"><span class="label">CA Net</span><span class="val green">+${fmt(caNet)}</span></div>
+          <div class="detail-ligne"><span class="label">Coût importation</span><span class="val red">-${fmt(coutAchat)}</span></div>
+          <div class="detail-ligne" style="border-top:2px solid #1a1a2e;margin-top:5px;padding-top:5px">
+            <span style="font-weight:800">Marge brute</span>
+            <span class="val ${margeBrute >= 0 ? 'green' : 'red'}" style="font-size:12px">${fmt(margeBrute)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">🚚 Livraisons & Ménage</div>
+        <div class="resume-block" style="margin-bottom:0">
+          <div class="detail-ligne"><span class="label">Nb livraisons</span><span class="val">${livr.filter(l => (l.type || 'livraison') === 'livraison').length}</span></div>
+          <div class="detail-ligne"><span class="label">Total livraisons</span><span class="val green">+${fmt(totalLivr)}</span></div>
+          <div class="detail-ligne"><span class="label">Nb ménages</span><span class="val">${livr.filter(l => l.type === 'menage').length}</span></div>
+          <div class="detail-ligne"><span class="label">Total ménage</span><span class="val green">+${fmt(totalMenage)}</span></div>
+          <div class="detail-ligne" style="border-top:2px solid #1a1a2e;margin-top:5px;padding-top:5px">
+            <span style="font-weight:800">Total</span>
+            <span class="val green" style="font-size:12px">+${fmt(totalLivr + totalMenage)}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Primes -->
+    <div class="section-title">👥 Primes & Versements</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+      <div class="info-box">
+        <div class="info-box-val">${primes.length}</div>
+        <div class="info-box-label">Primes totales</div>
+      </div>
+      <div class="info-box" style="border-left-color:#27ae60">
+        <div class="info-box-val" style="color:#27ae60">${fmt(primesVersees)}</div>
+        <div class="info-box-label">Versées</div>
+      </div>
+      <div class="info-box" style="border-left-color:#f39c12">
+        <div class="info-box-val" style="color:#e67e22">${fmt(primesAttente)}</div>
+        <div class="info-box-label">En attente</div>
+      </div>
+      <div class="info-box" style="border-left-color:#2980b9">
+        <div class="info-box-val" style="color:#2980b9">${fmt(primesVersees + primesAttente)}</div>
+        <div class="info-box-label">Total primes</div>
+      </div>
+    </div>
+
+    <!-- Dépenses -->
+    <div class="section-title">💸 Dépenses opérationnelles</div>
+    ${dep.length ? `
+    <table class="data-table">
+      <thead><tr><th>Libellé</th><th>Date</th><th>Montant</th></tr></thead>
+      <tbody>
+        ${dep.map(d => `<tr>
+          <td><strong>${d.libelle || '—'}</strong></td>
+          <td style="color:#888">${new Date(d.created_at).toLocaleDateString('fr-FR')}</td>
+          <td style="color:#c0392b">-${fmt(d.montant || 0)}</td>
+        </tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td colspan="2">TOTAL DÉPENSES</td><td>-${fmt(cr.total_depenses || 0)}</td></tr></tfoot>
+    </table>` : '<p style="color:#aaa;font-size:10px;margin-bottom:14px">Aucune dépense cette semaine.</p>'}
+
+  </div>
+  <div class="page-footer">Burger Shot © ${now.getFullYear()} — Document confidentiel — Los Santos</div>
+  <div class="page-indicator">2 / 4</div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 3 — CLASSEMENT EMPLOYÉS
+════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <img src="https://upload.redstartrp.fr/uploads/photo-1780754345-d3f296c2e7e4.png" alt="BS">
+      </div>
+      <div>
+        <div class="brand-name">Burger Shot</div>
+        <div class="brand-sub">${cr.semaine_label || cr.semaine}</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="doc-title">Classement Employés</div>
+      <div class="doc-ref">Performance individuelle hebdomadaire</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <div class="info-grid" style="margin-bottom:18px">
+      <div class="info-box">
+        <div class="info-box-val">${empRanking.length}</div>
+        <div class="info-box-label">Employés actifs</div>
+      </div>
+      <div class="info-box" style="border-left-color:#27ae60">
+        <div class="info-box-val" style="color:#27ae60">${fmt(caNet)}</div>
+        <div class="info-box-label">CA Total ventes</div>
+      </div>
+      <div class="info-box" style="border-left-color:#e67e22">
+        <div class="info-box-val" style="color:#e67e22">${cmds.length > 0 && empRanking.length > 0 ? fmt(caNet / empRanking.length) : '0$'}</div>
+        <div class="info-box-label">CA moyen / employé</div>
+      </div>
+    </div>
+
+    <div class="section-title">🏆 Classement par CA</div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Employé</th>
+          <th>Poste</th>
+          <th>Commandes</th>
+          <th>CA Semaine</th>
+          <th>% du CA</th>
+          <th>Primes</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${empRanking.map((e, i) => {
+          const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-n';
+          const pctCA = caNet > 0 ? Math.round(e.ca / caNet * 100) : 0;
+          const empPrimes = primesEmpMap[Object.keys(caEmpMap)[i]] || { total: 0, verse: 0 };
+          return `<tr>
+            <td><span class="rank-num ${rankClass}">${i + 1}</span></td>
+            <td><strong>${e.emp.prenom || ''} ${e.emp.nom || '?'}</strong></td>
+            <td><span class="badge badge-orange">${e.emp.poste || '—'}</span></td>
+            <td style="text-align:center">${e.cmds}</td>
+            <td style="color:#27ae60">+${fmt(e.ca)}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="progress-bg" style="flex:1;min-width:40px"><div class="progress-fill" style="width:${pctCA}%"></div></div>
+                <span style="font-size:9px;color:#888;min-width:25px">${pctCA}%</span>
+              </div>
+            </td>
+            <td style="color:#e67e22">${fmt(empPrimes.total)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4">TOTAL</td>
+          <td>+${fmt(caNet)}</td>
+          <td>100%</td>
+          <td>${fmt(primesVersees + primesAttente)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    ${primesAttente > 0 ? `
+    <div style="background:#fff8e1;border:1px solid #f39c12;border-radius:8px;padding:10px 14px;margin-top:14px;font-size:10px">
+      ⚠️ <strong>${fmt(primesAttente)}</strong> de primes sont en attente de versement. Prévoir les virements ce week-end.
+    </div>` : ''}
+
+  </div>
+  <div class="page-footer">Burger Shot © ${now.getFullYear()} — Document confidentiel — Los Santos</div>
+  <div class="page-indicator">3 / 4</div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 4 — TOP PRODUITS
+════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <img src="https://upload.redstartrp.fr/uploads/photo-1780754345-d3f296c2e7e4.png" alt="BS">
+      </div>
+      <div>
+        <div class="brand-name">Burger Shot</div>
+        <div class="brand-sub">${cr.semaine_label || cr.semaine}</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="doc-title">Analyse Produits</div>
+      <div class="doc-ref">Ventes & rentabilité par produit</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <div class="info-grid" style="margin-bottom:18px">
+      <div class="info-box">
+        <div class="info-box-val">${topProduits.length}</div>
+        <div class="info-box-label">Produits vendus</div>
+      </div>
+      <div class="info-box" style="border-left-color:#c0392b">
+        <div class="info-box-val" style="color:#c0392b">${topProduits[0]?.nom || '—'}</div>
+        <div class="info-box-label">Meilleure vente</div>
+      </div>
+      <div class="info-box" style="border-left-color:#27ae60">
+        <div class="info-box-val" style="color:#27ae60">${pct(margeBrute, caNet)}</div>
+        <div class="info-box-label">Marge globale</div>
+      </div>
+    </div>
+
+    <div class="section-title">📦 Classement des produits</div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Produit</th>
+          <th>Qté vendue</th>
+          <th>CA généré</th>
+          <th>Coût achat</th>
+          <th>Marge</th>
+          <th>% Marge</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${topProduits.map((p, i) => {
+          const marge = p.ca - p.cout;
+          const margePct = p.ca > 0 ? Math.round(marge / p.ca * 100) : 0;
+          const margeBadge = margePct >= 60 ? 'badge-green' : margePct >= 30 ? 'badge-orange' : 'badge-red';
+          const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-n';
+          return `<tr>
+            <td><span class="rank-num ${rankClass}">${i + 1}</span></td>
+            <td><strong>${p.nom}</strong></td>
+            <td style="text-align:center">${p.qte}</td>
+            <td style="color:#27ae60">+${fmt(p.ca)}</td>
+            <td style="color:#c0392b">-${fmt(p.cout)}</td>
+            <td style="color:${marge >= 0 ? '#27ae60' : '#c0392b'}">${sign(marge)}${fmt(marge)}</td>
+            <td><span class="badge ${margeBadge}">${margePct}%</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">TOTAL</td>
+          <td style="text-align:center">${topProduits.reduce((a, p) => a + p.qte, 0)}</td>
+          <td>+${fmt(caNet)}</td>
+          <td>-${fmt(coutAchat)}</td>
+          <td>${sign(margeBrute)}${fmt(margeBrute)}</td>
+          <td>${pct(margeBrute, caNet)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Note de bas de page -->
+    <div style="margin-top:20px;padding:12px 16px;background:#f8f9fa;border-radius:8px;border-left:3px solid #1a1a2e;font-size:9px;color:#666;line-height:1.6">
+      <strong style="color:#1a1a2e">Note :</strong> Ce document est généré automatiquement à partir des données Supabase du dashboard Burger Shot.
+      Les montants sont en dollars de San Andreas ($). Les primes en attente ne sont pas déduites du bénéfice net jusqu'à leur versement effectif.
+      Ce document est strictement confidentiel et à usage interne uniquement.
+    </div>
+
+  </div>
+  <div class="page-footer">Burger Shot © ${now.getFullYear()} — Document confidentiel — Los Santos</div>
+  <div class="page-indicator">4 / 4</div>
+</div>
+
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 800);
 }
 
 /* VÉRIF CLÔTURE VENDREDI */
