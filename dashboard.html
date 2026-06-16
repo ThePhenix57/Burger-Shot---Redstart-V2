@@ -1831,7 +1831,7 @@ async function voirCmdsClient(cId,nom){openOv('ovCmdsClient');document.getElemen
 ══════════════════════════════════════════ */
 async function searchPassClient(val){const el=document.getElementById('passResults');if(val.length<2){el.innerHTML='';return;}const data=await sb(`clients?select=*&or=(nom.ilike.*${val}*,prenom.ilike.*${val}*)`);el.innerHTML=(data||[]).map(c=>`<div onclick='selPassClient(${JSON.stringify(c).replace(/'/g,"&#39;")})' style="padding:9px;background:var(--card2);border:1px solid var(--border);margin-bottom:5px;border-radius:7px;cursor:pointer;font-size:12px">${c.prenom} ${c.nom}</div>`).join('');}
 function selPassClient(c){if(typeof c==='string')try{c=JSON.parse(c);}catch{return;}passClientActif=c;document.getElementById('passSearch').value=`${c.prenom} ${c.nom}`;document.getElementById('passResults').innerHTML='';const info=document.getElementById('passClientInfo');info.style.display='block';info.innerHTML=`✅ <strong>${c.prenom} ${c.nom}</strong>${c.pass?` — Pass actuel : <span class="badge badge-gold">${c.pass}</span>`:''}`;const sel=document.getElementById('passTypeSelect');sel.innerHTML=passTypes.map(p=>`<option value="${p.id}" data-nom="${p.nom}" data-mult="${p.multiplicateur}" data-reduc="${p.reduction}">${p.nom} — ${p.prix}$</option>`).join('');sel.onchange=()=>{const o=sel.options[sel.selectedIndex];document.getElementById('passTypeInfo').textContent=`×${o.dataset.mult} pts${o.dataset.reduc>0?` • -${o.dataset.reduc}% de réduction`:''}`};sel.dispatchEvent(new Event('change'));}
-async function confirmerPass(){if(!passClientActif){alert('Sélectionner un client.');return;}const sel=document.getElementById('passTypeSelect'),opt=sel.options[sel.selectedIndex];const expiry=new Date();expiry.setMonth(expiry.getMonth()+1);await sb(`clients?id=eq.${passClientActif.id}`,{method:'PATCH',body:JSON.stringify({pass:opt.dataset.nom,pass_id:sel.value,pass_expiry:expiry.toISOString()})});closeOv('ovPass');alert(`✅ Pass ${opt.dataset.nom} attribué !`);loadClients();}
+async function confirmerPass(){if(!passClientActif){alert('Sélectionner un client.');return;}const sel=document.getElementById('passTypeSelect'),opt=sel.options[sel.selectedIndex];const expiry=new Date();expiry.setMonth(expiry.getMonth()+1);await sb(`clients?id=eq.${passClientActif.id}`,{method:'PATCH',body:JSON.stringify({pass:sel.dataset.nom,pass_id:sel.value,pass_expiry:expiry.toISOString()})});closeOv('ovPass');alert(`✅ Pass ${sel.dataset.nom} attribué !`);loadClients();}
 
 /* ══════════════════════════════════════════
    QUOTA PAGE
@@ -4071,6 +4071,7 @@ async function loadContratsTravail() {
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
 
   const employes = await sb('comptes_dashboard?select=*&actif=eq.true&role=neq.gouvernement&order=nom.asc') || [];
+  _ctEmployes = employes;
   const historique = await sb('contrats_travail?select=*&order=created_at.desc&limit=30') || [];
 
   const empOptions = employes.map(e =>
@@ -4085,10 +4086,13 @@ async function loadContratsTravail() {
 
       <div class="form-group">
         <label class="form-label">Employé</label>
-        <select class="form-select" id="ctEmploye" onchange="ctOnEmployeChange()">
-          <option value="">— Sélectionner —</option>
-          ${empOptions}
-        </select>
+        <input class="form-input" id="ctEmployeSearch" placeholder="🔍 Rechercher un employé..." oninput="ctFiltrerEmployes(this.value)" autocomplete="off">
+        <div id="ctEmployeResults" style="margin-top:5px"></div>
+        <input type="hidden" id="ctEmploye" value="">
+        <div id="ctEmployeSelectionne" style="display:none;margin-top:7px;padding:9px;background:var(--card2);border-radius:7px;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+          <span id="ctEmployeNom"></span>
+          <button class="btn btn-outline btn-sm" onclick="ctResetEmploye()">✕</button>
+        </div>
       </div>
 
       <div class="g2">
@@ -4154,18 +4158,16 @@ function ctRenderHistorique(list) {
 
 function ctOnEmployeChange() {
   const sel = document.getElementById('ctEmploye');
-  const opt = sel.options[sel.selectedIndex];
-  if (!opt.value) return;
-
-  const contrat = opt.dataset.contrat || 'CDD';
-  const poste = opt.dataset.poste || '';
-  const embauche = opt.dataset.embauche || ctTodayISO();
+  if (!sel.value) return;
+  const contrat = sel.dataset.contrat || 'CDD';
+  const poste = sel.dataset.poste || '';
+  const embauche = sel.dataset.embauche || ctTodayISO();
 
   document.getElementById('ctReference').value = `CT-BS-${ctFmtDate(ctTodayISO()).replace(/\//g,'/')}`;
   document.getElementById('ctType').value = contrat;
   document.getElementById('ctPoste').value = poste;
   document.getElementById('ctDateDebut').value = embauche;
-  document.getElementById('ctIdCitoyen').value = opt.value;
+  document.getElementById('ctIdCitoyen').value = sel.value;
 
   // Rémunération par défaut selon contrat
   document.getElementById('ctRemuneration').value = contrat === 'CDI'
@@ -4349,9 +4351,9 @@ function ctCollectData(signatureDataURL) {
     salarieNom: (() => {
       const sel = document.getElementById('ctEmploye');
       const opt = sel.options[sel.selectedIndex];
-      return `${opt.dataset.prenom} ${opt.dataset.nom}`.toUpperCase().includes(opt.dataset.nom.toUpperCase())
-        ? `${opt.dataset.prenom} ${opt.dataset.nom.toUpperCase()}`
-        : `${opt.dataset.prenom} ${opt.dataset.nom}`;
+      return `${sel.dataset.prenom} ${sel.dataset.nom}`.toUpperCase().includes(sel.dataset.nom.toUpperCase())
+        ? `${sel.dataset.prenom} ${sel.dataset.nom.toUpperCase()}`
+        : `${sel.dataset.prenom} ${sel.dataset.nom}`;
     })(),
     salarieAdresse: 'Los Santos',
     idCitoyen: document.getElementById('ctIdCitoyen').value.trim(),
@@ -4410,9 +4412,9 @@ async function ctEnvoyerSignature() {
 
   const payload = {
     reference: data.reference,
-    employe_discord_id: opt.value,
-    employe_nom: opt.dataset.nom,
-    employe_prenom: opt.dataset.prenom,
+    employe_discord_id: sel.value,
+    employe_nom: sel.dataset.nom,
+    employe_prenom: sel.dataset.prenom,
     employe_id_citoyen: data.idCitoyen,
     poste: data.poste,
     type_contrat: data.typeContrat,
@@ -4439,7 +4441,7 @@ async function ctEnvoyerSignature() {
       title: '📄 Nouveau contrat de travail',
       color: 0x3498db,
       fields: [
-        { name: '👤 Salarié(e)', value: `${opt.dataset.prenom} ${opt.dataset.nom}`, inline: true },
+        { name: '👤 Salarié(e)', value: `${sel.dataset.prenom} ${sel.dataset.nom}`, inline: true },
         { name: '📋 Type', value: data.typeContrat, inline: true },
         { name: '💼 Poste', value: data.poste, inline: true },
         { name: '📅 Référence', value: data.reference, inline: true }
@@ -4663,6 +4665,53 @@ async function ctRefuserContrat(contratId) {
       }]
     });
   }
+}
+let _ctEmployes = [];
+
+function ctFiltrerEmployes(v) {
+  const el = document.getElementById('ctEmployeResults');
+  if (!v.trim()) { el.innerHTML = ''; return; }
+  const f = v.toLowerCase();
+  const filtered = _ctEmployes.filter(e =>
+    `${e.prenom} ${e.nom} ${e.poste||''}`.toLowerCase().includes(f)
+  );
+  el.innerHTML = filtered.slice(0, 8).map(e =>
+    `<div onclick="ctSelectionnerEmploye('${e.discord_id}')" style="padding:9px;background:var(--card2);border:1px solid var(--border);margin-bottom:4px;border-radius:7px;cursor:pointer;font-size:12px;display:flex;justify-content:space-between;align-items:center">
+      <strong>${e.prenom} ${e.nom}</strong>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-orange">${e.poste||'—'}</span>
+        <span class="badge badge-blue">${e.contrat||'CDD'}</span>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function ctSelectionnerEmploye(discordId) {
+  const e = _ctEmployes.find(x => x.discord_id === discordId);
+  if (!e) return;
+  // Remplir le champ caché avec toutes les data-* nécessaires
+  const hidden = document.getElementById('ctEmploye');
+  hidden.value = discordId;
+  hidden.dataset.nom = e.nom;
+  hidden.dataset.prenom = e.prenom;
+  hidden.dataset.poste = e.poste || '';
+  hidden.dataset.contrat = e.contrat || 'CDD';
+  hidden.dataset.embauche = e.date_embauche || '';
+  // Afficher la sélection
+  document.getElementById('ctEmployeResults').innerHTML = '';
+  document.getElementById('ctEmployeSearch').value = '';
+  const sel = document.getElementById('ctEmployeSelectionne');
+  sel.style.display = 'flex';
+  document.getElementById('ctEmployeNom').innerHTML = 
+    `<strong>${e.prenom} ${e.nom}</strong> — <span class="badge badge-orange">${e.poste||'—'}</span> <span class="badge badge-blue">${e.contrat||'CDD'}</span>`;
+  ctOnEmployeChange();
+}
+
+function ctResetEmploye() {
+  document.getElementById('ctEmploye').value = '';
+  document.getElementById('ctEmployeSearch').value = '';
+  document.getElementById('ctEmployeResults').innerHTML = '';
+  document.getElementById('ctEmployeSelectionne').style.display = 'none';
 }
 </script>
 </body>
