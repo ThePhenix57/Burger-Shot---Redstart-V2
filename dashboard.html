@@ -1499,11 +1499,17 @@ async function loadCaisse() {
   produits = Array.isArray(prods) ? prods : [];
   const sel = document.getElementById('caisseContrat');
   if (sel) {
-    sel.innerHTML = '<option value="">— Aucun contrat —</option>' +
-      (Array.isArray(contrats)?contrats:[])
-        .filter(c => !c.prix_achat || ROLE === 'direction')
-        .map(c => `<option value="${c.id}" data-pct="${c.pourcentage}" data-pa="${c.prix_achat||false}">${c.nom}${c.prix_achat?' (Prix achat)':` (-${c.pourcentage}%)`}</option>`)
-        .join('');
+    // Option spéciale direction : annule le mercredi des zouzous
+  const optionZouzous = ROLE === 'direction' 
+    ? `<option value="__zouzous__" data-pct="-10" data-pa="false">🎉 Annuler Mercredi Zouzous (+10%)</option>`
+    : '';
+
+  sel.innerHTML = '<option value="">— Aucun contrat —</option>' +
+    optionZouzous +
+    (Array.isArray(contrats)?contrats:[])
+      .filter(c => !c.prix_achat || ROLE === 'direction')
+      .map(c => `<option value="${c.id}" data-pct="${c.pourcentage}" data-pa="${c.prix_achat||false}">${c.nom}${c.prix_achat?' (Prix achat)':` (-${c.pourcentage}%)`}</option>`)
+      .join('');
   }
   const el = document.getElementById('caisseProduits');
   if (!el) return;
@@ -1550,7 +1556,11 @@ function removeFromTicket(id) { commande = commande.filter(x=>x.id!==id); render
 function updateContrat() {
   const sel = document.getElementById('caisseContrat'); if(!sel) return;
   const opt = sel.options[sel.selectedIndex];
-  contratActif = sel.value ? {id:sel.value, pct:+opt.dataset.pct, nom:opt.text, prixAchat:opt.dataset.pa==='true'} : null;
+  if (sel.value === '__zouzous__') {
+    contratActif = { id: '__zouzous__', pct: -10, nom: 'Annuler Zouzous', prixAchat: false };
+  } else {
+    contratActif = sel.value ? {id:sel.value, pct:+opt.dataset.pct, nom:opt.text, prixAchat:opt.dataset.pa==='true'} : null;
+  }
   renderTicket();
 }
 
@@ -1564,10 +1574,12 @@ function calcCmd() {
   let r = 0;
   if (isMercredi()) r = Math.max(r,10);
   if (clientActif?.pass) { const pt=passTypes.find(p=>p.nom===clientActif.pass); if(pt?.reduction>0) r=Math.max(r,+pt.reduction); }
-  if (contratActif) r = Math.max(r, contratActif.pct);
-  const montantR = Math.round(brut*r/100);
-  const net = brut-montantR;
-  return { brut, r, montantR, net, tvx:Math.round(net*TVX) };
+  if (contratActif) {
+    if (contratActif.id === '__zouzous__') {
+      r = Math.max(0, r - 10); // annule le -10% mercredi
+    } else {
+      r = Math.max(r, contratActif.pct);
+  }
 }
 
 function calcPts() {
