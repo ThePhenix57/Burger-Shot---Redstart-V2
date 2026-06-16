@@ -1655,7 +1655,7 @@ async function confirmerCommande(avecFacture=false) {
     client_id:clientActif?.id||null, employe_discord_id:USER.id,
     items:JSON.stringify(commande), total:c.brut, reduction_pct:c.r,
     total_apres_reduction:c.net, points_gagnes:pts,
-    contrat_id:contratActif?.id||null, semaine, tva:c.tvx
+    contrat_id:(contratActif?.id && contratActif.id !== '__zouzous__') ? contratActif.id : null, semaine, tva:c.tvx
   })});
   if(clientActif&&pts>0) await sb(`clients?id=eq.${clientActif.id}`,{method:'PATCH',body:JSON.stringify({points:(clientActif.points||0)+pts})});
   await decrementStock();
