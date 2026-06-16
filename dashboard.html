@@ -2356,7 +2356,15 @@ async function loadEmployes(){
   else if(filt==='inactif')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
   const [data,cmds,primesData,contratsData]=await Promise.all([sb(base),sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),sb('contrats_travail?select=employe_discord_id,statut')]);
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>';return;}
-  data.sort((a,b)=>{const nDiff = (NIVEAU[b.poste]||0) - (NIVEAU[a.poste]||0);if (nDiff !== 0) return nDiff;return new Date(b.date_embauche||0) - new Date(a.date_embauche||0);});
+  data.sort((a,b)=>{
+  // CDI avant CDD
+  if (a.contrat !== b.contrat) return a.contrat === 'CDI' ? -1 : 1;
+  // Puis par niveau de poste décroissant
+  const nDiff = (NIVEAU[b.poste]||0) - (NIVEAU[a.poste]||0);
+  if (nDiff !== 0) return nDiff;
+  // Puis par embauche la plus récente
+  return new Date(b.date_embauche||0) - new Date(a.date_embauche||0);
+  });
   const empCountEl = document.getElementById('empCount');
   if (empCountEl) empCountEl.textContent = `${data.length} EMPLOYÉ${data.length > 1 ? 'S' : ''}`;
   const caMap={},primesMap={},cntMap={};
@@ -4604,9 +4612,9 @@ async function ctSignerContrat(contratId) {
 
   // Marquer le règlement signé si pas déjà fait (optionnel, cohérence)
   await sb(`comptes_dashboard?discord_id=eq.${USER.id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({})
-  });
+     method: 'PATCH',
+     body: JSON.stringify({ contrat: c?.type_contrat || 'CDI' })
+   });
 
   document.getElementById('ovContratSign').style.display = 'none';
   alert('✅ Contrat signé avec succès !');
