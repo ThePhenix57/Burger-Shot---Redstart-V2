@@ -2507,16 +2507,13 @@ async function voirFicheEmp(empId, nom){
   const data=await sb(`comptes_dashboard?id=eq.${empId}&select=*`);
   const emp = data?.[0];
   if (!emp) { el.innerHTML='<p style="color:var(--muted)">Introuvable.</p>'; return; }
+  const e = emp;
   // Récupérer le statut règlement depuis la table employes
-  const reglData = await sb(`employes?discord_id=eq.${emp.discord_id}&select=reglement_signe,reglement_signe_le`);
-  const reglInfo = reglData?.[0] || {};
-  emp.reglement_signe = reglInfo.reglement_signe || false;
-  emp.reglement_signe_le = reglInfo.reglement_signe_le || null;
   const reglData = await sb(`employes?discord_id=eq.${e.discord_id}&select=reglement_signe,reglement_signe_le`);
   const reglInfo = reglData?.[0] || {};
   e.reglement_signe = reglInfo.reglement_signe || false;
   e.reglement_signe_le = reglInfo.reglement_signe_le || null;
-  let age='—';if(e.date_naissance){const diff=Date.now()-new Date(e.date_naissance).getTime();age=Math.floor(diff/(1000*60*60*24*365.25))+' ans';}
+  let age='—';
   let anc='—';if(e.date_embauche){const diff=Date.now()-new Date(e.date_embauche).getTime();const j=Math.floor(diff/(1000*60*60*24));anc=j<30?`${j}j`:j<365?`${Math.floor(j/30)} mois`:`${Math.floor(j/365)} an(s)`;}
   const dateEmbaucheStr=e.date_embauche?new Date(e.date_embauche).toLocaleDateString('fr-FR'):'—';
   const contratsEmp=await sb(`contrats_travail?employe_discord_id=eq.${e.discord_id}&order=created_at.desc&limit=1`);
