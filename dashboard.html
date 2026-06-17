@@ -2947,25 +2947,29 @@ async function chargerGraphiqueEvolution(semaine) {
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: true, position: 'top' },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('fr-FR')}$`
-          }
-        }
-      },
-      scales: {
-        y: {
-          ticks: { callback: v => (v/1000000).toFixed(1) + 'M$' },
-          grid: { color: 'rgba(255,255,255,.05)' }
-        },
-        x: { grid: { display: false } }
-      }
-    }
-  });
+     responsive: true,
+     maintainAspectRatio: false,
+     interaction: {
+       mode: 'index',
+       intersect: false,
+     },
+     plugins: {
+       legend: { display: true, position: 'top' },
+       tooltip: {
+         mode: 'index',
+         intersect: false,
+         callbacks: {
+           label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('fr-FR')}$`
+         }
+       }
+     },
+     scales: {
+       y: {
+         ticks: { callback: v => (v/1000000).toFixed(1) + 'M$' },
+         grid: { color: 'rgba(255,255,255,.05)' }
+       },
+    x: { grid: { display: false } }
+  }
 }
 
 /* ══════════════════════════════════════════
