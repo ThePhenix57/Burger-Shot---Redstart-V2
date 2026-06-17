@@ -2878,23 +2878,23 @@ async function chargerGraphiqueEvolution(semaine) {
     jours.push(d.toISOString().split('T')[0]);
   }
 
-  // Récupérer toutes les données en une fois
   const dateDebut = jours[0];
   const dateFin = jours[6];
 
-  const [cmdsD, livrD, depD] = await Promise.all([
+  const [cmdsD, livrD, depD, coffreD] = await Promise.all([
     sb(`commandes?select=created_at,total_apres_reduction&created_at=gte.${dateDebut}T00:00:00&created_at=lte.${dateFin}T23:59:59&order=created_at.asc`),
     sb(`livraisons?select=created_at,montant&created_at=gte.${dateDebut}T00:00:00&created_at=lte.${dateFin}T23:59:59&order=created_at.asc`),
-    sb(`depenses?select=created_at,montant&created_at=gte.${dateDebut}T00:00:00&created_at=lte.${dateFin}T23:59:59&order=created_at.asc`)
+    sb(`depenses?select=created_at,montant&created_at=gte.${dateDebut}T00:00:00&created_at=lte.${dateFin}T23:59:59&order=created_at.asc`),
+    sb('coffre_solde?limit=1')
   ]);
 
-  const soldeDepart = 4910885; // solde début de semaine
+  const soldeDepart = +(coffreD?.[0]?.solde ?? 0);
+
   const labels = jours.map(j => {
     const d = new Date(j + 'T12:00:00');
     return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   });
 
-  // Calculer CA + livraisons + dépenses par jour
   let soldeCourant = soldeDepart;
   const soldes = [], caJours = [];
 
