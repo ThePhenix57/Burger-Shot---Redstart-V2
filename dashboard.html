@@ -1474,7 +1474,7 @@ async function loadAccueil() {
   </div>
   <div class="g3" style="margin-bottom:18px">
     <div class="stat" style="--accent:var(--warn)"><div class="stat-icon">🏆</div><div class="stat-label">Employés actifs</div><div class="stat-val">${(employes||[]).length}</div></div>
-    <div class="stat" style="--accent:var(--blue)"><div class="stat-icon">📈</div><div class="stat-label">CA Semaine</div><div class="stat-val">${fmtMoney(caSem)}</div><div class="stat-sub">${(cmdSem||[]).length} commandes</div></div>
+    <div class="stat" style="--accent:var(--blue)"><div class="stat-icon">📈</div><div class="stat-label">CA Semaine</div><div class="stat-val">${fmtMoney(caSem+caLiv)}</div><div class="stat-sub">${(cmdSem||[]).length} commandes + livraisons</div></div>
     <div class="stat" style="--accent:var(--green)"><div class="stat-icon">☀️</div><div class="stat-label">CA Aujourd'hui</div><div class="stat-val">${fmtMoney(caJour)}</div><div class="stat-sub">${(cmdJour||[]).length} commandes</div></div>
   </div>
   ${ROLE === 'employe' ? `<div class="g2" style="margin-bottom:18px">
