@@ -4322,7 +4322,8 @@ function ctOnEmployeChange() {
   const embauche = hidden.dataset.embauche || ctTodayISO();
 
   const today = ctTodayISO();
-  document.getElementById('ctReference').value = `CT-BS-${today}`;
+  const [y,m,d] = today.split('-');
+  document.getElementById('ctReference').value = `CT-BS-${d}-${m}-${y}`;
   document.getElementById('ctType').value = contrat;
   document.getElementById('ctPoste').value = poste;
   document.getElementById('ctDateDebut').value = embauche;
