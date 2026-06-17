@@ -22,7 +22,8 @@
   --text:#111; --muted:#777; --border:rgba(0,0,0,.08);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html {font-size: 20px;zoom: 1.25;}
+html {font-size: 20px;}
+body { transform: scale(1.25); transform-origin: top left; width: 80%; }
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 a{text-decoration:none;color:inherit;}
 button,input,select,textarea{font-family:'Barlow',sans-serif;}
@@ -2949,6 +2950,11 @@ async function chargerGraphiqueEvolution(semaine) {
     y: (e.clientY - rect.top) / cssZoom
     };
   }, { passive: true });
+  const originalGetEventPosition = window.Chart.helpers.getRelativePosition;
+  window.Chart.helpers.getRelativePosition = function(evt, chart) {
+    const pos = originalGetEventPosition(evt, chart);
+    return { x: pos.x * 1.25, y: pos.y * 1.25 };
+  };
   window._chartEvol = new window.Chart(canvas, {
     type: 'line',
     data: {
