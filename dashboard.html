@@ -4315,19 +4315,18 @@ function ctRenderHistorique(list) {
 }
 
 function ctOnEmployeChange() {
-  const sel = document.getElementById('ctEmploye');
-  if (!sel.value) return;
-  const contrat = sel.dataset.contrat || 'CDD';
-  const poste = sel.dataset.poste || '';
-  const embauche = sel.dataset.embauche || ctTodayISO();
+  const hidden = document.getElementById('ctEmploye');
+  if (!hidden.value) return;
+  const contrat = hidden.dataset.contrat || 'CDD';
+  const poste   = hidden.dataset.poste   || '';
+  const embauche = hidden.dataset.embauche || ctTodayISO();
 
-  document.getElementById('ctReference').value = `CT-BS-${ctFmtDate(ctTodayISO()).replace(/\//g,'/')}`;
+  const today = ctTodayISO();
+  document.getElementById('ctReference').value = `CT-BS-${today}`;
   document.getElementById('ctType').value = contrat;
   document.getElementById('ctPoste').value = poste;
   document.getElementById('ctDateDebut').value = embauche;
-  document.getElementById('ctIdCitoyen').value = sel.value;
-
-  // Rémunération par défaut selon contrat
+  document.getElementById('ctIdCitoyen').value = hidden.value;
   document.getElementById('ctRemuneration').value = contrat === 'CDI'
     ? 'Quota + Prime de vente'
     : '$50.000/quota';
@@ -4489,50 +4488,50 @@ function ctBuildHTML(data) {
 function ctPreremplirDepuisEmploye(discordId) {
   showPage('contrats_travail');
   setTimeout(() => {
-    const sel = document.getElementById('ctEmploye');
-    if (!sel) return;
-    sel.value = discordId;
-    ctOnEmployeChange();
-    document.querySelector('#page-contrats_travail .card')?.scrollIntoView({behavior:'smooth'});
-  }, 200);
+    const trySelect = () => {
+      if (!_ctEmployes.length) { setTimeout(trySelect, 150); return; }
+      ctSelectionnerEmploye(discordId);
+      document.querySelector('#page-contrats_travail .card')?.scrollIntoView({ behavior: 'smooth' });
+    };
+    trySelect();
+  }, 300);
 }
    
 /* ══════════════════════════════════════════
    COLLECTE DES DONNÉES DEPUIS LE FORMULAIRE
 ══════════════════════════════════════════ */
 function ctCollectData(signatureDataURL) {
+  const hidden = document.getElementById('ctEmploye');
   return {
-    reference: document.getElementById('ctReference').value.trim(),
-    employeurNom: USER.displayName,
-    entreprise: 'Burger Shot',
-    adresseEntreprise: 'Power Street & Hawking Avenue',
-    salarieNom: (() => {
-      const sel = document.getElementById('ctEmploye');
-      const opt = sel.options[sel.selectedIndex];
-      return `${sel.dataset.prenom} ${sel.dataset.nom}`.toUpperCase().includes(sel.dataset.nom.toUpperCase())
-        ? `${sel.dataset.prenom} ${sel.dataset.nom.toUpperCase()}`
-        : `${sel.dataset.prenom} ${sel.dataset.nom}`;
-    })(),
-    salarieAdresse: 'Los Santos',
-    idCitoyen: document.getElementById('ctIdCitoyen').value.trim(),
-    poste: document.getElementById('ctPoste').value.trim(),
-    typeContrat: document.getElementById('ctType').value,
-    dateDebut: document.getElementById('ctDateDebut').value,
-    dateFin: document.getElementById('ctDateFin').value || null,
-    datePriseEffet: document.getElementById('ctDateDebut').value,
-    tempsHebdo: document.getElementById('ctTemps').value.trim(),
-    remuneration: document.getElementById('ctRemuneration').value.trim(),
-    dateSignature: ctTodayISO(),
+    reference:        document.getElementById('ctReference').value.trim(),
+    employeurNom:     USER.displayName,
+    entreprise:       'Burger Shot',
+    adresseEntreprise:'Power Street & Hawking Avenue',
+    salarieNom:       `${hidden.dataset.prenom || ''} ${hidden.dataset.nom || ''}`.trim(),
+    salarieAdresse:   'Los Santos',
+    idCitoyen:        document.getElementById('ctIdCitoyen').value.trim(),
+    poste:            document.getElementById('ctPoste').value.trim(),
+    typeContrat:      document.getElementById('ctType').value,
+    dateDebut:        document.getElementById('ctDateDebut').value,
+    dateFin:          document.getElementById('ctDateFin').value || null,
+    datePriseEffet:   document.getElementById('ctDateDebut').value,
+    tempsHebdo:       document.getElementById('ctTemps').value.trim(),
+    remuneration:     document.getElementById('ctRemuneration').value.trim(),
+    dateSignature:    ctTodayISO(),
     signatureEmployeDataURL: signatureDataURL || null
   };
 }
 
 function ctValidateForm() {
-  const required = ['ctEmploye','ctReference','ctDateDebut','ctPoste','ctTemps','ctRemuneration','ctIdCitoyen'];
+  if (!document.getElementById('ctEmploye').value.trim()) {
+    document.getElementById('alertCT').innerHTML = '<div class="alert alert-err">⚠️ Sélectionne un employé.</div>';
+    return false;
+  }
+  const required = ['ctReference','ctDateDebut','ctPoste','ctTemps','ctRemuneration','ctIdCitoyen'];
   for (const id of required) {
     const el = document.getElementById(id);
     if (!el.value.trim()) {
-      document.getElementById('alertCT').innerHTML = '<div class="alert alert-err">⚠️ Tous les champs sont obligatoires.</div>';
+      document.getElementById('alertCT').innerHTML = `<div class="alert alert-err">⚠️ Le champ "${id}" est obligatoire.</div>`;
       el.focus();
       return false;
     }
@@ -4561,32 +4560,31 @@ function ctApercu() {
 ══════════════════════════════════════════ */
 async function ctEnvoyerSignature() {
   if (!ctValidateForm()) return;
-  const sel = document.getElementById('ctEmploye');
-  const opt = sel.options[sel.selectedIndex];
+  const hidden = document.getElementById('ctEmploye');
   const aEl = document.getElementById('alertCT');
   aEl.innerHTML = '<div class="alert alert-warn">⏳ Envoi en cours...</div>';
 
   const data = ctCollectData(null);
 
   const payload = {
-    reference: data.reference,
-    employe_discord_id: sel.value,
-    employe_nom: sel.dataset.nom,
-    employe_prenom: sel.dataset.prenom,
+    reference:         data.reference,
+    employe_discord_id: hidden.value,
+    employe_nom:       hidden.dataset.nom,
+    employe_prenom:    hidden.dataset.prenom,
     employe_id_citoyen: data.idCitoyen,
-    poste: data.poste,
-    type_contrat: data.typeContrat,
-    date_debut: data.dateDebut,
-    date_fin: data.dateFin,
-    remuneration: data.remuneration,
-    temps_hebdo: data.tempsHebdo,
-    statut: 'en_attente',
-    cree_par: USER.id
+    poste:             data.poste,
+    type_contrat:      data.typeContrat,
+    date_debut:        data.dateDebut,
+    date_fin:          data.dateFin,
+    remuneration:      data.remuneration,
+    temps_hebdo:       data.tempsHebdo,
+    statut:            'en_attente',
+    cree_par:          USER.id
   };
 
   const res = await sb('contrats_travail', { method:'POST', body: JSON.stringify(payload) });
   if (!res) {
-    aEl.innerHTML = "<div class=\"alert alert-err\">❌ Erreur lors de l'envoi.</div>";
+    aEl.innerHTML = '<div class="alert alert-err">❌ Erreur lors de l\'envoi.</div>';
     return;
   }
 
@@ -4599,7 +4597,7 @@ async function ctEnvoyerSignature() {
       title: '📄 Nouveau contrat de travail',
       color: 0x3498db,
       fields: [
-        { name: '👤 Salarié(e)', value: `${sel.dataset.prenom} ${sel.dataset.nom}`, inline: true },
+        { name: '👤 Salarié(e)', value: `${hidden.dataset.prenom} ${hidden.dataset.nom}`, inline: true },
         { name: '📋 Type', value: data.typeContrat, inline: true },
         { name: '💼 Poste', value: data.poste, inline: true },
         { name: '📅 Référence', value: data.reference, inline: true }
