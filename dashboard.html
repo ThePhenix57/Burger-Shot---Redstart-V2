@@ -2867,18 +2867,105 @@ async function loadCoffreComplet(){
   await chargerGraphiqueEvolution(semaine);
 }
 
-async function chargerGraphiqueEvolution(semaine){
-  const data=await sb(`coffre_evolution?semaine=eq.${semaine}&order=jour.asc`);
-  const el=document.getElementById('coffreGraph');if(!el||!data?.length)return;
-  const labels=(data||[]).map(d=>new Date(d.jour).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}));
-  const soldes=(data||[]).map(d=>Math.round(d.solde));
-  const caJours=(data||[]).map(d=>Math.round(d.ca_jour));
-  el.innerHTML=`<div style="position:relative;width:100%;height:260px"><canvas id="chartEvol"></canvas></div>`;
-  if(!window.Chart){await new Promise(r=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';s.onload=r;document.head.appendChild(s);});}
-  new window.Chart(document.getElementById('chartEvol'),{type:'line',data:{labels,datasets:[
-    {label:'Solde coffre ($)',data:soldes,borderColor:'#27ae60',backgroundColor:'rgba(39,174,96,.1)',fill:true,tension:.3,borderWidth:2,pointBackgroundColor:'#27ae60'},
-    {label:'CA du jour ($)',data:caJours,borderColor:'#3498db',fill:false,tension:.3,borderWidth:2,borderDash:[5,5],pointBackgroundColor:'#3498db'}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top'},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('fr-FR')}$`}}},scales:{y:{ticks:{callback:v=>v.toLocaleString('fr-FR')+'$'},grid:{color:'rgba(255,255,255,.05)'}},x:{grid:{display:false}}}}});
+async function chargerGraphiqueEvolution(semaine) {
+  const el = document.getElementById('coffreGraph'); if (!el) return;
+
+  // 7 derniers jours glissants
+  const jours = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    jours.push(d.toISOString().split('T')[0]);
+  }
+
+  // Récupérer toutes les données en une fois
+  const dateDebut = jours[0];
+  const dateFin = jours[6];
+
+  const [cmdsD, livrD, depD] = await Promise.all([
+    sb(`commandes?select=created_at,total_apres_reduction&created_at=gte.${dateDebut}T00:00:00&created_at=lte.${dateFin}T23:59:59&order=created_at.asc`),
+    sb(`livraisons?select=created_at,montant&created_at=gte.${dateDebut}T00:00:00&created_at=lte.${dateFin}T23:59:59&order=created_at.asc`),
+    sb(`depenses?select=created_at,montant&created_at=gte.${dateDebut}T00:00:00&created_at=lte.${dateFin}T23:59:59&order=created_at.asc`)
+  ]);
+
+  const soldeDepart = 4910885; // solde début de semaine
+  const labels = jours.map(j => {
+    const d = new Date(j + 'T12:00:00');
+    return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  });
+
+  // Calculer CA + livraisons + dépenses par jour
+  let soldeCourant = soldeDepart;
+  const soldes = [], caJours = [];
+
+  for (const jour of jours) {
+    const cmdsJour = (cmdsD||[]).filter(c => c.created_at.startsWith(jour));
+    const livrJour = (livrD||[]).filter(l => l.created_at.startsWith(jour));
+    const depJour  = (depD||[]).filter(d => d.created_at.startsWith(jour));
+
+    const caJ  = cmdsJour.reduce((a,c) => a + (c.total_apres_reduction||0), 0);
+    const livJ = livrJour.reduce((a,l) => a + (l.montant||0), 0);
+    const depJ = depJour.reduce((a,d)  => a + (d.montant||0), 0);
+
+    soldeCourant += caJ + livJ - depJ;
+    soldes.push(soldeCourant);
+    caJours.push(caJ + livJ);
+  }
+
+  el.innerHTML = `<div style="position:relative;width:100%;height:260px"><canvas id="chartEvol"></canvas></div>`;
+
+  if (!window.Chart) {
+    await new Promise(r => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+      s.onload = r;
+      document.head.appendChild(s);
+    });
+  }
+
+  new window.Chart(document.getElementById('chartEvol'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Solde coffre ($)',
+          data: soldes,
+          borderColor: '#27ae60',
+          backgroundColor: 'rgba(39,174,96,.1)',
+          fill: true, tension: .3, borderWidth: 2,
+          pointBackgroundColor: '#27ae60'
+        },
+        {
+          label: 'Entrées du jour ($)',
+          data: caJours,
+          borderColor: '#3498db',
+          fill: false, tension: .3, borderWidth: 2,
+          borderDash: [5,5],
+          pointBackgroundColor: '#3498db'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'top' },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('fr-FR')}$`
+          }
+        }
+      },
+      scales: {
+        y: {
+          ticks: { callback: v => (v/1000000).toFixed(1) + 'M$' },
+          grid: { color: 'rgba(255,255,255,.05)' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
 }
 
 /* ══════════════════════════════════════════
