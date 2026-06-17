@@ -2940,7 +2940,15 @@ async function chargerGraphiqueEvolution(semaine) {
 
   el.innerHTML = '';
   el.appendChild(wrapper);
-
+  const zoom = window.devicePixelRatio || 1;
+  const cssZoom = 1.25;
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    e._chartjs = {
+    x: (e.clientX - rect.left) / cssZoom,
+    y: (e.clientY - rect.top) / cssZoom
+    };
+  }, { passive: true });
   window._chartEvol = new window.Chart(canvas, {
     type: 'line',
     data: {
