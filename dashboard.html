@@ -615,7 +615,6 @@ function getSemaine() {
 
 function getLabelSemaine(cle) {
   if (!cle) cle = getSemaine();
-  // Si ancien format W
   if (cle.includes('-W')) {
     const sam = new Date(cle.replace('-W','W') + '-6');
     cle = `${sam.getFullYear()}-${String(sam.getMonth()+1).padStart(2,'0')}-${String(sam.getDate()).padStart(2,'0')}`;
@@ -623,9 +622,16 @@ function getLabelSemaine(cle) {
   const sam = new Date(cle + 'T00:00:00');
   const ven = new Date(sam);
   ven.setDate(sam.getDate() + 6);
-  const M = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
-  const f = dt => `${String(dt.getDate()).padStart(2,'0')} ${M[dt.getMonth()]}`;
-  return `${f(sam)} → ${f(ven)} ${sam.getFullYear()}`;
+  const M = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  const fj = dt => String(dt.getDate()).padStart(2,'0');
+  const fm = dt => M[dt.getMonth()];
+  // Même année : "13 Jun → 19 Jun 2026"
+  // Années différentes : "30 Déc 2025 → 05 Jan 2026"
+  if (sam.getFullYear() === ven.getFullYear()) {
+    return `${fj(sam)} ${fm(sam)} → ${fj(ven)} ${fm(ven)} ${ven.getFullYear()}`;
+  } else {
+    return `${fj(sam)} ${fm(sam)} ${sam.getFullYear()} → ${fj(ven)} ${fm(ven)} ${ven.getFullYear()}`;
+  }
 }
 
 function calcImpot(ca) {
@@ -2870,7 +2876,6 @@ async function loadCoffreComplet(){
 async function chargerGraphiqueEvolution(semaine) {
   const el = document.getElementById('coffreGraph'); if (!el) return;
 
-  // 7 derniers jours glissants
   const jours = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
@@ -2888,31 +2893,38 @@ async function chargerGraphiqueEvolution(semaine) {
     sb('coffre_solde?limit=1')
   ]);
 
-  const soldeDepart = +(coffreD?.[0]?.solde ?? 0);
+  // Solde actuel = point final, on remonte en arrière
+  const soldeActuel = +(coffreD?.[0]?.solde ?? 0);
+
+  // Calculer les entrées/sorties par jour
+  const jourData = jours.map(jour => {
+    const caJ  = (cmdsD||[]).filter(c => c.created_at.startsWith(jour)).reduce((a,c) => a + (c.total_apres_reduction||0), 0);
+    const livJ = (livrD||[]).filter(l => l.created_at.startsWith(jour)).reduce((a,l) => a + (l.montant||0), 0);
+    const depJ = (depD||[]).filter(d => d.created_at.startsWith(jour)).reduce((a,d) => a + (d.montant||0), 0);
+    return { entrees: caJ + livJ, sorties: depJ };
+  });
+
+  // Reconstruire le solde jour par jour en partant de la fin
+  const totalEntrees = jourData.reduce((a,d) => a + d.entrees - d.sorties, 0);
+  let soldeCourant = soldeActuel - totalEntrees;
+  const soldes = [], caJours = [];
+  for (const d of jourData) {
+    soldeCourant += d.entrees - d.sorties;
+    soldes.push(soldeCourant);
+    caJours.push(d.entrees);
+  }
 
   const labels = jours.map(j => {
     const d = new Date(j + 'T12:00:00');
     return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   });
 
-  let soldeCourant = soldeDepart;
-  const soldes = [], caJours = [];
-
-  for (const jour of jours) {
-    const cmdsJour = (cmdsD||[]).filter(c => c.created_at.startsWith(jour));
-    const livrJour = (livrD||[]).filter(l => l.created_at.startsWith(jour));
-    const depJour  = (depD||[]).filter(d => d.created_at.startsWith(jour));
-
-    const caJ  = cmdsJour.reduce((a,c) => a + (c.total_apres_reduction||0), 0);
-    const livJ = livrJour.reduce((a,l) => a + (l.montant||0), 0);
-    const depJ = depJour.reduce((a,d)  => a + (d.montant||0), 0);
-
-    soldeCourant += caJ + livJ - depJ;
-    soldes.push(soldeCourant);
-    caJours.push(caJ + livJ);
-  }
-
-  el.innerHTML = `<div style="position:relative;width:100%;height:260px"><canvas id="chartEvol"></canvas></div>`;
+  // Créer le canvas dans un div caché, puis swap sans flash
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:relative;width:100%;height:260px';
+  const canvas = document.createElement('canvas');
+  canvas.id = 'chartEvol';
+  wrapper.appendChild(canvas);
 
   if (!window.Chart) {
     await new Promise(r => {
@@ -2923,7 +2935,13 @@ async function chargerGraphiqueEvolution(semaine) {
     });
   }
 
-  new window.Chart(document.getElementById('chartEvol'), {
+  // Détruire l'ancien graphique si existe
+  if (window._chartEvol) { window._chartEvol.destroy(); window._chartEvol = null; }
+
+  el.innerHTML = '';
+  el.appendChild(wrapper);
+
+  window._chartEvol = new window.Chart(canvas, {
     type: 'line',
     data: {
       labels,
@@ -2949,10 +2967,7 @@ async function chargerGraphiqueEvolution(semaine) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: {
-        mode: 'index',
-        intersect: false,
-      },
+      interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: true, position: 'top' },
         tooltip: {
