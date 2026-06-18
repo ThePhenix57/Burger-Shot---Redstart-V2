@@ -828,6 +828,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   verifierClotureVendredi();
   enregistrerEvolutionJour();
   ctVerifierContratsEnAttente();
+  verifierExpirationAvertissements();
 });
 
 async function loadQuotaCfg() {
@@ -2499,15 +2500,101 @@ function ouvrirAvertissement(empId, nom, niveau) {
 }
 
 async function setAvertissement(empId, niveau) {
+  // Récupérer le discord_id depuis l'id
+  const empData = await sb(`comptes_dashboard?id=eq.${empId}&select=discord_id,nom,prenom`);
+  const emp = empData?.[0];
+  if (!emp) return;
+
+  if (niveau === 0) {
+    // Retirer tous les avertissements actifs
+    await sb(`avertissements?employe_discord_id=eq.${emp.discord_id}&actif=eq.true`, {
+      method: 'PATCH',
+      body: JSON.stringify({ actif: false })
+    });
+    await sb(`comptes_dashboard?id=eq.${empId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ avertissements: 0 })
+    });
+    closeOv('ovDocs');
+    loadEmployes();
+    alert('✅ Avertissements retirés.');
+    return;
+  }
+
+  // Calculer la date d'expiration
+  const semaines = niveau === 1 ? 1 : 2;
+  const expireDate = new Date();
+  expireDate.setDate(expireDate.getDate() + semaines * 7);
+
+  // Désactiver les anciens avertissements actifs
+  await sb(`avertissements?employe_discord_id=eq.${emp.discord_id}&actif=eq.true`, {
+    method: 'PATCH',
+    body: JSON.stringify({ actif: false })
+  });
+
+  // Créer le nouvel avertissement
+  await sb('avertissements', {
+    method: 'POST',
+    body: JSON.stringify({
+      employe_discord_id: emp.discord_id,
+      niveau,
+      expire_le: expireDate.toISOString(),
+      actif: true
+    })
+  });
+
+  // Mettre à jour comptes_dashboard
   await sb(`comptes_dashboard?id=eq.${empId}`, {
     method: 'PATCH',
     body: JSON.stringify({ avertissements: niveau })
   });
+
+  // Webhook si niveau 3
+  if (niveau === 3) {
+    await webhook({
+      username: 'Burger Shot — RH',
+      embeds: [{
+        title: '🚨 Avertissement niveau 3',
+        color: 0xc0392b,
+        description: `**${emp.prenom} ${emp.nom}** a reçu un 3ème avertissement.\n⚠️ Cet employé peut être licencié.`,
+        timestamp: new Date().toISOString(),
+        footer: { text: 'Burger Shot • Direction RH' }
+      }]
+    });
+  }
+
   closeOv('ovDocs');
   loadEmployes();
-  const labels = ['aucun avertissement', 'avertissement 1 (verbal)', 'avertissement 2 (écrit)', 'avertissement 3 (licenciement possible)'];
-  alert(`✅ Niveau mis à jour : ${labels[niveau]}`);
+
+  const delais = niveau === 1 ? '1 semaine' : niveau === 2 ? '2 semaines' : 'licenciement possible';
+  alert(`✅ Avertissement ${niveau} enregistré. Délai : ${delais}.\nExpire le : ${expireDate.toLocaleDateString('fr-FR')}`);
 }
+async function verifierExpirationAvertissements() {
+  try {
+    const now = new Date().toISOString();
+    const expires = await sb(`avertissements?actif=eq.true&expire_le=lte.${now}&select=*`);
+    if (!expires?.length) return;
+
+  for (const avert of expires) {
+    // Désactiver
+    await sb(`avertissements?id=eq.${avert.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ actif: false })
+    });
+    // Remettre à 0 dans comptes_dashboard si plus d'avertissement actif
+    const restants = await sb(`avertissements?employe_discord_id=eq.${avert.employe_discord_id}&actif=eq.true`);
+    if (!restants?.length) {
+      await sb(`comptes_dashboard?discord_id=eq.${avert.employe_discord_id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ avertissements: 0 })
+      });
+    }
+  }
+  } catch(e) {
+    console.warn('verifierExpirationAvertissements:', e);
+  }
+}
+function filtrerEmpSearch
 function filtrerEmpSearch(v){const f=v.toLowerCase();document.querySelectorAll('#empGrid .emp-card').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(f)?'':'none'});}
 function switchTabEmp(tab) {
   const isListe = tab === 'liste';
@@ -2542,6 +2629,18 @@ async function loadCDIEligibles() {
     if (t.type === 'patates') quotaMap[t.employe_discord_id].patates += t.quantite;
   });
 
+  // Charger les avertissements actifs de la semaine passée pour tous les employés
+  const uneSemaine = new Date();
+  uneSemaine.setDate(uneSemaine.getDate() - 7);
+   const avertsActifs = await sb(`avertissements?actif=eq.true&select=employe_discord_id,niveau,cree_le`).catch(()=>[]) || [];
+  const avertsRecents = await sb(`avertissements?actif=eq.false&cree_le=gte.${uneSemaine.toISOString()}&select=employe_discord_id,niveau,cree_le`).catch(()=>[]) || [];
+  const tousAverts = [...avertsActifs, ...avertsRecents];
+  const avertMap = {};
+  tousAverts.forEach(a => {
+    if (!avertMap[a.employe_discord_id]) avertMap[a.employe_discord_id] = 0;
+    avertMap[a.employe_discord_id] = Math.max(avertMap[a.employe_discord_id], a.niveau);
+  });
+
   const results = employes.filter(e => {
     const diff = Date.now() - new Date(e.date_embauche || 0).getTime();
     return Math.floor(diff / (1000*60*60*24)) >= 7;
@@ -2565,7 +2664,7 @@ async function loadCDIEligibles() {
     const hasVisite = docs.some(d => d.type === 'Visite médicale');
     const hasPermis = docs.some(d => d.type === 'Permis de conduire');
 
-    const avertOk = (e.avertissements || 0) < 0;
+    const avertOk = (avertMap[e.discord_id] || 0) === 0;
 
     const eligible = ancOk && quotaOk && reglOk && hasVisite && hasPermis && avertOk;
 
