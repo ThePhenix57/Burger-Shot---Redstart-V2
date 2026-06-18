@@ -1072,6 +1072,11 @@ function buildPages() {
   if (dir) {
     // EMPLOYÉS
     html += `<div class="page" id="page-employes"><div class="red-line"></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" id="tabEmpListe" onclick="switchTabEmp('liste')">👤 Liste employés</button>
+      <button class="btn btn-outline btn-sm" id="tabEmpCDI" onclick="switchTabEmp('cdi')">🏆 Éligibles CDI</button>
+    </div>
+    <div id="tabEmpListeContent">
     <div style="display:flex;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <input class="form-input" id="empSearch" placeholder="🔍 Rechercher..." oninput="filtrerEmpSearch(this.value)" style="max-width:260px">
@@ -1112,7 +1117,12 @@ function buildPages() {
       </div>
     </div>
      <div id="empCount" style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--muted);text-align:center;margin-bottom:16px"></div>
-    <div id="empGrid" class="emp-grid"></div></div>`;
+    <div id="empGrid" class="emp-grid"></div>
+    </div>
+    <div id="tabEmpCDIContent" style="display:none">
+      <div id="cdiEligiblesContent"><div class="loading"><div class="spin"></div></div></div>
+    </div>
+    </div>`;
 
     // MENU
     html += `<div class="page" id="page-menu"><div class="red-line"></div>
@@ -2450,6 +2460,7 @@ async function loadEmployes(){
         <div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="ouvrirDocsAjout('${e.id}','${e.prenom} ${e.nom}')">📎 Docs</button>
           <button class="btn btn-outline btn-sm" onclick="toggleEmp('${e.id}',${e.actif})">${e.actif?'🔴 Désactiver':'🟢 Activer'}</button>
+          <button class="btn btn-warn btn-sm" onclick="ouvrirAvertissement('${e.id}','${e.prenom} ${e.nom}',${e.avertissements||0})" title="Avertissements">⚠️ ${e.avertissements||0}/3</button>
           <button class="btn btn-danger btn-sm" onclick="virerEmp('${e.id}','${e.prenom} ${e.nom}')">🚪 Virer</button>
         </div>
       </div>
@@ -2461,7 +2472,191 @@ async function updatePoste(id,poste){await sb(`comptes_dashboard?id=eq.${id}`,{m
 async function updateContratEmp(id,contrat){await sb(`comptes_dashboard?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({contrat})});}
 async function toggleEmp(id,actif){await sb(`comptes_dashboard?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({actif:!actif})});loadEmployes();}
 async function virerEmp(id,nom){if(!confirm(`Virer ${nom} ?`))return;await sb(`comptes_dashboard?id=eq.${id}`,{method:'DELETE'});loadEmployes();}
+function ouvrirAvertissement(empId, nom, niveau) {
+  document.getElementById('ovDocsTitle').textContent = `⚠️ Avertissements — ${nom}`;
+  const el = document.getElementById('ovDocsContent');
+  const niveaux = [
+    { val: 0, label: '✅ Aucun avertissement', color: 'var(--green)', bg: 'rgba(39,174,96,.08)', border: 'rgba(39,174,96,.22)' },
+    { val: 1, label: '⚠️ Avertissement 1 — Verbal', color: 'var(--warn)', bg: 'rgba(243,156,18,.08)', border: 'rgba(243,156,18,.22)' },
+    { val: 2, label: '⚠️ Avertissement 2 — Écrit', color: 'var(--orange)', bg: 'rgba(230,126,34,.08)', border: 'rgba(230,126,34,.22)' },
+    { val: 3, label: '🚨 Avertissement 3 — Licenciement possible', color: 'var(--red)', bg: 'rgba(192,57,43,.08)', border: 'rgba(192,57,43,.22)' }
+  ];
+  el.innerHTML = `
+    <div style="margin-bottom:14px;font-size:13px;color:var(--muted)">Niveau actuel : <strong style="color:${niveaux[niveau].color}">${niveaux[niveau].label}</strong></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      ${niveaux.map(n => `
+        <div onclick="setAvertissement('${empId}',${n.val})" style="padding:12px 14px;background:${n.bg};border:2px solid ${n.val===niveau?n.color:n.border};border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" onmouseover="this.style.borderColor='${n.color}'" onmouseout="this.style.borderColor='${n.val===niveau?n.color:n.border}'">
+          <div style="width:18px;height:18px;border-radius:50%;background:${n.val===niveau?n.color:'var(--border)'};flex-shrink:0;display:flex;align-items:center;justify-content:center">
+            ${n.val===niveau?'<span style="color:#fff;font-size:11px">✓</span>':''}
+          </div>
+          <span style="font-weight:700;color:${n.color}">${n.label}</span>
+        </div>`).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--muted);padding:10px;background:var(--card2);border-radius:7px">
+      ⚠️ 3 avertissements = l'employé n'apparaît plus dans la liste CDI éligibles.
+    </div>`;
+  openOv('ovDocs');
+}
+
+async function setAvertissement(empId, niveau) {
+  await sb(`comptes_dashboard?id=eq.${empId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ avertissements: niveau })
+  });
+  closeOv('ovDocs');
+  loadEmployes();
+  const labels = ['aucun avertissement', 'avertissement 1 (verbal)', 'avertissement 2 (écrit)', 'avertissement 3 (licenciement possible)'];
+  alert(`✅ Niveau mis à jour : ${labels[niveau]}`);
+}
 function filtrerEmpSearch(v){const f=v.toLowerCase();document.querySelectorAll('#empGrid .emp-card').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(f)?'':'none'});}
+function switchTabEmp(tab) {
+  const isListe = tab === 'liste';
+  document.getElementById('tabEmpListeContent').style.display = isListe ? 'block' : 'none';
+  document.getElementById('tabEmpCDIContent').style.display = isListe ? 'none' : 'block';
+  document.getElementById('tabEmpListe').className = `btn btn-sm ${isListe ? 'btn-primary' : 'btn-outline'}`;
+  document.getElementById('tabEmpCDI').className = `btn btn-sm ${isListe ? 'btn-outline' : 'btn-primary'}`;
+  if (!isListe) loadCDIEligibles();
+}
+
+async function loadCDIEligibles() {
+  const el = document.getElementById('cdiEligiblesContent');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+
+  const semaine = getSemaine();
+  const [employes, tickets] = await Promise.all([
+    sb('comptes_dashboard?select=*&actif=eq.true&contrat=eq.CDD&role=neq.gouvernement&order=nom.asc'),
+    sb(`quotas_tickets?select=employe_discord_id,type,quantite&semaine=eq.${semaine}&statut=eq.valide`)
+  ]);
+
+  if (!employes?.length) {
+    el.innerHTML = '<div class="card"><p style="color:var(--muted);text-align:center;padding:28px">Aucun employé CDD actif.</p></div>';
+    return;
+  }
+
+  // Calcul quota par employé
+  const quotaMap = {};
+  (tickets || []).forEach(t => {
+    if (!quotaMap[t.employe_discord_id]) quotaMap[t.employe_discord_id] = { viande: 0, patates: 0 };
+    if (t.type === 'viande') quotaMap[t.employe_discord_id].viande += t.quantite;
+    if (t.type === 'patates') quotaMap[t.employe_discord_id].patates += t.quantite;
+  });
+
+  const results = employes.map(e => {
+    const diff = Date.now() - new Date(e.date_embauche || 0).getTime();
+    const joursAnc = Math.floor(diff / (1000*60*60*24));
+    const ancOk = joursAnc >= 7;
+
+    const maxV = quotaCfg.cdd_viande;
+    const maxP = quotaCfg.cdd_patates;
+    const q = quotaMap[e.discord_id] || { viande: 0, patates: 0 };
+    const quotaOk = maxV > 0
+      ? (Math.round(q.viande/maxV*100) >= 100 && Math.round(q.patates/maxP*100) >= 100)
+      : true;
+
+    const reglOk = e.reglement_signe || false;
+
+    // Vérifier docs
+    let docs = [];
+    try { docs = typeof e.documents === 'string' ? JSON.parse(e.documents) : (e.documents || []); } catch {}
+    const hasVisite = docs.some(d => d.type === 'Visite médicale');
+    const hasPermis = docs.some(d => d.type === 'Permis de conduire');
+
+    const avertOk = (e.avertissements || 0) < 3;
+
+    const eligible = ancOk && quotaOk && reglOk && hasVisite && hasPermis && avertOk;
+
+    return { e, joursAnc, ancOk, quotaOk, reglOk, hasVisite, hasPermis, avertOk, eligible, q };
+  });
+
+  const eligibles = results.filter(r => r.eligible);
+  const nonEligibles = results.filter(r => !r.eligible);
+
+  const renderRow = ({ e, joursAnc, ancOk, quotaOk, reglOk, hasVisite, hasPermis, avertOk, eligible, q }) => {
+    const check = ok => ok
+      ? '<span style="color:var(--green);font-weight:700">✅</span>'
+      : '<span style="color:var(--red);font-weight:700">❌</span>';
+    const init = `${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`.toUpperCase();
+    return `<tr style="background:${eligible?'rgba(39,174,96,.04)':''}">
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">
+            ${e.photo_url?`<img src="${e.photo_url}" style="width:100%;height:100%;object-fit:cover">`:init}
+          </div>
+          <div>
+            <div style="font-weight:700">${e.prenom} ${e.nom}</div>
+            <div style="font-size:10px;color:var(--muted)">${e.poste||'—'}</div>
+          </div>
+        </div>
+      </td>
+      <td style="text-align:center">${check(ancOk)}<div style="font-size:10px;color:var(--muted)">${joursAnc}j</div></td>
+      <td style="text-align:center">${check(quotaOk)}<div style="font-size:10px;color:var(--muted)">${Math.round(q.viande/quotaCfg.cdd_viande*100)}% / ${Math.round(q.patates/quotaCfg.cdd_patates*100)}%</div></td>
+      <td style="text-align:center">${check(reglOk)}</td>
+      <td style="text-align:center">${check(hasVisite)}</td>
+      <td style="text-align:center">${check(hasPermis)}</td>
+      <td style="text-align:center">${check(avertOk)}<div style="font-size:10px;color:var(--muted)">${e.avertissements||0}/3</div></td>
+      <td style="text-align:center">
+        ${eligible
+          ? `<span class="badge badge-green">✅ Éligible</span>`
+          : `<span class="badge badge-red">❌ Non éligible</span>`}
+      </td>
+      ${eligible ? `<td><button class="btn btn-success btn-sm" onclick="passerCDI('${e.id}','${e.prenom} ${e.nom}')">⬆️ Passer CDI</button></td>` : '<td>—</td>'}
+    </tr>`;
+  };
+
+  el.innerHTML = `
+    <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+      <div class="stat" style="--accent:var(--green);flex:1;min-width:140px">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-label">Éligibles CDI</div>
+        <div class="stat-val">${eligibles.length}</div>
+      </div>
+      <div class="stat" style="--accent:var(--orange);flex:1;min-width:140px">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Non éligibles</div>
+        <div class="stat-val">${nonEligibles.length}</div>
+      </div>
+      <div class="stat" style="flex:1;min-width:140px">
+        <div class="stat-icon">👤</div>
+        <div class="stat-label">Total CDD actifs</div>
+        <div class="stat-val">${results.length}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr style="background:var(--card2)">
+              <th>Employé</th>
+              <th style="text-align:center">📅 Ancienneté<br><span style="font-weight:400;font-size:9px">≥ 7 jours</span></th>
+              <th style="text-align:center">🚚 Quota<br><span style="font-weight:400;font-size:9px">100% vian. + pat.</span></th>
+              <th style="text-align:center">📜 Règlement</th>
+              <th style="text-align:center">🏥 Visite méd.</th>
+              <th style="text-align:center">🪪 Permis</th>
+              <th style="text-align:center">⚠️ Avertiss.</th>
+              <th style="text-align:center">Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${eligibles.length ? eligibles.map(renderRow).join('') : ''}
+            ${nonEligibles.map(renderRow).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+async function passerCDI(empId, nom) {
+  if (!confirm(`Passer ${nom} en CDI ?`)) return;
+  await sb(`comptes_dashboard?id=eq.${empId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ contrat: 'CDI' })
+  });
+  alert(`✅ ${nom} est maintenant en CDI !`);
+  loadCDIEligibles();
+}
 function toggleAddEmp(){const f=document.getElementById('addEmpForm');f.style.display=f.style.display==='none'?'block':'none';const d=document.getElementById('empEmbauche');if(d&&!d.value)d.value=new Date().toISOString().split('T')[0];}
 async function saveEmploye(){
   const nom=cap(document.getElementById('empNom')?.value.trim()),prenom=cap(document.getElementById('empPrenom')?.value.trim()),discord=document.getElementById('empDiscord')?.value.trim();
