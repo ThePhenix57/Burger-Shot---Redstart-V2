@@ -2565,7 +2565,7 @@ async function loadCDIEligibles() {
     const hasVisite = docs.some(d => d.type === 'Visite médicale');
     const hasPermis = docs.some(d => d.type === 'Permis de conduire');
 
-    const avertOk = (e.avertissements || 0) < 3;
+    const avertOk = (e.avertissements || 0) < 0;
 
     const eligible = ancOk && quotaOk && reglOk && hasVisite && hasPermis && avertOk;
 
