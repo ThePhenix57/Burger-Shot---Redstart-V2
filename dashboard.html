@@ -5272,9 +5272,8 @@ async function exporterRecapCDI() {
         ctx.fillStyle = val ? 'rgba(39,174,96,0.18)' : 'rgba(192,57,43,0.18)'; ctx.fill();
         ctx.fillStyle = val ? '#27ae60' : '#c0392b';
         ctx.font = '15px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      }
-      if (col.custom) {
-        // colonne statut — badge éligible ou non
+        ctx.fillText(val?'✓':'✗', cx, cy);
+      } else {
         if (elig) {
           ctx.fillStyle = 'rgba(39,174,96,0.2)';
           ctx.beginPath(); ctx.roundRect(cx-38, cy-11, 76, 22, 5); ctx.fill();
@@ -5286,8 +5285,6 @@ async function exporterRecapCDI() {
           ctx.fillStyle = '#c0392b'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
           ctx.fillText('EN COURS', cx, cy+1);
         }
-      } else {
-        ctx.fillText(val?'✓':'✗', cx, cy);
       }
     });
     ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
