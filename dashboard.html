@@ -5206,7 +5206,8 @@ async function exporterRecapCDI() {
     { label:'📜 Règlement',  key:'regl' },
     { label:'🏥 Visite méd.',key:'visite' },
     { label:'🪪 Permis',     key:'permis' },
-    { label:'⚠️ Avertiss.',  key:'avert', invert:true }
+    { label:'⚠️ Avertiss.',  key:'avert', invert:true },
+    { label:'🎯 Statut',     key:'statut', custom:true }
   ];
   const isElig = r => r.anc && r.quota && r.regl && r.visite && r.permis && !r.avert;
   const W = NAME_W + COLS.length * COL_W + PAD * 2;
@@ -5270,15 +5271,23 @@ async function exporterRecapCDI() {
       ctx.fillStyle = val ? 'rgba(39,174,96,0.18)' : 'rgba(192,57,43,0.18)'; ctx.fill();
       ctx.fillStyle = val ? '#27ae60' : '#c0392b';
       ctx.font = '15px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(val?'✓':'✗', cx, cy);
+      if (col.custom) {
+        // colonne statut — badge éligible ou non
+        if (elig) {
+          ctx.fillStyle = 'rgba(39,174,96,0.2)';
+          ctx.beginPath(); ctx.roundRect(cx-38, cy-11, 76, 22, 5); ctx.fill();
+          ctx.fillStyle = '#27ae60'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
+          ctx.fillText('ÉLIGIBLE', cx, cy+1);
+        } else {
+          ctx.fillStyle = 'rgba(192,57,43,0.15)';
+          ctx.beginPath(); ctx.roundRect(cx-38, cy-11, 76, 22, 5); ctx.fill();
+          ctx.fillStyle = '#c0392b'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
+          ctx.fillText('EN COURS', cx, cy+1);
+        }
+      } else {
+        ctx.fillText(val?'✓':'✗', cx, cy);
+      }
     });
-    if (elig) {
-      const bx = W-PAD-6;
-      ctx.fillStyle = 'rgba(39,174,96,0.2)';
-      ctx.beginPath(); ctx.roundRect(bx-72,y+ROW_H/2-11,72,22,5); ctx.fill();
-      ctx.fillStyle = '#27ae60'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
-      ctx.fillText('✅ ÉLIGIBLE', bx-36, y+ROW_H/2-1);
-    }
     ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(PAD,y+ROW_H-4); ctx.lineTo(W-PAD,y+ROW_H-4); ctx.stroke();
   });
