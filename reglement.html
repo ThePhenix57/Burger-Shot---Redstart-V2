@@ -491,6 +491,13 @@ async function soumettre() {
         reglement_signature: signatureData
       })
     });
+    await sb(`comptes_dashboard?discord_id=eq.${USER.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        reglement_signe: true,
+        reglement_signe_le: now
+      })
+    });
     localStorage.setItem('bs_reglement_signe', JSON.stringify({ signe: true, date: now, discord_id: USER.id }));
     showToast('✅ Règlement signé avec succès !');
     setTimeout(() => renderSignatureZone(true, now), 1200);
@@ -766,6 +773,10 @@ window.addEventListener('DOMContentLoaded', async () => {
           await sb(`employes?discord_id=eq.${USER.id}`, {
             method: 'PATCH',
             body: JSON.stringify({ reglement_signe: true, reglement_signe_le: now, reglement_signature: signatureData })
+          });
+          await sb(`comptes_dashboard?discord_id=eq.${USER.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ reglement_signe: true, reglement_signe_le: now })
           });
           showToast('✅ Règlement signé !');
           telechargerPDF(nomComplet, now, signatureData);
