@@ -2376,13 +2376,12 @@ async function loadEmployes(){
   if(filt==='actif')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.actif&actif=eq.true&order=created_at.desc';
   else if(filt==='absent')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.absent&actif=eq.true&order=created_at.desc';
   else if(filt==='inactif')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
-  const [data,cmds,primesData,contratsData,reglData]=await Promise.all([
+  const [data,cmds,primesData,contratsData]=await Promise.all([
   sb(base),
   sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
   sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
-  sb('contrats_travail?select=employe_discord_id,statut'),
-  sb('employes?select=discord_id,reglement_signe,reglement_signe_le')
-  ]);
+  sb('contrats_travail?select=employe_discord_id,statut')
+]);
   const reglMap = {};
   (reglData||[]).forEach(r => { reglMap[r.discord_id] = r; });
   // Fusionner les données règlement dans chaque employé
@@ -2530,11 +2529,6 @@ async function voirFicheEmp(empId, nom){
   const emp = data?.[0];
   if (!emp) { el.innerHTML='<p style="color:var(--muted)">Introuvable.</p>'; return; }
   const e = emp;
-  // Récupérer le statut règlement depuis la table employes
-  const reglData = await sb(`employes?discord_id=eq.${e.discord_id}&select=reglement_signe,reglement_signe_le`);
-  const reglInfo = reglData?.[0] || {};
-  e.reglement_signe = reglInfo.reglement_signe || false;
-  e.reglement_signe_le = reglInfo.reglement_signe_le || null;
   let age='—';
   let anc='—';if(e.date_embauche){const diff=Date.now()-new Date(e.date_embauche).getTime();const j=Math.floor(diff/(1000*60*60*24));anc=j<30?`${j}j`:j<365?`${Math.floor(j/30)} mois`:`${Math.floor(j/365)} an(s)`;}
   const dateEmbaucheStr=e.date_embauche?new Date(e.date_embauche).toLocaleDateString('fr-FR'):'—';
