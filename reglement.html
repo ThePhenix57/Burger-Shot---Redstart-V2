@@ -373,6 +373,7 @@ let hasSignature = false;
 let isDrawing = false;
 let canvas, ctx;
 let signatureData = null;
+let _reglementSigne = false;
 
 async function sb(endpoint, opts = {}) {
   const method = opts.method || 'GET';
@@ -647,6 +648,8 @@ function renderStatusBanner(role, signed, signedDate) {
 }
 
 function renderSignatureZone(signed, signedDate) {
+  // Si déjà signé globalement, forcer signed = true
+  if (_reglementSigne) { signed = true; }
   const el = document.getElementById('signatureZone');
   if (ROLE === 'gouvernement') {
     el.innerHTML = `
@@ -756,6 +759,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     const dash = dashData?.[0];
     const signed = emp?.reglement_signe || dash?.reglement_signe || false;
     const signedDate = emp?.reglement_signe_le || dash?.reglement_signe_le || null;
+    _reglementSigne = signed;
+
     renderSignatureZone(signed, signedDate);
     renderStatusBanner(ROLE, signed, signedDate);
 
@@ -781,6 +786,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             method: 'PATCH',
             body: JSON.stringify({ reglement_signe: true, reglement_signe_le: now })
           });
+          _reglementSigne = true;
           showToast('✅ Règlement signé !');
           telechargerPDF(nomComplet, now, signatureData);
           setTimeout(() => renderSignatureZone(true, now), 1500);
