@@ -2382,14 +2382,6 @@ async function loadEmployes(){
   sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
   sb('contrats_travail?select=employe_discord_id,statut')
 ]);
-  const reglMap = {};
-  (reglData||[]).forEach(r => { reglMap[r.discord_id] = r; });
-  // Fusionner les données règlement dans chaque employé
-  data.forEach(e => {
-    const r = reglMap[e.discord_id] || {};
-    e.reglement_signe = r.reglement_signe || false;
-    e.reglement_signe_le = r.reglement_signe_le || null;
-  });
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>';return;}
   data.sort((a,b)=>{
   // CDI avant CDD
