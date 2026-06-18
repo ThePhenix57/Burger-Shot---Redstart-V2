@@ -2542,10 +2542,10 @@ async function loadCDIEligibles() {
     if (t.type === 'patates') quotaMap[t.employe_discord_id].patates += t.quantite;
   });
 
-  const results = employes.map(e => {
+  const results = employes.filter(e => {
     const diff = Date.now() - new Date(e.date_embauche || 0).getTime();
-    const joursAnc = Math.floor(diff / (1000*60*60*24));
-    const ancOk = joursAnc >= 7;
+    return Math.floor(diff / (1000*60*60*24)) >= 7;
+  }).map(e => {
 
     const maxV = quotaCfg.cdd_viande;
     const maxP = quotaCfg.cdd_patates;
@@ -2569,8 +2569,9 @@ async function loadCDIEligibles() {
     return { e, joursAnc, ancOk, quotaOk, reglOk, hasVisite, hasPermis, avertOk, eligible, q };
   });
 
-  const eligibles = results.filter(r => r.eligible);
-  const nonEligibles = results.filter(r => !r.eligible);
+  const sortByAnciennete = (a, b) => new Date(a.e.date_embauche || 0) - new Date(b.e.date_embauche || 0);
+  const eligibles = results.filter(r => r.eligible).sort(sortByAnciennete);
+  const nonEligibles = results.filter(r => !r.eligible).sort(sortByAnciennete);
 
   const renderRow = ({ e, joursAnc, ancOk, quotaOk, reglOk, hasVisite, hasPermis, avertOk, eligible, q }) => {
     const check = ok => ok
@@ -2620,6 +2621,7 @@ async function loadCDIEligibles() {
         <div class="stat-icon">👤</div>
         <div class="stat-label">Total CDD actifs</div>
         <div class="stat-val">${results.length}</div>
+        <div class="stat-sub">≥ 7j d'ancienneté</div>
       </div>
     </div>
 
