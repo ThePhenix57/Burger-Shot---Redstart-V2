@@ -2546,6 +2546,9 @@ async function loadCDIEligibles() {
     const diff = Date.now() - new Date(e.date_embauche || 0).getTime();
     return Math.floor(diff / (1000*60*60*24)) >= 7;
   }).map(e => {
+    const diff = Date.now() - new Date(e.date_embauche || 0).getTime();
+    const joursAnc = Math.floor(diff / (1000*60*60*24));
+    const ancOk = true; // déjà filtré ≥ 7j
 
     const maxV = quotaCfg.cdd_viande;
     const maxP = quotaCfg.cdd_patates;
