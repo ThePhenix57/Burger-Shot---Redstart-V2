@@ -1607,7 +1607,7 @@ function calcCmd() {
 function calcPts() {
   if (!clientActif?.pass) return 0;
   const pt = passTypes.find(p=>p.nom===clientActif.pass);
-  return Math.round(commande.reduce((a,b)=>a+(b.points*b.qte),0) * (pt?+pt.multiplicateur:0));
+  return Math.floor(commande.reduce((a,b)=>a+(b.points*b.qte),0) * (pt?+pt.multiplicateur:0));
 }
 
 function renderTicket() {
