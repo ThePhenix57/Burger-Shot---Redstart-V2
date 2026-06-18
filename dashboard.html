@@ -2594,7 +2594,6 @@ async function verifierExpirationAvertissements() {
     console.warn('verifierExpirationAvertissements:', e);
   }
 }
-function filtrerEmpSearch
 function filtrerEmpSearch(v){const f=v.toLowerCase();document.querySelectorAll('#empGrid .emp-card').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(f)?'':'none'});}
 function switchTabEmp(tab) {
   const isListe = tab === 'liste';
