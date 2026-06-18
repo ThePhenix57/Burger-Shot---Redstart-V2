@@ -2794,6 +2794,7 @@ async function loadPrimesTable(){
     <td>${emp.poste||'—'}</td>
     <td><span class="badge badge-blue">${p.type||'vente'}</span></td>
     <td><strong style="color:var(--green)">${fmtMoney(p.montant)}</strong></td>
+    <td style="font-size:11px;color:var(--muted)">${p.created_at?new Date(p.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}</td>
     <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span></td>
     <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
   </tr>`;}).join('');
@@ -2805,8 +2806,8 @@ async function loadPrimesTable(){
     <button class="btn btn-primary btn-sm" id="tabPrimeAtt" onclick="switchTabPrime('att')">⏳ En attente (${enAtt.length})</button>
     <button class="btn btn-outline btn-sm" id="tabPrimeVer" onclick="switchTabPrime('ver')">✅ Versées (${versees.length})</button>
   </div>
-  <div id="primeTabAtt"><table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th></th></tr></thead><tbody>${rows(enAtt)}</tbody></table></div>
-  <div id="primeTabVer" style="display:none"><table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Statut</th><th></th></tr></thead><tbody>${rows(versees)}</tbody></table></div>`;
+  <div id="primeTabAtt"><table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Date</th><th>Statut</th><th></th></tr></thead><tbody>${rows(enAtt)}</tbody></table></div>
+  <div id="primeTabVer" style="display:none"><table><thead><tr><th>Employé</th><th>Poste</th><th>Type</th><th>Montant</th><th>Date</th><th>Statut</th><th></th></tr></thead><tbody>${rows(versees)}</tbody></table></div>`;
 }
 function switchTabPrime(t){
   document.getElementById('primeTabAtt').style.display=t==='att'?'block':'none';
