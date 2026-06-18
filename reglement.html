@@ -746,13 +746,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (gouvCheck?.length) ROLE = 'gouvernement';
   }
 
-  // Vérifier si déjà signé
+  // Vérifier si déjà signé (vérifie les deux tables)
   if (ROLE !== 'gouvernement') {
-    const empData = await sb(`employes?discord_id=eq.${USER.id}&select=nom,prenom,reglement_signe,reglement_signe_le,reglement_signature`);
+    const [empData, dashData] = await Promise.all([
+      sb(`employes?discord_id=eq.${USER.id}&select=nom,prenom,reglement_signe,reglement_signe_le,reglement_signature`),
+      sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=reglement_signe,reglement_signe_le`)
+    ]);
     const emp = empData?.[0];
-    const signed = emp?.reglement_signe || false;
-    const signedDate = emp?.reglement_signe_le || null;
-
+    const dash = dashData?.[0];
+    const signed = emp?.reglement_signe || dash?.reglement_signe || false;
+    const signedDate = emp?.reglement_signe_le || dash?.reglement_signe_le || null;
     renderSignatureZone(signed, signedDate);
     renderStatusBanner(ROLE, signed, signedDate);
 
