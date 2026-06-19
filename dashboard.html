@@ -2611,16 +2611,9 @@ async function loadCDIEligibles() {
   el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
 
   const semaine = getSemaine();
-  const semainePrecedente = (() => {
-    const d = new Date(semaine + 'T00:00:00');
-    d.setDate(d.getDate() - 7);
-    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), j = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${j}`;
-  })();
-  const [employes, ticketsSemActuelle, ticketsSemPrecedente] = await Promise.all([
+  const [employes, tousTickets] = await Promise.all([
     sb('comptes_dashboard?select=*&actif=eq.true&contrat=eq.CDD&role=neq.gouvernement&order=nom.asc'),
-    sb(`quotas_tickets?select=employe_discord_id,type,quantite&semaine=eq.${semaine}&statut=eq.valide`),
-    sb(`quotas_tickets?select=employe_discord_id,type,quantite&semaine=eq.${semainePrecedente}&statut=eq.valide`)
+    sb(`quotas_tickets?select=employe_discord_id,type,quantite,semaine&statut=eq.valide`)
   ]);
 
   if (!employes?.length) {
@@ -2628,31 +2621,27 @@ async function loadCDIEligibles() {
     return;
   }
 
-  // Calcul quota par employé — on prend le meilleur des deux semaines (actuelle ou passée)
-  const quotaMapActuelle = {};
-  (ticketsSemActuelle || []).forEach(t => {
-    if (!quotaMapActuelle[t.employe_discord_id]) quotaMapActuelle[t.employe_discord_id] = { viande: 0, patates: 0 };
-    if (t.type === 'viande') quotaMapActuelle[t.employe_discord_id].viande += t.quantite;
-    if (t.type === 'patates') quotaMapActuelle[t.employe_discord_id].patates += t.quantite;
+  // Calcul quota par employé ET par semaine, sur tout l'historique
+  const quotaParEmpParSemaine = {};
+  (tousTickets || []).forEach(t => {
+    if (!quotaParEmpParSemaine[t.employe_discord_id]) quotaParEmpParSemaine[t.employe_discord_id] = {};
+    if (!quotaParEmpParSemaine[t.employe_discord_id][t.semaine]) quotaParEmpParSemaine[t.employe_discord_id][t.semaine] = { viande: 0, patates: 0 };
+    if (t.type === 'viande') quotaParEmpParSemaine[t.employe_discord_id][t.semaine].viande += t.quantite;
+    if (t.type === 'patates') quotaParEmpParSemaine[t.employe_discord_id][t.semaine].patates += t.quantite;
   });
-  const quotaMapPrecedente = {};
-  (ticketsSemPrecedente || []).forEach(t => {
-    if (!quotaMapPrecedente[t.employe_discord_id]) quotaMapPrecedente[t.employe_discord_id] = { viande: 0, patates: 0 };
-    if (t.type === 'viande') quotaMapPrecedente[t.employe_discord_id].viande += t.quantite;
-    if (t.type === 'patates') quotaMapPrecedente[t.employe_discord_id].patates += t.quantite;
-  });
+  // Pour chaque employé, on garde la MEILLEURE semaine jamais atteinte
   const quotaMap = {};
-  const tousIds = new Set([...Object.keys(quotaMapActuelle), ...Object.keys(quotaMapPrecedente)]);
-  tousIds.forEach(id => {
-    const a = quotaMapActuelle[id] || { viande: 0, patates: 0 };
-    const p = quotaMapPrecedente[id] || { viande: 0, patates: 0 };
-    // On garde la semaine la plus avantageuse (celle où le quota est le plus complet)
-    const pctA = a.viande + a.patates;
-    const pctP = p.viande + p.patates;
-    quotaMap[id] = pctA >= pctP ? a : p;
+  Object.keys(quotaParEmpParSemaine).forEach(id => {
+    const semaines = quotaParEmpParSemaine[id];
+    let meilleure = { viande: 0, patates: 0 };
+    let meilleurScore = -1;
+    Object.values(semaines).forEach(q => {
+      const score = q.viande + q.patates;
+      if (score > meilleurScore) { meilleurScore = score; meilleure = q; }
+    });
+    quotaMap[id] = meilleure;
   });
 
-  // Charger les avertissements actifs sur la semaine actuelle + la semaine passée (sam→ven)
   // Charger les avertissements actifs sur la semaine actuelle + la semaine passée (sam→ven)
   const semaineActuelleDebut = new Date(getSemaine() + 'T00:00:00');
   const semainePasseeDebut = new Date(semaineActuelleDebut);
