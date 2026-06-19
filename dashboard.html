@@ -4685,6 +4685,9 @@ function ctOnTypeChange() {
   const finGroup = document.getElementById('ctDateFinGroup');
   finGroup.style.display = type === 'CDI' ? 'none' : '';
   if (type === 'CDI') document.getElementById('ctDateFin').value = '';
+  document.getElementById('ctRemuneration').value = type === 'CDI'
+    ? '$50.000/quota+vente'
+    : '$50.000/quota';
   ctRecalcDates();
 }
 
