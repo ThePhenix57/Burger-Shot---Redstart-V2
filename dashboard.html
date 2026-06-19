@@ -3108,9 +3108,16 @@ async function calculerPrimes(){
 
 async function loadPrimesTable(){
   const el=document.getElementById('primesTable');if(!el)return;
+  const semaineActuelle = getSemaine();
+  const semainePrecedente = (() => {
+    const d = new Date(semaineActuelle + 'T00:00:00');
+    d.setDate(d.getDate() - 7);
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), j = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${j}`;
+  })();
   const [dataSemaine, dataEnAttenteAnciennes] = await Promise.all([
-    sb(`primes?select=*&semaine=eq.${getSemaine()}&order=created_at.desc`),
-    sb(`primes?select=*&semaine=neq.${getSemaine()}&verse=eq.false&order=created_at.desc`)
+    sb(`primes?select=*&semaine=eq.${semaineActuelle}&order=created_at.desc`),
+    sb(`primes?select=*&semaine=eq.${semainePrecedente}&verse=eq.false&order=created_at.desc`)
   ]);
   const data=[...(dataSemaine||[]), ...(dataEnAttenteAnciennes||[])];
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime cette semaine.</p>';return;}
