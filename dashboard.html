@@ -2630,11 +2630,14 @@ async function loadCDIEligibles() {
   });
 
   // Charger les avertissements actifs sur la semaine actuelle + la semaine passée (sam→ven)
+  // Charger les avertissements actifs sur la semaine actuelle + la semaine passée (sam→ven)
   const semaineActuelleDebut = new Date(getSemaine() + 'T00:00:00');
   const semainePasseeDebut = new Date(semaineActuelleDebut);
   semainePasseeDebut.setDate(semainePasseeDebut.getDate() - 7);
+  const nowCdi = new Date();
    const avertsActifs = await sb(`avertissements?actif=eq.true&select=employe_discord_id,niveau,cree_le`).catch(()=>[]) || [];
-  const avertsRecents = await sb(`avertissements?actif=eq.false&cree_le=gte.${semainePasseeDebut.toISOString()}&select=employe_discord_id,niveau,cree_le`).catch(()=>[]) || [];
+  const avertsRecents = (await sb(`avertissements?actif=eq.false&cree_le=gte.${semainePasseeDebut.toISOString()}&select=employe_discord_id,niveau,cree_le,expire_le`).catch(()=>[]) || [])
+    .filter(a => a.expire_le && new Date(a.expire_le) <= nowCdi);
   const tousAverts = [...avertsActifs, ...avertsRecents];
   const avertMap = {};
   tousAverts.forEach(a => {
@@ -5180,8 +5183,10 @@ async function exporterRecapCDI() {
   const semaineActuelleDebut = new Date(getSemaine() + 'T00:00:00');
   const semainePasseeDebut = new Date(semaineActuelleDebut);
   semainePasseeDebut.setDate(semainePasseeDebut.getDate() - 7);
+  const nowExport = new Date();
   const avertsActifs = await sb(`avertissements?actif=eq.true&select=employe_discord_id,niveau`).catch(()=>[]) || [];
-  const avertsRecents = await sb(`avertissements?actif=eq.false&cree_le=gte.${semainePasseeDebut.toISOString()}&select=employe_discord_id,niveau`).catch(()=>[]) || [];
+  const avertsRecents = (await sb(`avertissements?actif=eq.false&cree_le=gte.${semainePasseeDebut.toISOString()}&select=employe_discord_id,niveau,expire_le`).catch(()=>[]) || [])
+    .filter(a => a.expire_le && new Date(a.expire_le) <= nowExport);
   const avertMap = {};
   [...avertsActifs,...avertsRecents].forEach(a => {
     avertMap[a.employe_discord_id] = Math.max(avertMap[a.employe_discord_id]||0, a.niveau);
