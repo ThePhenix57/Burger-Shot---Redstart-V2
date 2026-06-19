@@ -3434,14 +3434,29 @@ async function loadHistoriqueCompteRendus(){
   const el=document.getElementById('coffreHistorique');if(!el)return;
   const data=await sb('comptes_rendus?select=*&order=created_at.desc&limit=20');
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucun compte rendu archivé.</p>';return;}
-  el.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA</th><th>Bénéfice</th><th>Solde final</th><th>PDF</th></tr></thead><tbody>`+
+  el.innerHTML=`<table><thead><tr><th>Semaine</th><th>CA</th><th>Impôts (estimé / réel)</th><th>Bénéfice</th><th>Solde final</th><th>PDF</th></tr></thead><tbody>`+
   data.map(cr=>`<tr>
     <td><strong>${cr.semaine_label||cr.semaine}</strong></td>
     <td>${fmtMoney(cr.ca_ventes||0)}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="color:var(--muted)">${fmtMoney(cr.total_impots||0)}${cr.impots_reels!=null?` <span style="color:var(--warn)">(${fmtMoney(cr.impots_reels)})</span>`:''}</span>
+        <input type="number" class="form-input" id="impReel-${cr.id}" placeholder="Montant réel" value="${cr.impots_reels??''}" style="width:110px;padding:4px 8px;font-size:11px">
+        <button class="btn btn-outline btn-sm" onclick="saveImpotsReels('${cr.id}')">💾</button>
+      </div>
+    </td>
     <td style="color:${(cr.benefice_net||0)>=0?'var(--green)':'var(--red)'}">${(cr.benefice_net||0)>=0?'+':''}${fmtMoney(cr.benefice_net||0)}</td>
     <td><strong>${fmtMoney(cr.solde_final||0)}</strong></td>
     <td><button class="btn btn-outline btn-sm" onclick='genererPDF(${JSON.stringify(cr).replace(/'/g,"&#39;")})'>📄 PDF</button></td>
   </tr>`).join('')+'</tbody></table>';
+}
+
+async function saveImpotsReels(crId){
+  const val=+document.getElementById(`impReel-${crId}`)?.value;
+  if(!val||val<0){alert('Montant invalide.');return;}
+  await sb(`comptes_rendus?id=eq.${crId}`,{method:'PATCH',body:JSON.stringify({impots_reels:val})});
+  alert('✅ Montant réel des impôts enregistré !');
+  loadHistoriqueCompteRendus();
 }
 
 async function genererPDF(cr) {
