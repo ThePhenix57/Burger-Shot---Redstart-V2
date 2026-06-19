@@ -2964,7 +2964,14 @@ function ouvrirPrimeExcep(discordId,nom){document.getElementById('peDiscord').va
 async function savePrimeExcep(){const discordId=document.getElementById('peDiscord').value,montant=+document.getElementById('peMontant').value,raison=document.getElementById('peRaison').value.trim(),aEl=document.getElementById('alertPE');if(!montant||montant<=0){aEl.innerHTML='<div class="alert alert-err">⚠️ Montant invalide.</div>';return;}await sb('primes',{method:'POST',body:JSON.stringify({employe_discord:discordId,montant,semaine:getSemaine(),verse:false,type:'exceptionnelle',raison:raison||null})});aEl.innerHTML='<div class="alert alert-ok">✅ Prime attribuée !</div>';setTimeout(()=>closeOv('ovPrimeExcep'),1400);}
 
 async function verserPrime(id){await sb(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})});loadPrimesTable();if(document.getElementById('page-employes')?.classList.contains('active'))loadEmployes();alert('✅ Prime versée !');}
-
+async function verserPrimesGroupe(idsStr){
+  const ids=idsStr.split(',');
+  for(const id of ids){ await sb(`primes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({verse:true})}); }
+  loadPrimesTable();
+  if(document.getElementById('page-employes')?.classList.contains('active'))loadEmployes();
+  alert(`✅ ${ids.length>1?`${ids.length} primes versées !`:'Prime versée !'}`);
+}
+   
 /* ══════════════════════════════════════════
    MENU
 ══════════════════════════════════════════ */
@@ -3126,14 +3133,27 @@ async function loadPrimesTable(){
   if(ids.length){const emps=await sb(`comptes_dashboard?discord_id=in.(${ids.join(',')})&select=discord_id,nom,prenom,poste`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
   const enAtt=data.filter(p=>!p.verse),versees=data.filter(p=>p.verse);
   const totAtt=enAtt.reduce((a,p)=>a+p.montant,0),totVer=versees.reduce((a,p)=>a+p.montant,0);
-  const rows=(list)=>list.map(p=>{const emp=empMap[p.employe_discord]||{};const ancienne=p.semaine!==getSemaine();return`<tr>
+
+  function regrouperPrimes(list){
+    const groupes={};
+    list.forEach(p=>{
+      const cle=`${p.employe_discord}|${p.type||'vente'}|${p.semaine}|${p.verse}`;
+      if(!groupes[cle]) groupes[cle]={...p, montant:0, ids:[], dateRecente:p.created_at};
+      groupes[cle].montant+=p.montant;
+      groupes[cle].ids.push(p.id);
+      if(new Date(p.created_at)>new Date(groupes[cle].dateRecente)) groupes[cle].dateRecente=p.created_at;
+    });
+    return Object.values(groupes).sort((a,b)=>new Date(b.dateRecente)-new Date(a.dateRecente));
+  }
+
+  const rows=(list)=>regrouperPrimes(list).map(p=>{const emp=empMap[p.employe_discord]||{};const ancienne=p.semaine!==getSemaine();const idsStr=p.ids.join(',');return`<tr>
     <td><strong>${emp.prenom?`${emp.prenom} ${emp.nom}`:'—'}</strong></td>
     <td>${emp.poste||'—'}</td>
-    <td><span class="badge badge-blue">${p.type||'vente'}</span></td>
+    <td><span class="badge badge-blue">${p.type||'vente'}</span>${p.ids.length>1?` <span class="badge badge-grey">×${p.ids.length}</span>`:''}</td>
     <td><strong style="color:var(--green)">${fmtMoney(p.montant)}</strong></td>
-    <td style="font-size:11px;color:var(--muted)">${p.created_at?new Date(p.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}${ancienne?` <span class="badge badge-orange" style="margin-left:4px">${getLabelSemaine(p.semaine)}</span>`:''}</td>
+    <td style="font-size:11px;color:var(--muted)">${p.dateRecente?new Date(p.dateRecente).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}${ancienne?` <span class="badge badge-orange" style="margin-left:4px">${getLabelSemaine(p.semaine)}</span>`:''}</td>
     <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span></td>
-    <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
+    <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrimesGroupe('${idsStr}')">Verser</button>`:''}</td>
   </tr>`;}).join('');
   el.innerHTML=`<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
     <div style="padding:9px 14px;background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.28);border-radius:7px;font-size:12px">⏳ En attente : <strong style="color:var(--warn)">${fmtMoney(totAtt)}</strong></div>
