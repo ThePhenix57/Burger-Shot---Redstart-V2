@@ -3082,19 +3082,23 @@ async function calculerPrimes(){
 
 async function loadPrimesTable(){
   const el=document.getElementById('primesTable');if(!el)return;
-  const data=await sb(`primes?select=*&semaine=eq.${getSemaine()}&order=created_at.desc`);
+  const [dataSemaine, dataEnAttenteAnciennes] = await Promise.all([
+    sb(`primes?select=*&semaine=eq.${getSemaine()}&order=created_at.desc`),
+    sb(`primes?select=*&semaine=neq.${getSemaine()}&verse=eq.false&order=created_at.desc`)
+  ]);
+  const data=[...(dataSemaine||[]), ...(dataEnAttenteAnciennes||[])];
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime cette semaine.</p>';return;}
   const ids=[...new Set(data.map(p=>p.employe_discord).filter(Boolean))];
   let empMap={};
   if(ids.length){const emps=await sb(`comptes_dashboard?discord_id=in.(${ids.join(',')})&select=discord_id,nom,prenom,poste`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
   const enAtt=data.filter(p=>!p.verse),versees=data.filter(p=>p.verse);
   const totAtt=enAtt.reduce((a,p)=>a+p.montant,0),totVer=versees.reduce((a,p)=>a+p.montant,0);
-  const rows=(list)=>list.map(p=>{const emp=empMap[p.employe_discord]||{};return`<tr>
+  const rows=(list)=>list.map(p=>{const emp=empMap[p.employe_discord]||{};const ancienne=p.semaine!==getSemaine();return`<tr>
     <td><strong>${emp.prenom?`${emp.prenom} ${emp.nom}`:'—'}</strong></td>
     <td>${emp.poste||'—'}</td>
     <td><span class="badge badge-blue">${p.type||'vente'}</span></td>
     <td><strong style="color:var(--green)">${fmtMoney(p.montant)}</strong></td>
-    <td style="font-size:11px;color:var(--muted)">${p.created_at?new Date(p.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}</td>
+    <td style="font-size:11px;color:var(--muted)">${p.created_at?new Date(p.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}${ancienne?` <span class="badge badge-orange" style="margin-left:4px">${getLabelSemaine(p.semaine)}</span>`:''}</td>
     <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span></td>
     <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrime('${p.id}')">Verser</button>`:''}</td>
   </tr>`;}).join('');
