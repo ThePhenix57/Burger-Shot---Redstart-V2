@@ -3454,9 +3454,37 @@ async function loadHistoriqueCompteRendus(){
 async function saveImpotsReels(crId){
   const val=+document.getElementById(`impReel-${crId}`)?.value;
   if(!val||val<0){alert('Montant invalide.');return;}
-  await sb(`comptes_rendus?id=eq.${crId}`,{method:'PATCH',body:JSON.stringify({impots_reels:val})});
-  alert('✅ Montant réel des impôts enregistré !');
+  if(!confirm('Corriger les impôts va recalculer le bénéfice net et ajuster le solde du coffre. Continuer ?'))return;
+
+  const data=await sb(`comptes_rendus?id=eq.${crId}&select=*`);
+  const cr=data?.[0];
+  if(!cr){alert('Compte rendu introuvable.');return;}
+
+  const ancienImpot=+(cr.total_impots||0);
+  const nouvelImpot=val;
+  const ecart=nouvelImpot-ancienImpot; // positif = on doit retirer plus du coffre, négatif = on rend de l'argent
+
+  const nouveauBenefice=(cr.benefice_net||0)-ecart;
+  const nouveauSoldeFinal=(cr.solde_depart||0)+nouveauBenefice;
+
+  // Mettre à jour le compte rendu
+  await sb(`comptes_rendus?id=eq.${crId}`,{method:'PATCH',body:JSON.stringify({
+    impots_reels:nouvelImpot,
+    benefice_net:nouveauBenefice,
+    solde_final:nouveauSoldeFinal
+  })});
+
+  // Ajuster le coffre réel en conséquence (seulement l'écart, pas tout le solde)
+  const coffreData=await sb('coffre_solde?limit=1');
+  const coffreActuel=+(coffreData?.[0]?.solde??500000);
+  const coffreCorrige=coffreActuel-ecart;
+  if(coffreData?.[0]?.id){
+    await sb(`coffre_solde?id=eq.${coffreData[0].id}`,{method:'PATCH',body:JSON.stringify({solde:coffreCorrige,updated_at:new Date().toISOString()})});
+  }
+
+  alert(`✅ Impôts corrigés ! Écart : ${ecart>=0?'-':'+'}${fmtMoney(Math.abs(ecart))}\nNouveau solde coffre : ${fmtMoney(coffreCorrige)}`);
   loadHistoriqueCompteRendus();
+  loadCoffreComplet();
 }
 
 async function genererPDF(cr) {
