@@ -530,7 +530,7 @@ tr:hover td{background:var(--card2);}
 const SB_URL = 'https://jztrbqkbunxiacofqhic.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHJicWtidW54aWFjb2ZxaGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjY2NTcsImV4cCI6MjA5NTQwMjY1N30.E9TJtGn3eBQJCE2HmgKmmETyvu_1dufmm3EvJzuTHgY';
 const WEBHOOK = 'https://discord.com/api/webhooks/1512253420772528219/wTzndZgEaMIByy_QQ_XNTy4VyrSF_oxAxFFkBV6_Q63GV0Lqu6RK0GNKvMgxkuUE3WX-';
-const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432','628238935943938088'];
+const DIR_IDS = ['280415204477501451','1157333780898529333','370510144766738432','628238935943938088'];//Dans l'ordre : Manu,Enzo,Tibo,Mike
 const PATRON_ID = '280415204477501451';
 const TVX = 0.10;
 
@@ -2960,6 +2960,14 @@ async function verserPrimesGroupe(idsStr){
   if(document.getElementById('page-employes')?.classList.contains('active'))loadEmployes();
   alert(`✅ ${ids.length>1?`${ids.length} primes versées !`:'Prime versée !'}`);
 }
+async function supprimerPrimesGroupe(idsStr){
+  const ids=idsStr.split(',');
+  if(!confirm(`Supprimer ${ids.length>1?`ces ${ids.length} primes`:'cette prime'} ? Action irréversible.`))return;
+  for(const id of ids){ await sb(`primes?id=eq.${id}`,{method:'DELETE'}); }
+  loadPrimesTable();
+  if(document.getElementById('page-employes')?.classList.contains('active'))loadEmployes();
+  alert(`✅ ${ids.length>1?`${ids.length} primes supprimées !`:'Prime supprimée !'}`);
+}
    
 /* ══════════════════════════════════════════
    MENU
@@ -3142,7 +3150,7 @@ async function loadPrimesTable(){
     <td><strong style="color:var(--green)">${fmtMoney(p.montant)}</strong></td>
     <td style="font-size:11px;color:var(--muted)">${p.dateRecente?new Date(p.dateRecente).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}${ancienne?` <span class="badge badge-orange" style="margin-left:4px">${getLabelSemaine(p.semaine)}</span>`:''}</td>
     <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span></td>
-    <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrimesGroupe('${idsStr}')">Verser</button>`:''}</td>
+    <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrimesGroupe('${idsStr}')">Verser</button> <button class="btn btn-danger btn-sm" onclick="supprimerPrimesGroupe('${idsStr}')">🗑️</button>`:''}</td>
   </tr>`;}).join('');
   el.innerHTML=`<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
     <div style="padding:9px 14px;background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.28);border-radius:7px;font-size:12px">⏳ En attente : <strong style="color:var(--warn)">${fmtMoney(totAtt)}</strong></div>
