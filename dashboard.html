@@ -4380,6 +4380,8 @@ async function enregistrerEvolutionJour(){
 ══════════════════════════════════════════ */
 async function loadDepenses(){
   const el=document.getElementById('depContent');if(!el)return;
+  const selId = 'depSemSel';
+  const semaineFiltreAvant = document.getElementById(selId)?.value || null;
   el.innerHTML='<div class="loading"><div class="spin"></div></div>';
  
   // Récupérer toutes les semaines disponibles
@@ -4396,8 +4398,7 @@ async function loadDepenses(){
     ...(depSemaines||[]).map(d=>d.semaine).filter(Boolean)
   ])].sort((a,b)=>b.localeCompare(a));
  
-  const selId = 'depSemSel';
-  const semaineFiltre = document.getElementById(selId)?.value || semaineCour;
+  const semaineFiltre = semaineFiltreAvant || semaineCour;
  
   const data = await sb(`depenses?semaine=eq.${semaineFiltre}&order=created_at.desc`);
   const total=(data||[]).reduce((a,d)=>a+(d.montant||0),0);
@@ -4458,12 +4459,13 @@ async function loadRegistreRO(){await _loadRegistreCore('registreROContent');}
 
 async function _loadRegistreCore(containerId){
   const el=document.getElementById(containerId);if(!el)return;
+  const selId=`regSem_${containerId}`;
+  const semaineFiltreAvant=document.getElementById(selId)?.value||null;
   el.innerHTML='<div class="loading"><div class="spin"></div></div>';
   const historique=await sb('comptes_rendus?select=semaine,semaine_label&order=created_at.desc&limit=20')||[];
   const semaineCour=getSemaine();
   const semaines=[...new Set([semaineCour,...(historique||[]).map(h=>h.semaine)])];
-  const selId=`regSem_${containerId}`;
-  const semaineFiltre=document.getElementById(selId)?.value||semaineCour;
+  const semaineFiltre=semaineFiltreAvant||semaineCour;
   const[cmdsD,livrD,primesD,depD,coffreD,caD]=await Promise.all([
     sb(`commandes?select=*&semaine=eq.${semaineFiltre}&order=created_at.asc`),
     sb(`livraisons?select=*&semaine=eq.${semaineFiltre}&order=created_at.asc`),
