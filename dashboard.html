@@ -1475,30 +1475,64 @@ async function loadAccueil() {
       </div>`;
     }
   }
-  // Météo Los Santos (basée sur Los Angeles)
+  // Météo Los Santos (basée sur Paris) — compacte + prévision 7j
   let meteoHtml = '';
   try {
-    const meteoRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current=temperature_2m,weather_code&timezone=Europe/Paris');
+    const meteoRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current=temperature_2m,weather_code&daily=temperature_2m_max,weather_code&timezone=Europe/Paris&forecast_days=7');
     const meteoData = await meteoRes.json();
     const temp = Math.round(meteoData?.current?.temperature_2m);
-    const code = meteoData?.current?.weather_code;
+    const codeNow = meteoData?.current?.weather_code;
     const WMOICON = {
       0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',
       51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',
       71:'🌨️',73:'🌨️',75:'🌨️',80:'🌦️',81:'🌧️',82:'⛈️',
       95:'⛈️',96:'⛈️',99:'⛈️'
     };
-    const icon = WMOICON[code] || '🌡️';
-    const canicule = temp >= 30;
-    meteoHtml = `<div class="card" style="margin-bottom:18px;${canicule?'border-left:3px solid var(--red)':''}">
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <div style="font-size:32px">${icon}</div>
-        <div style="flex:1">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px">📍 Météo Los Santos</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${canicule?'var(--red)':'var(--text)'}">${isNaN(temp)?'—':temp+'°C'}</div>
+    const iconNow = WMOICON[codeNow] || '🌡️';
+
+    const jours = meteoData?.daily?.time || [];
+    const tmax = meteoData?.daily?.temperature_2m_max || [];
+    const codes = meteoData?.daily?.weather_code || [];
+    const JOURS_COURT = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+    const previsionHtml = jours.map((d, i) => {
+      const dt = new Date(d + 'T12:00:00');
+      const j = JOURS_COURT[dt.getDay()];
+      const t = Math.round(tmax[i]);
+      const ic = WMOICON[codes[i]] || '🌡️';
+      const chaud = t >= 30;
+      return `<div style="text-align:center;flex:1;min-width:38px">
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase">${i===0?"Auj.":j}</div>
+        <div style="font-size:16px;margin:2px 0">${ic}</div>
+        <div style="font-size:11px;font-weight:700;color:${chaud?'var(--red)':'var(--text)'}">${isNaN(t)?'—':t+'°'}</div>
+      </div>`;
+    }).join('');
+
+    const orageSemaine = codes.some(c => [95,96,99].includes(c));
+    const caniculeSemaine = tmax.some(t => t >= 32);
+    const caniculeAuj = temp >= 30;
+
+    let alerteHtml = '';
+    if (caniculeSemaine) {
+      alerteHtml = `<div class="alert alert-err" style="margin-top:10px;margin-bottom:0">🥵 <strong>Alerte canicule cette semaine !</strong> Pense à bien t'hydrater et à porter une casquette pendant ton service.</div>`;
+    } else if (caniculeAuj) {
+      alerteHtml = `<div class="alert alert-err" style="margin-top:10px;margin-bottom:0">🥵 <strong>Forte chaleur aujourd'hui !</strong> Hydrate-toi et pense à ta casquette.</div>`;
+    } else if (orageSemaine) {
+      alerteHtml = `<div class="alert alert-warn" style="margin-top:10px;margin-bottom:0">⛈️ <strong>Risque d'orage cette semaine.</strong> Reste prudent sur la route en livraison.</div>`;
+    }
+
+    meteoHtml = `<div class="card" style="margin-bottom:18px;${caniculeAuj?'border-left:3px solid var(--red)':''}">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px;min-width:140px">
+          <div style="font-size:26px">${iconNow}</div>
+          <div>
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">📍 Météo Los Santos</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${caniculeAuj?'var(--red)':'var(--text)'}">${isNaN(temp)?'—':temp+'°C'}</div>
+          </div>
         </div>
+        <div style="display:flex;flex:1;gap:4px;border-left:1px solid var(--border);padding-left:12px;overflow-x:auto">${previsionHtml}</div>
       </div>
-      ${canicule?`<div class="alert alert-err" style="margin-top:10px;margin-bottom:0">🥵 <strong>Alerte canicule !</strong> Pense à bien t'hydrater et à porter une casquette pendant ton service.</div>`:''}
+      ${alerteHtml}
     </div>`;
   } catch(e) { console.warn('Météo error:', e); }
   const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
