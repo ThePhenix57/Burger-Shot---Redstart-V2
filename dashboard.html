@@ -1425,8 +1425,8 @@ async function loadAccueil() {
     sb(`livraisons?select=montant&semaine=eq.${semaine}`)
   ]);
 
-  // Message quota personnalisé avec véhicule attribué
-  let quotaMsgHtml = '';
+  // Message quota personnalisé avec véhicule attribué — intégré dans le hero
+  let quotaInlineHtml = '';
   if (ROLE !== 'gouvernement') {
     const [empQ, vehData] = await Promise.all([
       sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=contrat,quota_viande_validee,quota_patates_validee,prenom`),
@@ -1459,16 +1459,16 @@ async function loadAccueil() {
         phrase = `Bonjour <strong>${prenomMsg}</strong>, il te reste ${partieTxt} dans ton quota${vehTxt} !`;
       }
 
-      quotaMsgHtml = `<div class="card" style="margin-bottom:18px;border-left:3px solid ${okV&&okP?'var(--green)':'var(--orange)'}">
-        <div style="font-size:13px;margin-bottom:10px">${phrase}</div>
+      quotaInlineHtml = `<div style="min-width:220px;max-width:280px;padding:12px 14px;background:rgba(0,0,0,.25);border-radius:10px;border-left:3px solid ${okV&&okP?'var(--green)':'var(--orange)'};position:relative;z-index:1">
+        <div style="font-size:11px;line-height:1.5;margin-bottom:${!(okV&&okP)?'8px':'0'}">${phrase}</div>
         ${!(okV&&okP) ? `
-        <div class="g2">
+        <div style="display:flex;flex-direction:column;gap:6px">
           ${vActif ? `<div>
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>🥩 Viande</span><span>${pV}%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:2px"><span>🥩 Viande</span><span>${pV}%</span></div>
             <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pV}%"></div></div>
           </div>` : ''}
           ${pActif ? `<div>
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>🥔 Patates</span><span>${pP}%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:2px"><span>🥔 Patates</span><span>${pP}%</span></div>
             <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pP}%;background:linear-gradient(90deg,var(--orange),var(--warn))"></div></div>
           </div>` : ''}
         </div>` : ''}
@@ -1588,10 +1588,10 @@ async function loadAccueil() {
     }
   }
 
-  el.innerHTML = `${passAlerts}${meteoHtml}${quotaMsgHtml}
+  el.innerHTML = `${passAlerts}${meteoHtml}
   <div class="hero">
     <div class="hero-avatar">${avHtml}</div>
-    <div>
+    <div style="flex:1">
       <div class="hero-sub">Bonjour,</div>
       <div class="hero-name">${first.toUpperCase()}${last?`, <span style="color:var(--red)">${last.toUpperCase()}</span>`:''}</div>
       <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
@@ -1600,6 +1600,7 @@ async function loadAccueil() {
         ${isMercredi()?'<span class="badge badge-orange">🎉 Mercredi des Zouzous -10%</span>':''}
       </div>
     </div>
+    ${quotaInlineHtml}
   </div>
   <div class="g3" style="margin-bottom:18px">
     <div class="stat" style="--accent:var(--warn)"><div class="stat-icon">🏆</div><div class="stat-label">Employés actifs</div><div class="stat-val">${(employes||[]).length}</div></div>
