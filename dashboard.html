@@ -1424,6 +1424,57 @@ async function loadAccueil() {
     sb(`commandes?select=total,total_apres_reduction&semaine=eq.${semaine}&employe_discord_id=eq.${USER.id}`),
     sb(`livraisons?select=montant&semaine=eq.${semaine}`)
   ]);
+
+  // Message quota personnalisé avec véhicule attribué
+  let quotaMsgHtml = '';
+  if (ROLE === 'employe') {
+    const [empQ, vehData] = await Promise.all([
+      sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=contrat,quota_viande_validee,quota_patates_validee,prenom`),
+      sb(`vehicules?employe_discord_id=eq.${USER.id}&select=plaque&limit=1`)
+    ]);
+    const empQd = empQ?.[0];
+    if (empQd) {
+      const maxV = empQd.contrat==='CDI' ? quotaCfg.cdi_viande : quotaCfg.cdd_viande;
+      const maxP = empQd.contrat==='CDI' ? quotaCfg.cdi_patates : quotaCfg.cdd_patates;
+      const vActif = empQd.contrat==='CDI' ? quotaCfg.cdi_viande_actif : quotaCfg.cdd_viande_actif;
+      const pActif = empQd.contrat==='CDI' ? quotaCfg.cdi_patates_actif : quotaCfg.cdd_patates_actif;
+      const qV = +empQd.quota_viande_validee||0, qP = +empQd.quota_patates_validee||0;
+      const restV = Math.max(0, maxV - qV), restP = Math.max(0, maxP - qP);
+      const pV = maxV>0 ? Math.min(100, Math.round(qV/maxV*100)) : 100;
+      const pP = maxP>0 ? Math.min(100, Math.round(qP/maxP*100)) : 100;
+      const okV = !vActif || restV <= 0;
+      const okP = !pActif || restP <= 0;
+      const plaque = vehData?.[0]?.plaque || null;
+      const prenomMsg = empQd.prenom || USER.displayName.split(' ')[0];
+
+      let phrase;
+      if (okV && okP) {
+        phrase = `Bonjour <strong>${prenomMsg}</strong>, ton quota est au max, tu peux vendre ta production ! 🎉`;
+      } else {
+        const parties = [];
+        if (vActif && restV > 0) parties.push(`<strong style="color:var(--red)">${restV}</strong> de viande`);
+        if (pActif && restP > 0) parties.push(`<strong style="color:var(--orange)">${restP}</strong> de patates`);
+        const partieTxt = parties.join(' et ');
+        const vehTxt = plaque ? ` avec le Speedo immatriculé <strong>${plaque}</strong>` : '';
+        phrase = `Bonjour <strong>${prenomMsg}</strong>, il te reste ${partieTxt} à livrer${vehTxt} !`;
+      }
+
+      quotaMsgHtml = `<div class="card" style="margin-bottom:18px;border-left:3px solid ${okV&&okP?'var(--green)':'var(--orange)'}">
+        <div style="font-size:13px;margin-bottom:10px">${phrase}</div>
+        ${!(okV&&okP) ? `
+        <div class="g2">
+          ${vActif ? `<div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>🥩 Viande</span><span>${pV}%</span></div>
+            <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pV}%"></div></div>
+          </div>` : ''}
+          ${pActif ? `<div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>🥔 Patates</span><span>${pP}%</span></div>
+            <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pP}%;background:linear-gradient(90deg,var(--orange),var(--warn))"></div></div>
+          </div>` : ''}
+        </div>` : ''}
+      </div>`;
+    }
+  }
   const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
   const caSem = (cmdSem||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const caJour = (cmdJour||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
@@ -1477,7 +1528,7 @@ async function loadAccueil() {
     }
   }
 
-  el.innerHTML = `${passAlerts}
+  el.innerHTML = `${passAlerts}${quotaMsgHtml}
   <div class="hero">
     <div class="hero-avatar">${avHtml}</div>
     <div>
