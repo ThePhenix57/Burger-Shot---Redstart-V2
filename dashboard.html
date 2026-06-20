@@ -1475,6 +1475,32 @@ async function loadAccueil() {
       </div>`;
     }
   }
+  // Météo Los Santos (basée sur Los Angeles)
+  let meteoHtml = '';
+  try {
+    const meteoRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.0522&longitude=-118.2437&current=temperature_2m,weather_code&timezone=America/Los_Angeles');
+    const meteoData = await meteoRes.json();
+    const temp = Math.round(meteoData?.current?.temperature_2m);
+    const code = meteoData?.current?.weather_code;
+    const WMOICON = {
+      0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',
+      51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',
+      71:'🌨️',73:'🌨️',75:'🌨️',80:'🌦️',81:'🌧️',82:'⛈️',
+      95:'⛈️',96:'⛈️',99:'⛈️'
+    };
+    const icon = WMOICON[code] || '🌡️';
+    const canicule = temp >= 30;
+    meteoHtml = `<div class="card" style="margin-bottom:18px;${canicule?'border-left:3px solid var(--red)':''}">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-size:32px">${icon}</div>
+        <div style="flex:1">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px">📍 Météo Los Santos</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${canicule?'var(--red)':'var(--text)'}">${isNaN(temp)?'—':temp+'°C'}</div>
+        </div>
+      </div>
+      ${canicule?`<div class="alert alert-err" style="margin-top:10px;margin-bottom:0">🥵 <strong>Alerte canicule !</strong> Pense à bien t'hydrater et à porter une casquette pendant ton service.</div>`:''}
+    </div>`;
+  } catch(e) { console.warn('Météo error:', e); }
   const caLiv = (livrSem||[]).reduce((a,l)=>a+(l.montant||0),0);
   const caSem = (cmdSem||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
   const caJour = (cmdJour||[]).reduce((a,c)=>a+(c.total_apres_reduction||c.total||0),0);
@@ -1528,7 +1554,7 @@ async function loadAccueil() {
     }
   }
 
-  el.innerHTML = `${passAlerts}${quotaMsgHtml}
+  el.innerHTML = `${passAlerts}${meteoHtml}${quotaMsgHtml}
   <div class="hero">
     <div class="hero-avatar">${avHtml}</div>
     <div>
