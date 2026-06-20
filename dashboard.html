@@ -1478,7 +1478,7 @@ async function loadAccueil() {
   // Météo Los Santos (basée sur Los Angeles)
   let meteoHtml = '';
   try {
-    const meteoRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.0522&longitude=-118.2437&current=temperature_2m,weather_code&timezone=America/Los_Angeles');
+    const meteoRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current=temperature_2m,weather_code&timezone=Europe/Paris');
     const meteoData = await meteoRes.json();
     const temp = Math.round(meteoData?.current?.temperature_2m);
     const code = meteoData?.current?.weather_code;
