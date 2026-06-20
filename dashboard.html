@@ -2405,7 +2405,11 @@ async function loadEmployes(){
   return new Date(b.date_embauche||0) - new Date(a.date_embauche||0);
   });
   const empCountEl = document.getElementById('empCount');
-  if (empCountEl) empCountEl.textContent = `${data.length} EMPLOYÉ${data.length > 1 ? 'S' : ''}`;
+  if (empCountEl) {
+    const nbCDI = data.filter(e => e.contrat === 'CDI').length;
+    const nbCDD = data.filter(e => e.contrat === 'CDD').length;
+    empCountEl.textContent = `${data.length} EMPLOYÉ${data.length > 1 ? 'S' : ''} · ${nbCDI} CDI · ${nbCDD} CDD`;
+  }
   const caMap={},primesMap={},cntMap={};
   (cmds||[]).forEach(c=>{caMap[c.employe_discord_id]=(caMap[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);cntMap[c.employe_discord_id]=(cntMap[c.employe_discord_id]||0)+1;});
   (primesData||[]).forEach(p=>{primesMap[p.employe_discord]=(primesMap[p.employe_discord]||0)+p.montant;});
