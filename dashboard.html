@@ -1427,7 +1427,7 @@ async function loadAccueil() {
 
   // Message quota personnalisé avec véhicule attribué
   let quotaMsgHtml = '';
-  if (ROLE === 'employe') {
+  if (ROLE !== 'gouvernement') {
     const [empQ, vehData] = await Promise.all([
       sb(`comptes_dashboard?discord_id=eq.${USER.id}&select=contrat,quota_viande_validee,quota_patates_validee,prenom`),
       sb(`vehicules?employe_discord_id=eq.${USER.id}&select=plaque&limit=1`)
