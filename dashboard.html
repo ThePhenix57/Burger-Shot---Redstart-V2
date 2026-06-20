@@ -1449,14 +1449,14 @@ async function loadAccueil() {
 
       let phrase;
       if (okV && okP) {
-        phrase = `Bonjour <strong>${prenomMsg}</strong>, ton quota est au max, tu peux vendre ta production ! 🎉`;
+        phrase = `Bonjour <strong>${prenomMsg}</strong>, tu n'as plus de quota à faire, tu peux livrer ta production ! 🎉`;
       } else {
         const parties = [];
         if (vActif && restV > 0) parties.push(`<strong style="color:var(--red)">${restV}</strong> de viande`);
         if (pActif && restP > 0) parties.push(`<strong style="color:var(--orange)">${restP}</strong> de patates`);
         const partieTxt = parties.join(' et ');
         const vehTxt = plaque ? ` avec le Speedo immatriculé <strong>${plaque}</strong>` : '';
-        phrase = `Bonjour <strong>${prenomMsg}</strong>, il te reste ${partieTxt} à livrer${vehTxt} !`;
+        phrase = `Bonjour <strong>${prenomMsg}</strong>, il te reste ${partieTxt} dans ton quota${vehTxt} !`;
       }
 
       quotaMsgHtml = `<div class="card" style="margin-bottom:18px;border-left:3px solid ${okV&&okP?'var(--green)':'var(--orange)'}">
