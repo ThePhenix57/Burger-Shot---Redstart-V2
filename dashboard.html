@@ -714,6 +714,26 @@ function startClock() {
 }
 
 /* ══════════════════════════════════════════
+   THÈME AUTO (clair le jour, sombre dès 21h)
+   Respecte le choix manuel de l'utilisateur si déjà fait
+══════════════════════════════════════════ */
+function appliquerThemeAuto() {
+  const choixManuel = localStorage.getItem('bs_theme_manuel');
+  if (choixManuel) {
+    document.documentElement.dataset.theme = choixManuel;
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = choixManuel === 'dark' ? '☀️' : '🌙';
+    return;
+  }
+  const heure = new Date().getHours();
+  const sombre = heure >= 21 || heure < 7;
+  const theme = sombre ? 'dark' : 'light';
+  document.documentElement.dataset.theme = theme;
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+/* ══════════════════════════════════════════
    MERCREDI DES ZOUZOUS
 ══════════════════════════════════════════ */
 function lancerZouzous() {
@@ -739,6 +759,8 @@ function lancerZouzous() {
 ══════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async () => {
   startClock();
+  appliquerThemeAuto();
+  setInterval(appliquerThemeAuto, 60000);
   lancerZouzous();
 
   const raw = localStorage.getItem('bs_user');
@@ -1405,6 +1427,7 @@ function toggleTheme() {
   const h = document.documentElement, b = document.getElementById('themeBtn');
   h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
   b.textContent = h.dataset.theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('bs_theme_manuel', h.dataset.theme);
 }
 function logout() { localStorage.removeItem('bs_user'); location.href = '/'; }
 
