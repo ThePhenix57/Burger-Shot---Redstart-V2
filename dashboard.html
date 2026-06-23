@@ -1750,7 +1750,22 @@ function calcPts() {
 function renderTicket() {
   const linesEl = document.getElementById('tktLines'); if(!linesEl) return;
   linesEl.innerHTML = !commande.length ? '<div class="t-empty">Aucun article</div>' :
-    commande.map(p=>`<div class="t-line" style="margin-bottom:3px"><div>${p.nom} ×${p.qte}</div><div style="display:flex;align-items:center;gap:5px"><span>${p.prix*p.qte}$</span><span class="t-del" onclick="removeFromTicket('${p.id}')">✕</span></div></div>`).join('');
+    commande.map(p => {
+      let compHtml = '';
+      if (p.composition) {
+        let comp = [];
+        try { comp = typeof p.composition === 'string' ? JSON.parse(p.composition) : (p.composition || []); } catch {}
+        if (comp.length) {
+          compHtml = `<div style="border-left:2px dotted #bbb;margin-left:6px;padding-left:8px;margin-top:2px;margin-bottom:4px">
+            ${comp.map(c => `<div style="font-size:10px;color:#888;margin-bottom:1px">┊ ${c.qty * p.qte} ${c.nom}</div>`).join('')}
+          </div>`;
+        }
+      }
+      return `<div style="margin-bottom:3px">
+        <div class="t-line"><div>${p.nom} ×${p.qte}</div><div style="display:flex;align-items:center;gap:5px"><span>${p.prix*p.qte}$</span><span class="t-del" onclick="removeFromTicket('${p.id}')">✕</span></div></div>
+        ${compHtml}
+      </div>`;
+    }).join('');
   const c=calcCmd(), pts=calcPts();
   document.getElementById('tktTotal').textContent=`${c.brut}$`;
   document.getElementById('tktTVX').textContent=`TVX (10%) : ${c.tvx}$`;
