@@ -853,6 +853,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   enregistrerEvolutionJour();
   ctVerifierContratsEnAttente();
   verifierExpirationAvertissements();
+   verifierExpirationPass();
 });
 
 async function loadQuotaCfg() {
@@ -1756,7 +1757,7 @@ function renderTicket() {
         let comp = [];
         try { comp = typeof p.composition === 'string' ? JSON.parse(p.composition) : (p.composition || []); } catch {}
         if (comp.length) {
-          compHtml = `<div style="border-left:2px dotted #bbb;margin-left:6px;padding-left:8px;margin-top:2px;margin-bottom:4px">
+          compHtml = `<div style="margin-left:6px;margin-top:2px;margin-bottom:4px">
             ${comp.map(c => `<div style="font-size:10px;color:#888;margin-bottom:1px">┊ ${c.qty * p.qte} ${c.nom}</div>`).join('')}
           </div>`;
         }
@@ -1997,7 +1998,17 @@ async function saveNewClient(){
   const alertEl=document.getElementById('alertNC');
   if(!nom||!prenom){alertEl.innerHTML='<div class="alert alert-err">⚠️ Nom et prénom obligatoires.</div>';return;}
   alertEl.innerHTML='<div class="alert alert-warn">⏳...</div>';
-  const res=await sb('clients',{method:'POST',body:JSON.stringify({nom,prenom,telephone:document.getElementById('ncTel')?.value.trim()||null,discord_id:document.getElementById('ncDiscord')?.value.trim()||null,points:0,blacklist:false})});
+   const passFF = passTypes.find(p => p.nom === 'French Fries');
+  const res=await sb('clients',{method:'POST',body:JSON.stringify({
+    nom, prenom,
+    telephone: document.getElementById('ncTel')?.value.trim()||null,
+    discord_id: document.getElementById('ncDiscord')?.value.trim()||null,
+    points: 0,
+    blacklist: false,
+    pass: passFF?.nom || 'French Fries',
+    pass_id: passFF?.id || null,
+    pass_expiry: null
+  })});
   if(!res){alertEl.innerHTML='<div class="alert alert-err">❌ Erreur.</div>';return;}
   alertEl.innerHTML='<div class="alert alert-ok">✅ Client ajouté !</div>';
   ['ncNom','ncPrenom','ncTel','ncDiscord'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -2749,6 +2760,28 @@ async function verifierExpirationAvertissements() {
   }
   } catch(e) {
     console.warn('verifierExpirationAvertissements:', e);
+  }
+}
+async function verifierExpirationPass() {
+  try {
+    const now = new Date().toISOString();
+    // Chercher tous les clients avec un pass Nuggets ou Burger expiré
+    const expires = await sb(`clients?select=id,pass,points&pass_expiry=lte.${now}&or=(pass.eq.Nuggets,pass.eq.Burger)`);
+    if (!expires?.length) return;
+    const passFF = passTypes.find(p => p.nom === 'French Fries');
+    for (const client of expires) {
+      await sb(`clients?id=eq.${client.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          pass: passFF?.nom || 'French Fries',
+          pass_id: passFF?.id || null,
+          pass_expiry: null // French Fries permanent, pas de timer
+        })
+      });
+    }
+    console.log(`✅ ${expires.length} pass rétrogradé(s) vers French Fries`);
+  } catch(e) {
+    console.warn('verifierExpirationPass:', e);
   }
 }
 function filtrerEmpSearch(v){const f=v.toLowerCase();document.querySelectorAll('#empGrid .emp-card').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(f)?'':'none'});}
