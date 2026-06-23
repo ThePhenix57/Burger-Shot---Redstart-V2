@@ -1980,7 +1980,7 @@ function renderClients(list){
       <td><strong>${c.nom}</strong>${c.blacklist?` <span class="badge badge-black">BL</span>`:''}</td>
       <td>${c.prenom}</td>
       <td>${fmtTelDisplay(c.telephone)}</td>
-      <td>${c.pass?`<span class="badge badge-gold">${c.pass}</span>${days!==null?` <span class="badge ${days<=7?'badge-orange':'badge-blue'}">${days<=0?'Expiré':`J-${days}`}</span>`:''}` : '—'}</td>
+      <td>${c.pass?`<span class="badge badge-gold">${c.pass}</span>${days!==null?` <span class="badge ${days<=7?'badge-orange':'badge-blue'}">${days<=0?'Expiré':`J-${days}`}</span>`:' <span class="badge badge-grey">∞</span>'}` : '—'}</td>
       <td><span class="badge badge-blue">🎯 ${c.points||0}</span></td>
       <td><div style="display:flex;gap:3px;flex-wrap:wrap">
         ${can?`<button class="btn btn-outline btn-sm" onclick="voirCmdsClient('${c.id}','${c.prenom} ${c.nom}')">📦</button>`:''}
