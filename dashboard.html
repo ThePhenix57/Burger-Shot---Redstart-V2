@@ -3229,7 +3229,7 @@ async function loadGestion(){
   sv('gPrimeCDD',map.prime_quota_cdd);sv('gPrimeCDI',map.prime_quota_cdi);
   sc('gCDDViandeActif',map.quota_cdd_viande_actif);sc('gCDDPatasActif',map.quota_cdd_patates_actif);
   sc('gCDIViandeActif',map.quota_cdi_viande_actif);sc('gCDIPatasActif',map.quota_cdi_patates_actif);
-  await Promise.all([loadQuotaTicketsList(),loadCoffreComplet(),loadPrimesTable(),loadLivraisons(),loadSoldeSection(),loadHistoriqueCompteRendus()]);
+  await Promise.all([loadQuotaTicketsList(),loadCoffreComplet(),loadPrimesTable(),loadPrimesSemainePrecedente(),loadEmployesSansQuota(),loadLivraisons(),loadSoldeSection(),loadHistoriqueCompteRendus()]);
 }
 
 async function saveQuotaCfg(){
@@ -3334,24 +3334,116 @@ async function loadPrimesTable(){
   function regrouperPrimes(list){
     const groupes={};
     list.forEach(p=>{
-      const cle=`${p.employe_discord}|${p.type||'vente'}|${p.semaine}|${p.verse}`;
-      if(!groupes[cle]) groupes[cle]={...p, montant:0, ids:[], dateRecente:p.created_at};
+      // Regroupement par employé + semaine + statut versement (1 ligne par employé par semaine)
+      const cle=`${p.employe_discord}|${p.semaine}|${p.verse}`;
+      if(!groupes[cle]){
+        groupes[cle]={...p, montant:0, ids:[], dateRecente:p.created_at, types:[]};
+      }
       groupes[cle].montant+=p.montant;
       groupes[cle].ids.push(p.id);
+      if(!groupes[cle].types.includes(p.type||'vente')) groupes[cle].types.push(p.type||'vente');
       if(new Date(p.created_at)>new Date(groupes[cle].dateRecente)) groupes[cle].dateRecente=p.created_at;
     });
     return Object.values(groupes).sort((a,b)=>new Date(b.dateRecente)-new Date(a.dateRecente));
   }
 
-  const rows=(list)=>regrouperPrimes(list).map(p=>{const emp=empMap[p.employe_discord]||{};const ancienne=p.semaine!==getSemaine();const idsStr=p.ids.join(',');return`<tr>
-    <td><strong>${emp.prenom?`${emp.prenom} ${emp.nom}`:'—'}</strong></td>
-    <td>${emp.poste||'—'}</td>
-    <td><span class="badge badge-blue">${p.type||'vente'}</span>${p.ids.length>1?` <span class="badge badge-grey">×${p.ids.length}</span>`:''}</td>
-    <td><strong style="color:var(--green)">${fmtMoney(p.montant)}</strong></td>
-    <td style="font-size:11px;color:var(--muted)">${p.dateRecente?new Date(p.dateRecente).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}${ancienne?` <span class="badge badge-orange" style="margin-left:4px">${getLabelSemaine(p.semaine)}</span>`:''}</td>
-    <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span></td>
-    <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrimesGroupe('${idsStr}')">Verser</button> <button class="btn btn-danger btn-sm" onclick="supprimerPrimesGroupe('${idsStr}')">🗑️</button>`:''}</td>
-  </tr>`;}).join('');
+/* ══════════════════════════════════════════
+   PRIMES SEMAINE PASSÉE (résumé par employé)
+══════════════════════════════════════════ */
+async function loadPrimesSemainePrecedente(){
+  const el=document.getElementById('primesPrecedentesTable');if(!el)return;
+  const semActuelle=getSemaine();
+  const semPrec=(()=>{const d=new Date(semActuelle+'T00:00:00');d.setDate(d.getDate()-7);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
+  const data=await sb(`primes?select=*&semaine=eq.${semPrec}&order=created_at.desc`);
+  if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucune prime la semaine passée.</p>';return;}
+  const ids=[...new Set(data.map(p=>p.employe_discord).filter(Boolean))];
+  let empMap={};
+  if(ids.length){const emps=await sb(`comptes_dashboard?discord_id=in.(${ids.join(',')})&select=discord_id,nom,prenom,poste`);(emps||[]).forEach(e=>empMap[e.discord_id]=e);}
+  // Fusionner par employé
+  const groupes={};
+  data.forEach(p=>{
+    const id=p.employe_discord;
+    if(!groupes[id]) groupes[id]={discord:id,montant:0,ids:[],verse:p.verse,types:[]};
+    groupes[id].montant+=p.montant;
+    groupes[id].ids.push(p.id);
+    if(!groupes[id].types.includes(p.type||'vente')) groupes[id].types.push(p.type||'vente');
+    if(p.verse) groupes[id].verse=true;
+  });
+  const list=Object.values(groupes).sort((a,b)=>b.montant-a.montant);
+  const totalAtt=list.filter(g=>!g.verse).reduce((a,g)=>a+g.montant,0);
+  const totalVer=list.filter(g=>g.verse).reduce((a,g)=>a+g.montant,0);
+  el.innerHTML=`
+  <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <div style="padding:9px 14px;background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.28);border-radius:7px;font-size:12px">⏳ À verser : <strong style="color:var(--warn)">${fmtMoney(totalAtt)}</strong></div>
+    <div style="padding:9px 14px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.28);border-radius:7px;font-size:12px">✅ Déjà versées : <strong style="color:var(--green)">${fmtMoney(totalVer)}</strong></div>
+    <div style="padding:9px 14px;background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.28);border-radius:7px;font-size:12px">👥 Total : <strong style="color:var(--blue)">${fmtMoney(totalAtt+totalVer)}</strong></div>
+  </div>
+  <table><thead><tr><th>Employé</th><th>Poste</th><th>Types</th><th>Total prime</th><th>Statut</th><th></th></tr></thead><tbody>
+  ${list.map(g=>{
+    const emp=empMap[g.discord]||{};
+    const idsStr=g.ids.join(',');
+    const verse=g.ids.every(id=>data.find(p=>p.id===id)?.verse);
+    return`<tr>
+      <td><strong>${emp.prenom?`${emp.prenom} ${emp.nom}`:'—'}</strong></td>
+      <td>${emp.poste||'—'}</td>
+      <td>${g.types.map(t=>`<span class="badge badge-blue" style="margin-right:2px">${t}</span>`).join('')}</td>
+      <td><strong style="color:var(--green);font-size:15px">${fmtMoney(g.montant)}</strong></td>
+      <td><span class="badge ${verse?'badge-green':'badge-orange'}">${verse?'✅ Versée':'⏳ En attente'}</span></td>
+      <td>${!verse?`<button class="btn btn-success btn-sm" onclick="verserPrimesGroupe('${idsStr}')">💸 Verser</button> <button class="btn btn-danger btn-sm" onclick="supprimerPrimesGroupe('${idsStr}')">🗑️</button>`:''}</td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
+
+/* ══════════════════════════════════════════
+   EMPLOYÉS SANS QUOTA SUR 2 SEMAINES
+══════════════════════════════════════════ */
+async function loadEmployesSansQuota(){
+  const el=document.getElementById('employesSansQuotaTable');if(!el)return;
+  const semActuelle=getSemaine();
+  const semPrec1=(()=>{const d=new Date(semActuelle+'T00:00:00');d.setDate(d.getDate()-7);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
+  const semPrec2=(()=>{const d=new Date(semActuelle+'T00:00:00');d.setDate(d.getDate()-14);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
+  const [employes, tickets] = await Promise.all([
+    sb('comptes_dashboard?select=*&actif=eq.true&role=neq.gouvernement&order=nom.asc'),
+    sb(`quotas_tickets?select=employe_discord_id,semaine&statut=eq.valide&semaine=in.(${semPrec1},${semPrec2})`)
+  ]);
+  const ayantFait=new Set((tickets||[]).map(t=>t.employe_discord_id));
+  const sansFaire=(employes||[]).filter(e=>e.discord_id&&!ayantFait.has(e.discord_id));
+  if(!sansFaire.length){el.innerHTML='<div class="alert alert-ok">✅ Tous les employés ont fait leur quota sur les 2 dernières semaines.</div>';return;}
+  el.innerHTML=`<div class="alert alert-warn" style="margin-bottom:12px">⚠️ <strong>${sansFaire.length} employé(s)</strong> n'ont validé aucun quota sur les semaines du ${getLabelSemaine(semPrec2)} et du ${getLabelSemaine(semPrec1)}.</div>
+  <table><thead><tr><th>Employé</th><th>Poste</th><th>Contrat</th><th>Ancienneté</th></tr></thead><tbody>
+  ${sansFaire.map(e=>{
+    const jours=Math.floor((Date.now()-new Date(e.date_embauche||0).getTime())/86400000);
+    const anc=jours<30?`${jours}j`:jours<365?`${Math.floor(jours/30)} mois`:`${Math.floor(jours/365)} an(s)`;
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">
+          ${e.photo_url?`<img src="${e.photo_url}" style="width:100%;height:100%;object-fit:cover">`:`${e.prenom?.charAt(0)||''}${e.nom?.charAt(0)||''}`}
+        </div>
+        <strong>${e.prenom} ${e.nom}</strong>
+      </div></td>
+      <td><span class="badge badge-orange">${e.poste||'—'}</span></td>
+      <td><span class="badge badge-blue">${e.contrat||'—'}</span></td>
+      <td>${anc}</td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
+  const rows=(list)=>regrouperPrimes(list).map(p=>{
+    const emp=empMap[p.employe_discord]||{};
+    const ancienne=p.semaine!==getSemaine();
+    const idsStr=p.ids.join(',');
+    const typesBadges=p.types.map(t=>`<span class="badge badge-blue" style="margin-right:2px">${t}</span>`).join('');
+    return`<tr>
+      <td><strong>${emp.prenom?`${emp.prenom} ${emp.nom}`:'—'}</strong></td>
+      <td>${emp.poste||'—'}</td>
+      <td>${typesBadges}</td>
+      <td><strong style="color:var(--green)">${fmtMoney(p.montant)}</strong></td>
+      <td style="font-size:11px;color:var(--muted)">${p.dateRecente?new Date(p.dateRecente).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}):'—'}${ancienne?` <span class="badge badge-orange" style="margin-left:4px">${getLabelSemaine(p.semaine)}</span>`:''}</td>
+      <td><span class="badge ${p.verse?'badge-green':'badge-orange'}">${p.verse?'Versée':'En attente'}</span></td>
+      <td>${!p.verse?`<button class="btn btn-success btn-sm" onclick="verserPrimesGroupe('${idsStr}')">Verser</button> <button class="btn btn-danger btn-sm" onclick="supprimerPrimesGroupe('${idsStr}')">🗑️</button>`:''}</td>
+    </tr>`;
+  }).join('');
   el.innerHTML=`<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
     <div style="padding:9px 14px;background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.28);border-radius:7px;font-size:12px">⏳ En attente : <strong style="color:var(--warn)">${fmtMoney(totAtt)}</strong></div>
     <div style="padding:9px 14px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.28);border-radius:7px;font-size:12px">✅ Versées : <strong style="color:var(--green)">${fmtMoney(totVer)}</strong></div>
