@@ -2596,10 +2596,11 @@ async function loadEmployes(){
   else if(filt==='absent')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.absent&actif=eq.true&order=created_at.desc';
   else if(filt==='inactif')base='comptes_dashboard?select=*&role=neq.gouvernement&statut_activite=eq.inactif&actif=eq.true&order=created_at.desc';
   const semPrec=(()=>{const d=new Date(semaine+'T00:00:00');d.setDate(d.getDate()-7);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
-  const [data,cmds,primesActuelle,primesPrec,contratsData]=await Promise.all([
+  const semPrec=(()=>{const d=new Date(semaine+'T00:00:00');d.setDate(d.getDate()-7);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
+  const [data,cmds,primesData,contratsData]=await Promise.all([
   sb(base),
   sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
-  sb(`primes?select=employe_discord,montant&verse=eq.false`),
+  sb(`primes?select=employe_discord,montant&verse=eq.false&semaine=in.(${semaine},${semPrec})`),
   sb('contrats_travail?select=employe_discord_id,statut')
 ]);
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>';return;}
