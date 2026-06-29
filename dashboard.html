@@ -2326,29 +2326,50 @@ async function validerQuota(ticketId,discordId,quantite,type){
 async function refuserQuota(id){await sb(`quotas_tickets?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({statut:'refuse'})});const el=document.getElementById(`qt-${id}`);if(el)el.remove();loadQuotaPage();}
 async function attribuerPrimesQuota() {
   const semaine = getSemaine();
+  const semPrec = (()=>{
+    const d = new Date(semaine+'T00:00:00');
+    d.setDate(d.getDate()-7);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  })();
+
   const employes = await sb('comptes_dashboard?select=*&actif=eq.true&role=neq.gouvernement');
   if (!employes?.length) { alert('Aucun employé actif.'); return; }
+
   let count = 0;
   for (const emp of employes) {
     if (!emp.discord_id) continue;
-    const maxV = emp.contrat==='CDI' ? quotaCfg.cdi_viande  : quotaCfg.cdd_viande;
+    const maxV = emp.contrat==='CDI' ? quotaCfg.cdi_viande : quotaCfg.cdd_viande;
     const maxP = emp.contrat==='CDI' ? quotaCfg.cdi_patates : quotaCfg.cdd_patates;
-    const primeMax = emp.contrat==='CDI' ? quotaCfg.cdi_prime : quotaCfg.cdd_prime;
-    const qSem = await getQuotaSemaine(emp.discord_id, semaine);
     const vActif = emp.contrat==='CDI' ? quotaCfg.cdi_viande_actif : quotaCfg.cdd_viande_actif;
     const pActif = emp.contrat==='CDI' ? quotaCfg.cdi_patates_actif : quotaCfg.cdd_patates_actif;
-    const pV = (vActif && maxV > 0) ? Math.min(100, Math.round(qSem.viande/maxV*100)) : 100;
-    const pP = (pActif && maxP > 0) ? Math.min(100, Math.round(qSem.patates/maxP*100)) : 100;
-    if (pV < 100 || pP < 100) continue;
+    const primeMax = emp.contrat==='CDI' ? quotaCfg.cdi_prime : quotaCfg.cdd_prime;
+
+    // Chercher la meilleure semaine (actuelle ou passée) où le quota est à 100%
+    let semainePrime = null;
+    for (const sem of [semaine, semPrec]) {
+      const qSem = await getQuotaSemaine(emp.discord_id, sem);
+      const pV = (vActif && maxV > 0) ? Math.min(100, Math.round(qSem.viande/maxV*100)) : 100;
+      const pP = (pActif && maxP > 0) ? Math.min(100, Math.round(qSem.patates/maxP*100)) : 100;
+      if (pV >= 100 && pP >= 100) { semainePrime = sem; break; }
+    }
+    if (!semainePrime) continue;
+
+    // Vérifier qu'une prime quota n'existe pas déjà pour cette semaine
+    const dejaAttribuee = await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semainePrime}&type=eq.quota`);
+    if (dejaAttribuee?.length) continue;
+
     const plafond = PLAFOND_PRIME[emp.poste] ?? 50000;
-    const primesVente = await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.vente`);
+    const primesVente = await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semainePrime}&type=eq.vente`);
     const cumulVente = (primesVente||[]).reduce((a,p) => a+p.montant, 0);
     const primeQuota = Math.min(primeMax, Math.max(0, plafond - cumulVente));
     if (primeQuota <= 0) continue;
-    await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.quota&verse=eq.false`, { method:'DELETE' });
+
     await sb('primes', { method:'POST', body: JSON.stringify({
-      employe_discord: emp.discord_id, montant: primeQuota,
-      semaine, verse: false, type: 'quota'
+      employe_discord: emp.discord_id,
+      montant: primeQuota,
+      semaine: semainePrime,
+      verse: false,
+      type: 'quota'
     })});
     count++;
   }
