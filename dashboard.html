@@ -2288,8 +2288,10 @@ async function validerQuota(ticketId,discordId,quantite,type){
         const maxP=u.contrat==='CDI'?quotaCfg.cdi_patates:quotaCfg.cdd_patates;
         // Lire depuis les tickets validés cette semaine (source fiable)
         const qSemCheck = await getQuotaSemaine(discordId, getSemaine());
-        const pV = maxV > 0 ? Math.min(100, Math.round(qSemCheck.viande/maxV*100)) : 0;
-        const pP = maxP > 0 ? Math.min(100, Math.round(qSemCheck.patates/maxP*100)) : 0;
+        const vActifCheck = u.contrat==='CDI' ? quotaCfg.cdi_viande_actif : quotaCfg.cdd_viande_actif;
+        const pActifCheck = u.contrat==='CDI' ? quotaCfg.cdi_patates_actif : quotaCfg.cdd_patates_actif;
+        const pV = (vActifCheck && maxV > 0) ? Math.min(100, Math.round(qSemCheck.viande/maxV*100)) : 100;
+        const pP = (pActifCheck && maxP > 0) ? Math.min(100, Math.round(qSemCheck.patates/maxP*100)) : 100;
         if(pV>=100&&pP>=100){
         const primeMax=u.contrat==='CDI'?quotaCfg.cdi_prime:quotaCfg.cdd_prime;
         // Supprimer l'ancienne prime quota non versée si elle existe
@@ -2333,8 +2335,10 @@ async function attribuerPrimesQuota() {
     const maxP = emp.contrat==='CDI' ? quotaCfg.cdi_patates : quotaCfg.cdd_patates;
     const primeMax = emp.contrat==='CDI' ? quotaCfg.cdi_prime : quotaCfg.cdd_prime;
     const qSem = await getQuotaSemaine(emp.discord_id, semaine);
-    const pV = maxV > 0 ? Math.min(100, Math.round(qSem.viande/maxV*100))  : 0;
-    const pP = maxP > 0 ? Math.min(100, Math.round(qSem.patates/maxP*100)) : 0;
+    const vActif = emp.contrat==='CDI' ? quotaCfg.cdi_viande_actif : quotaCfg.cdd_viande_actif;
+    const pActif = emp.contrat==='CDI' ? quotaCfg.cdi_patates_actif : quotaCfg.cdd_patates_actif;
+    const pV = (vActif && maxV > 0) ? Math.min(100, Math.round(qSem.viande/maxV*100)) : 100;
+    const pP = (pActif && maxP > 0) ? Math.min(100, Math.round(qSem.patates/maxP*100)) : 100;
     if (pV < 100 || pP < 100) continue;
     const plafond = PLAFOND_PRIME[emp.poste] ?? 50000;
     const primesVente = await sb(`primes?employe_discord=eq.${emp.discord_id}&semaine=eq.${semaine}&type=eq.vente`);
