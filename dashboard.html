@@ -2599,8 +2599,7 @@ async function loadEmployes(){
   const [data,cmds,primesActuelle,primesPrec,contratsData]=await Promise.all([
   sb(base),
   sb(`commandes?select=employe_discord_id,total_apres_reduction,total&semaine=eq.${semaine}`),
-  sb(`primes?select=employe_discord,montant&semaine=eq.${semaine}&verse=eq.false`),
-  sb(`primes?select=employe_discord,montant&semaine=eq.${semPrec}&verse=eq.false`),
+  sb(`primes?select=employe_discord,montant&verse=eq.false`),
   sb('contrats_travail?select=employe_discord_id,statut')
 ]);
   if(!data?.length){el.innerHTML='<p style="color:var(--muted)">Aucun employé.</p>';return;}
@@ -2621,7 +2620,7 @@ async function loadEmployes(){
   }
   const caMap={},primesMap={},cntMap={};
   (cmds||[]).forEach(c=>{caMap[c.employe_discord_id]=(caMap[c.employe_discord_id]||0)+(c.total_apres_reduction||c.total||0);cntMap[c.employe_discord_id]=(cntMap[c.employe_discord_id]||0)+1;});
-  const primesData=[...(primesActuelle||[]),...(primesPrec||[])];
+  const primesData=primesActuelle||[];
   (primesData||[]).forEach(p=>{primesMap[p.employe_discord]=(primesMap[p.employe_discord]||0)+p.montant;});
   const contratsSet=new Set((contratsData||[]).filter(c=>c.statut==='signe'||c.statut==='en_attente').map(c=>c.employe_discord_id));
   el.innerHTML=data.map(e=>{
